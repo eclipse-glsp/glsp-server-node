@@ -9,6 +9,41 @@ The server consists of three components:
 -   [`@eclipse-glsp/graph`](packages/graph/) The Typescript based implementation of the graphical model used in GLSP (GModel).
 -   [`@eclipse-glsp-examples/workflow-server`](examples/workflow-server) GLSP example server using the workflow model.
 
+## Integration & Features
+
+Currently the node-based API does not yet support the full feature set of the Java GLSP Server API.
+Below is a list of features that are currently supported.
+
+| Integration                                       | Node Server | Java Server |
+| ------------------------------------------------- | :---------: | :---------: |
+| JSON-RPC over Socket (Theia, VSCode)              |      ✓      |      ✓      |
+| JSON-RPC over Websocket (Standalone, Eclipse IDE) |             |      ✓      |
+
+| Feature                                                           |   Node Server   |   Java Server   |
+| ----------------------------------------------------------------- | :-------------: | :-------------: |
+| Model Saving                                                      |        ✓        |        ✓        |
+| Model Dirty State                                                 |                 |        ✓        |
+| Model SVG Export                                                  |        ✓        |        ✓        |
+| Model Layout                                                      |                 |        ✓        |
+| Model Edit Modes<br>- Edit<br>- Read-only                         | <br>✓<br>&nbsp; |   <br>✓<br>✓    |
+| Client View Port<br>- Center<br>- Fit to Screen                   |   <br>✓<br>✓    |   <br>✓<br>✓    |
+| Client Status Notification                                        |        ✓        |        ✓        |
+| Client Message Notification                                       |        ✓        |        ✓        |
+| Element Selection                                                 |        ✓        |        ✓        |
+| Element Hover                                                     |        ✓        |        ✓        |
+| Element Validation                                                |        ✓        |        ✓        |
+| Element Navigation                                                |                 |        ✓        |
+| Element Type Hints                                                |        ✓        |        ✓        |
+| Element Creation and Deletion                                     |        ✓        |        ✓        |
+| Node Change Bounds<br>- Move<br>- Resize                          |   <br>✓<br>✓    |   <br>✓<br>✓    |
+| Node Change Container                                             |        ✓        |        ✓        |
+| Edge Reconnect                                                    |        ✓        |        ✓        |
+| Edge Routing Points                                               |                 |        ✓        |
+| Element Text Editing                                              |        ✓        |        ✓        |
+| Clipboard (Cut, Copy, Paste)                                      |                 |        ✓        |
+| Undo / Redo                                                       |                 |        ✓        |
+| Contexts<br>- Context Menu<br>- Command Palette<br>- Tool Palette | <br><br>✓<br>✓  | <br>✓<br>✓<br>✓ |
+
 ## Build
 
 Install dependencies and build via

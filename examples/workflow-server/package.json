@@ -49,7 +49,7 @@
     "clean": "rimraf lib",
     "build": "yarn run clean && tsc",
     "test": "",
-    "lint": "eslint -c ../.eslintrc.js --ext .ts,.tsx ./src",
+    "lint": "eslint -c ../../.eslintrc.js --ext .ts,.tsx ./src",
     "lint:fix": "eslint --fix -c ../../.eslintrc.js --ext .ts,.tsx ./src",
     "watch": "tsc -w",
     "start:server": "yarn ts-node src/index.ts"
