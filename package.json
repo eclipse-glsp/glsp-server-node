@@ -1,0 +1,36 @@
+{
+  "private": true,
+  "name": "parent",
+  "version": "0.9.0",
+  "engines": {
+    "yarn": ">=1.7.0 <2.x.x"
+  },
+  "scripts": {
+    "prepare": "yarn build",
+    "all": "yarn install && yarn lint && yarn build",
+    "build": "lerna run build",
+    "watch": "lerna run --parallel watch",
+    "lint": "lerna run lint",
+    "test": "lerna run test",
+    "publish:prepare": "lerna version minor --exact --ignore-scripts --yes --no-push",
+    "publish:latest": "lerna publish from-git --no-git-reset --no-verify-access --no-push",
+    "publish:next": "SHA=$(git rev-parse --short HEAD) && lerna publish preminor --exact --canary --preid next.${SHA} --dist-tag next --no-git-reset --no-git-tag-version --no-push --ignore-scripts --yes --no-verify-access",
+    "upgrade:next": "yarn upgrade -p \"@eclipse-glsp.*\" --next ",
+    "start": "yarn --cwd examples/workflow-server start:server"
+  },
+  "resolutions": {
+    "**/@eclipse-glsp/protocol": "0.9.0-next.e0116720"
+  },
+  "devDependencies": {
+    "@eclipse-glsp/config": "next",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "eslint-plugin-chai-friendly": "^0.7.2",
+    "eslint-plugin-prettier": "^4.0.0",
+    "lerna": "^4.0.0",
+    "typescript": "^3.9.2"
+  },
+  "workspaces": [
+    "packages/*",
+    "examples/workflow-server"
+  ]
+}
