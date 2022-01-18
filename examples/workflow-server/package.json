@@ -40,9 +40,6 @@
     "@eclipse-glsp/server-node": "0.9.0"
   },
   "devDependencies": {
-    "@types/node": "12.x",
-    "reflect-metadata": "^0.1.13",
-    "ts-node": "^10.4.0",
     "typescript": "^3.9.2"
   },
   "scripts": {

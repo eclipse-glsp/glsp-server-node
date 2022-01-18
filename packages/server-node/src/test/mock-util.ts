@@ -104,6 +104,10 @@ export class StubCreateEdgeOperationHandler extends CreateEdgeOperationHandler {
 }
 
 export class StubActionDispatcher implements ActionDispatcher {
+    dispatchAfterNextUpdate(...actions: MaybeArray<Action[]>): void {
+        // NO-OP
+    }
+
     dispatch(action: Action): Promise<void> {
         return Promise.resolve();
     }

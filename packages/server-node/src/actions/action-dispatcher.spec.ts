@@ -23,7 +23,7 @@ import { ActionHandler } from './action-handler';
 import { ActionHandlerRegistry } from './action-handler-registry';
 import * as sinon from 'sinon';
 import { expect } from 'chai';
-import { Action } from '@eclipse-glsp/protocol';
+import { Action, UpdateModelAction } from '@eclipse-glsp/protocol';
 
 function waitSync(timeInMillis: number): void {
     const start = Date.now();
@@ -250,6 +250,40 @@ describe('test DefaultActionDispatcher', () => {
             // Check if all handlers have been called in the right order
             sinon.assert.callOrder(spy_requestHandler1_execute, spy_requestHandler2_execute);
             sinon.assert.callOrder(spy_responseHandler1_execute, spy_responseHandler2_execute);
+        });
+    });
+
+    describe('test dispatch after next update', () => {
+        it('dispatchAfterNextUpdate', async () => {
+            // Mock setup
+            const updateModelAction = new UpdateModelAction({ id: 'newRoot', type: 'myType' });
+            const intermediateAction = 'intermediate';
+            const postUpdateAction = 'postUpdate';
+            const handler = new mock.StubActionHandler([updateModelAction.kind, intermediateAction]);
+            const postUpdateHandler = new mock.StubActionHandler([postUpdateAction]);
+
+            const getHandler = (kind: string): ActionHandler[] => {
+                if (kind === updateModelAction.kind || kind === intermediateAction) {
+                    return [handler];
+                } else if (kind === postUpdateAction) {
+                    return [postUpdateHandler];
+                }
+
+                return [];
+            };
+            registry_get_stub.callsFake(getHandler);
+            const spy_postUpdateHandler_execute = sinon.spy(postUpdateHandler, 'execute');
+
+            // Test execution
+            actionDispatcher.dispatchAfterNextUpdate({ kind: postUpdateAction });
+            expect(spy_postUpdateHandler_execute.called).to.be.false;
+            await actionDispatcher.dispatch({ kind: intermediateAction });
+            expect(spy_postUpdateHandler_execute.called).to.be.false;
+            await actionDispatcher.dispatch(updateModelAction);
+            expect(spy_postUpdateHandler_execute.calledOnce);
+            // Check that action does not get dispatched again
+            await actionDispatcher.dispatch(updateModelAction);
+            expect(spy_postUpdateHandler_execute.calledOnce);
         });
     });
 });

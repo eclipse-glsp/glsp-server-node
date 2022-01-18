@@ -19,22 +19,11 @@
     "upgrade:next": "yarn upgrade -p \"@eclipse-glsp.*\" --next ",
     "start": "yarn --cwd examples/workflow-server start:server"
   },
-  "resolutions": {
-    "**/@eclipse-glsp/protocol": "0.9.0-next.e0116720"
-  },
   "devDependencies": {
     "@eclipse-glsp/config": "next",
-    "eslint-plugin-chai-friendly": "^0.7.2",
+    "@types/node": "12.x",
     "lerna": "^4.0.0",
-    "typescript": "^3.9.2",
-    "mocha-jenkins-reporter": "^0.4.7",
-    "mocha": "^9.1.3",
-    "chai": "^4.3.4",
-    "sinon": "^12.0.1",
-    "ts-node": "^10.4.0",
-    "@types/chai": "^4.2.22",
-    "@types/mocha": "^9.0.0",
-    "@types/sinon": "^10.0.6"
+    "typescript": "^3.9.2"
   },
   "workspaces": [
     "packages/*",

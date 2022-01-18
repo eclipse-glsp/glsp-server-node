@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, flatPush, isAction, isRequestAction, MaybeArray, ResponseAction } from '@eclipse-glsp/protocol';
+import { Action, flatPush, isAction, isRequestAction, isUpdateModelAction, MaybeArray, ResponseAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
 import { ClientActionKinds, ClientId } from '../di/service-identifiers';
@@ -46,6 +46,16 @@ export interface ActionDispatcher {
      */
     dispatchAll(actions: Action[]): Promise<void>;
     dispatchAll(...actions: Action[]): Promise<void>;
+
+    /**
+     * Processes all given actions, by dispatching them to the corresponding handlers, after the next model update.
+     * The given actions are queued until the next model update cycle has been completed i.e. an
+     * `UpdateModelAction` has been dispatched and processed by this action dispatcher.
+     *
+     * @param actions The actions that should be dispatched after the next model update
+     */
+    dispatchAfterNextUpdate(actions: Action[]): void;
+    dispatchAfterNextUpdate(...actions: Action[]): void;
 }
 
 @injectable()
@@ -63,6 +73,7 @@ export class DefaultActionDispatcher extends Disposable implements ActionDispatc
     protected clientId: string;
 
     protected actionQueue = new PromiseQueue();
+    protected postUpdateQueue: Action[] = [];
 
     dispatch(action: Action): Promise<void> {
         // Dont queue actions that are just delegated to the client
@@ -85,7 +96,12 @@ export class DefaultActionDispatcher extends Disposable implements ActionDispatc
             responses.push(...response);
         }
 
-        return this.dispatchResponses(responses);
+        if (isUpdateModelAction(action) && this.postUpdateQueue.length > 0) {
+            responses.push(...this.postUpdateQueue);
+            this.postUpdateQueue = [];
+        }
+
+        await this.dispatchResponses(responses);
     }
 
     protected async executeHandler(handler: ActionHandler, request: Action): Promise<Action[]> {
@@ -109,6 +125,12 @@ export class DefaultActionDispatcher extends Disposable implements ActionDispatc
         const flat: Action[] = [];
         flatPush(flat, actions);
         return Promise.all(flat.map(action => this.dispatch(action))).then(() => Promise.resolve());
+    }
+
+    dispatchAfterNextUpdate(...actions: MaybeArray<Action>[]): void {
+        if (actions.length !== 0) {
+            flatPush(this.postUpdateQueue, actions);
+        }
     }
 
     doDispose(): void {
