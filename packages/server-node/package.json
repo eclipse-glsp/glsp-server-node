@@ -46,7 +46,6 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
-    "@types/node": "12.x",
     "reflect-metadata": "^0.1.13",
     "typescript": "^3.9.2"
   },

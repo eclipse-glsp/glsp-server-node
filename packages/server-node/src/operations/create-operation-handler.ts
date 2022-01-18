@@ -21,6 +21,7 @@ import {
     CreateOperation,
     Operation,
     Point,
+    SelectAction,
     TriggerEdgeCreationAction,
     TriggerElementCreationAction,
     TriggerNodeCreationAction
@@ -84,8 +85,8 @@ export abstract class CreateNodeOperationHandler extends CreateOperationHandler 
         if (element) {
             container.children.push(element);
             element.parent = container;
+            this.actionDispatcher.dispatchAfterNextUpdate(new SelectAction(), new SelectAction([element.id]));
         }
-        // TODO: Dispatch Select Action after next update
     }
 
     getContainer(operation: CreateNodeOperation): GModelElement | undefined {

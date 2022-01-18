@@ -40,12 +40,22 @@
       "port": 9229
     },
     {
-      "name": "Debug workflow example GLSP Server",
-      "program": "${workspaceFolder}/examples/workflow-server/lib/index.js",
+      "type": "node",
       "request": "launch",
-      "skipFiles": ["<node_internals>/**"],
-      "console": "integratedTerminal",
-      "type": "pwa-node"
+      "name": "Debug Workflow Example Server",
+      "program": "${workspaceFolder}/examples/workflow-server/lib/index.js",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/node_modules/@eclipse-glsp/*/lib/**/*.js",
+        "${workspaceRoot}/node_modules/@eclipse-glsp-examples/*/lib/**/*.js",
+        "${workspaceRoot}/packages/*/lib/**/*.js"
+      ],
+      "smartStep": true,
+      "internalConsoleOptions": "openOnSessionStart",
+      "outputCapture": "std"
     }
   ]
 }
