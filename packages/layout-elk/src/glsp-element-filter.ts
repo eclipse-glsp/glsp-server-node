@@ -22,7 +22,7 @@ import { BasicTypeMapper } from './basic-type-mapper';
  * The default `IElementFilter` used to determine which model elements should be included in the automatic layout.
  * Without further configuration this filter includes all basic model elements (nodes,edges,labels,ports) that are
  * part of the graphical model. For each a custom filter behavior is in place. Edges that have no source or target are filtered out.
- * In addtion, edges that are connected to a filtered element are filtered out as well.
+ * In addition, edges that are connected to a filtered element are filtered out as well.
  * The filter behavior for each of the basic types can be customized by overriding the corresponding `filter` method.
  * (e.g. {@link GlspElementFilter.filterNode})
  *

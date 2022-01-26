@@ -35,9 +35,9 @@ export class BasicTypeMapper {
     protected postConstruct(): void {
         this.basicTypeMap = new Map();
         this.diagramConfiguration.typeMapping.forEach((constructor, type) => {
-            const basictype = this.toBasicType(constructor);
-            if (basictype) {
-                this.basicTypeMap.set(type, basictype);
+            const basicType = this.toBasicType(constructor);
+            if (basicType) {
+                this.basicTypeMap.set(type, basicType);
             }
         });
     }
@@ -64,9 +64,9 @@ export class BasicTypeMapper {
         if (basicType) {
             return basicType;
         }
-        const subtypeSeperator = type.lastIndexOf(':');
-        if (subtypeSeperator > 0) {
-            return this.getBasicType(type.substring(0, subtypeSeperator));
+        const subtypeSeparator = type.lastIndexOf(':');
+        if (subtypeSeparator > 0) {
+            return this.getBasicType(type.substring(0, subtypeSeparator));
         }
         return 'unknown';
     }
