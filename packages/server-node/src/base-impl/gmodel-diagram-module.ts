@@ -14,12 +14,15 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { injectable, interfaces } from 'inversify';
-import { ApplyLabelEditOperationHandler } from '../features/directediting/apply-label-edit-operation-handler';
 import { ActionHandlerConstructor } from '../actions/action-handler';
+import { SaveModelActionHandler } from '../actions/save-model-action-handler';
+import { ChangeBoundsOperationHandler } from '../base-impl/change-bounds-operation-handler';
 import { CommandStack, DefaultCommandStack } from '../command/command-stack';
 import { DiagramModule } from '../di/diagram-module';
 import { InstanceMultiBinding } from '../di/multi-binding';
 import { RequestClipboardDataActionHandler } from '../features/clipboard/request-clipboard-data-action-handler';
+import { ApplyLabelEditOperationHandler } from '../features/directediting/apply-label-edit-operation-handler';
+import { LayoutOperationHandler } from '../features/layout/layout-operation-handler';
 import { GModelFactory, GModelFactoryNullImpl } from '../features/model/gmodel-factory';
 import { GModelIndex } from '../features/model/gmodel-index';
 import { ModelSourceLoader } from '../features/model/model-source-loader';
@@ -27,15 +30,11 @@ import { ModelState } from '../features/model/model-state';
 import { CutOperationHandler } from '../operations/cut-operation-handler';
 import { OperationHandlerConstructor } from '../operations/operation-handler';
 import { PasteOperationHandler } from '../operations/paste-operation-handler';
+import { ReconnectEdgeOperationHandler } from '../operations/reconnect-edge-operation-handler';
 import { ComputedBoundsActionHandler } from './computed-bounds-action-handler';
+import { DeleteOperationHandler } from './delete-operation-handler';
 import { GModelLoader } from './gmodel-loader';
 import { GModelState } from './gmodel-state';
-import { DeleteOperationHandler } from './delete-operation-handler';
-// TODO: investigate why direct import does not work
-// eslint-disable-next-line no-restricted-imports
-import { ChangeBoundsOperationHandler } from '../base-impl/change-bounds-operation-handler';
-import { SaveModelActionHandler } from '../actions/save-model-action-handler';
-import { ReconnectEdgeOperationHandler } from '../operations/reconnect-edge-operation-handler';
 
 /**
  * Extension of the {@link DiagramModule} to provide GModel integration.
@@ -86,5 +85,6 @@ export abstract class GModelDiagramModule extends DiagramModule {
         binding.add(DeleteOperationHandler);
         binding.add(PasteOperationHandler);
         binding.add(ReconnectEdgeOperationHandler);
+        binding.add(LayoutOperationHandler);
     }
 }

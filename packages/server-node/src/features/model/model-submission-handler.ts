@@ -17,7 +17,7 @@ import { GModelRootSchema } from '@eclipse-glsp/graph';
 import { Action, RequestBoundsAction, SetDirtyStateAction, SetModelAction, UpdateModelAction } from '@eclipse-glsp/protocol';
 import { inject, injectable, optional } from 'inversify';
 import { DiagramConfiguration, ServerLayoutKind } from '../../diagram/diagram-configuration';
-import { LayoutEngine } from '../../layout/layout-engine';
+import { LayoutEngine } from '../layout/layout-engine';
 import { GModelFactory } from './gmodel-factory';
 import { GModelSerializer } from './gmodel-serializer';
 import { ModelState } from './model-state';

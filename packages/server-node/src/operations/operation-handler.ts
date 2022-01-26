@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Operation } from '@eclipse-glsp/protocol';
+import { MaybePromise, Operation } from '@eclipse-glsp/protocol';
 import { interfaces } from 'inversify';
 
 export const OperationHandler = Symbol('OperationHandler');
@@ -45,7 +45,7 @@ export interface OperationHandler {
      *
      * @param operation The operation that should be executed.
      */
-    execute(operation: Operation): void;
+    execute(operation: Operation): MaybePromise<void>;
 }
 
 export const OperationHandlerConstructor = Symbol('OperationHandlerConstructor');

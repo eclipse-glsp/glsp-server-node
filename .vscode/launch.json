@@ -40,6 +40,20 @@
       "port": 9229
     },
     {
+      "name": "Run layout-elk tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/node_modules/.bin/mocha",
+      "args": [
+        "--config",
+        "${workspaceRoot}/.mocharc.json",
+        "${workspaceRoot}/packages/layout-elk/src/**/*.spec.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "port": 9229
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "Debug Workflow Example Server",
