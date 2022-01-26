@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, isCreateOperation, Operation, ServerMessageAction } from '@eclipse-glsp/protocol';
+import { Action, isCreateOperation, MaybePromise, Operation, ServerMessageAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
 import { GModelState } from '../base-impl/gmodel-state';
@@ -30,7 +30,7 @@ export class OperationActionHandler implements ActionHandler {
 
     constructor(@inject(Operations) readonly actionKinds: string[]) {}
 
-    execute(action: Action): Action[] {
+    execute(action: Action): MaybePromise<Action[]> {
         if (this.handles(action)) {
             if (this.modelState.isReadonly) {
                 return [new ServerMessageAction('WARNING', `Server is in readonly-mode! Could not execute operation: ${action.kind}`)];
@@ -43,9 +43,9 @@ export class OperationActionHandler implements ActionHandler {
         return [];
     }
 
-    executeHandler(operation: Operation, handler: OperationHandler): Action[] {
+    async executeHandler(operation: Operation, handler: OperationHandler): Promise<Action[]> {
         // TODO: Create GModelRecordingCommand;
-        handler.execute(operation);
+        await handler.execute(operation);
         this.modelState.index.indexRoot(this.modelState.root);
         // TODO: this.modelState.execute(command)
         return this.modelSubmissionHandler.submitModel(); // TODO: Add SetDirtyStateAction.Reason.Operation

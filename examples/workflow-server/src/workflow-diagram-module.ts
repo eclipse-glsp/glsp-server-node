@@ -26,13 +26,13 @@ import {
     JsonRpcGLSPServer,
     LabelEditValidator,
     ModelValidator,
+    NavigationTargetProvider,
+    NavigationTargetResolver,
     OperationHandlerConstructor,
     PopupModelFactory,
     ServerModule,
     ToolPaletteItemProvider
 } from '@eclipse-glsp/server-node';
-import { NavigationTargetProvider } from '@eclipse-glsp/server-node/lib/features/navigation/navigation-target-provider';
-import { NavigationTargetResolver } from '@eclipse-glsp/server-node/lib/features/navigation/navigation-target-resolver';
 import { injectable, interfaces } from 'inversify';
 import { CreateAutomatedTaskHandler } from './handler/create-automated-task-handler';
 import { CreateCategoryHandler } from './handler/create-category-handler';

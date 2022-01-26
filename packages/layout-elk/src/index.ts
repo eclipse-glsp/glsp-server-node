@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,15 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-
-/**
- * A layout engine is able to compute layout information for a model.
- */
-export interface LayoutEngine {
-    /*
-     * Compute a layout for the model state and modify the model accordingly.
-     */
-    layout(): void;
-}
-
-export const LayoutEngine = Symbol('LayoutEngine');
+export * from 'sprotty-elk';
+export { SModelIndex } from 'sprotty-protocol/lib/utils/model-utils';
+export * from './basic-type-mapper';
+export * from './di.config';
+export * from './glsp-element-filter';
+export * from './glsp-elk-layout-engine';
+export * from './glsp-layout-configurator';
