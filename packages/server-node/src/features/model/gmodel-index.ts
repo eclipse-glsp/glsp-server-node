@@ -14,7 +14,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GEdge, GModelElement, GModelElementConstructor, GModelRoot, GNode } from '@eclipse-glsp/graph';
-import { DefaultTypes } from '@eclipse-glsp/protocol';
 import { injectable } from 'inversify';
 import { getOrThrow, GLSPServerError } from '../../utils/glsp-server-error';
 
@@ -102,7 +101,7 @@ export class GModelIndex {
      * @param constructor The class of which the returned elements should be instances.
      * @returns A set containing the elements of type constructor.
      */
-    getAllByClass<G extends GNode>(constructor: GModelElementConstructor): G[] {
+    getAllByClass<G extends GModelElement>(constructor: GModelElementConstructor<G>): G[] {
         return Array.from(this.idToElement.values()).filter(element => element instanceof constructor) as G[];
     }
 
@@ -164,12 +163,6 @@ export class GModelIndex {
      * @returns All edges in the index.
      */
     getAllEdges(): GEdge[] {
-        const edges: GEdge[] = [];
-        this.getElements(DefaultTypes.EDGE).forEach(edge => {
-            if (edge instanceof GEdge) {
-                edges.push(edge);
-            }
-        });
-        return edges;
+        return this.getAllByClass(GEdge);
     }
 }

@@ -21,7 +21,6 @@ import {
     DiagramConfiguration,
     GLSPServer,
     GModelDiagramModule,
-    GModelIndex,
     InstanceMultiBinding,
     JsonRpcGLSPServer,
     LabelEditValidator,
@@ -53,7 +52,6 @@ import { WorkflowCommandPaletteActionProvider } from './provider/workflow-comman
 import { WorkflowContextMenuItemProvider } from './provider/workflow-context-menu-item-provider';
 import { WorkflowDiagramConfiguration } from './workflow-diagram-configuration';
 import { WorkflowGLSPServer } from './workflow-glsp-server';
-import { WorkflowModelIndex } from './workflow-model-index';
 import { WorkflowPopupFactory } from './workflow-popup-factory';
 
 @injectable()
@@ -82,7 +80,6 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
         bind(PopupModelFactory).to(WorkflowPopupFactory).inSingletonScope();
         bind(ModelValidator).to(WorkflowModelValidator).inSingletonScope();
         bind(ToolPaletteItemProvider).to(DefaultToolPaletteItemProvider).inSingletonScope();
-        rebind(GModelIndex).to(WorkflowModelIndex).inSingletonScope();
     }
 
     protected configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {

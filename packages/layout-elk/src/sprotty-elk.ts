@@ -13,19 +13,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GEdge, GModelIndex } from '@eclipse-glsp/server-node';
-import { injectable } from 'inversify';
-import { ModelTypes } from './util/model-types';
-
-@injectable()
-export class WorkflowModelIndex extends GModelIndex {
-    getAllEdges(): GEdge[] {
-        const edges: GEdge[] = super.getAllEdges();
-        this.getElements(ModelTypes.WEIGHTED_EDGE).forEach(weighted => {
-            if (weighted instanceof GEdge) {
-                edges.push(weighted);
-            }
-        });
-        return edges;
-    }
-}
+// Reexport of the relevant sprotty-elk typings
+export { LayoutOptions } from 'elkjs';
+export { ElkFactory } from 'sprotty-elk/lib/inversify';

@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 /* Derived from sprotty (https://github.com/eclipse/sprotty/blob/master/packages/sprotty/src/base/model/smodel-factory.ts) */
-import { GModelElement, GModelElementConstructor, GModelRoot } from '@eclipse-glsp/graph';
+import { GModelElement, GModelElementConstructor, GModelElementSchema, GModelRoot, GModelRootSchema } from '@eclipse-glsp/graph';
 import { SModelElementSchema, SModelRootSchema } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { DiagramConfiguration } from '../../diagram/diagram-configuration';
@@ -22,13 +22,41 @@ import { GLSPServerError } from '../../utils/glsp-server-error';
 
 export const GModelSerializer = Symbol('GModelSerializer');
 
+/**
+ * The `GModelSerializer` is used to transform a graphical model received as serializable JSON schema into the ES6-class based
+ * model representation and vice versa. It has to be invoked for whenever a graphical model is received in JSON format
+ * (i.e. by the GLSP client) to derive the corresponding class based model which is used internally by the GLSP server. In addition,
+ * it has to be invoked before the graphical model is sent based to the client. This is necessary to resolve the parent-child cycles
+ * inside of the graphical model which ensures that the model is serializable.
+ */
 export interface GModelSerializer {
-    createRoot(schema: SModelRootSchema): GModelRoot;
+    /**
+     * Transform the given {@link GModelRootSchema} into its {@link GModelRoot} representation.
+     * @throws An error if the received element cannot be transformed into a {@link GModelRoot}.
+     * @param schema The root schema that should be transformed.
+     * @returns The transformed {@link GModelRoot}.
+     */
+    createRoot(schema: GModelRootSchema): GModelRoot;
 
-    createElement(schema: SModelElementSchema, parent?: GModelElement): GModelElement;
+    /**
+     * Transform the given {@link GModelRootSchema} into its {@link GModelElement} representation.
+     * @throws An error if the received element cannot be transformed into a {@link GModelElement}.
+     * @param schema The element schema that should be transformed.
+     * @returns The transformed {@link GModelElement}.
+     */
+    createElement(schema: GModelElementSchema, parent?: GModelElement): GModelElement;
 
-    createSchema(element: GModelElement): SModelElementSchema;
+    /**
+     * Transforms the given {@link GModelElement} into its serializable {@link GModelElementSchema} representation.
+     * @param element The element that should be serialized.
+     * @returns The transformed {@link GModelElementSchema}.
+     */
+    createSchema(element: GModelElement): GModelElementSchema;
 
+    /**
+     * The set of reserved property keys that should be excluded from serialization. Typically
+     * this set contains at least the `children` and `parent` keys to avoid parent-child cycles.
+     */
     reservedKeys: string[];
 }
 
@@ -36,7 +64,7 @@ export interface GModelSerializer {
 export class DefaultGModelSerializer implements GModelSerializer {
     @inject(DiagramConfiguration) protected diagramConfiguration: DiagramConfiguration;
 
-    reservedKeys = ['children', 'parent', 'index'];
+    reservedKeys = ['children', 'parent', 'index', 'source', 'target'];
     createRoot(schema: SModelElementSchema): GModelRoot {
         const constructor = this.getConfiguredConstructor(schema);
         if (constructor) {

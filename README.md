@@ -24,7 +24,7 @@ Below is a list of features that are currently supported.
 | Model Saving                                                      |        ✓        |        ✓        |
 | Model Dirty State                                                 |                 |        ✓        |
 | Model SVG Export                                                  |        ✓        |        ✓        |
-| Model Layout                                                      |                 |        ✓        |
+| Model Layout                                                      |        ✓        |        ✓        |
 | Model Edit Modes<br>- Edit<br>- Read-only                         | <br>✓<br>&nbsp; |   <br>✓<br>✓    |
 | Client View Port<br>- Center<br>- Fit to Screen                   |   <br>✓<br>✓    |   <br>✓<br>✓    |
 | Client Status Notification                                        |        ✓        |        ✓        |
