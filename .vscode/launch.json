@@ -65,7 +65,8 @@
       "outFiles": [
         "${workspaceRoot}/node_modules/@eclipse-glsp/*/lib/**/*.js",
         "${workspaceRoot}/node_modules/@eclipse-glsp-examples/*/lib/**/*.js",
-        "${workspaceRoot}/packages/*/lib/**/*.js"
+        "${workspaceRoot}/packages/*/lib/**/*.js",
+        "${workspaceRoot}/examples/*/lib/**/*.js"
       ],
       "smartStep": true,
       "internalConsoleOptions": "openOnSessionStart",

@@ -13,15 +13,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { GEdge, GModelElement, GNode } from '@eclipse-glsp/graph';
 import { DeleteElementOperation } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { GModelIndex } from '../features/model/gmodel-index';
-import { GModelState } from './gmodel-state';
 import { OperationHandler } from '../operations/operation-handler';
-import { GEdge, GModelElement, GNode } from '@eclipse-glsp/graph';
+import { Logger } from '../utils/logger';
+import { GModelState } from './gmodel-state';
 
 @injectable()
 export class DeleteOperationHandler implements OperationHandler {
+    @inject(Logger)
+    protected logger: Logger;
+
     protected allDependantsIds: Set<string>;
 
     @inject(GModelState) protected readonly modelState: GModelState;
@@ -33,14 +37,14 @@ export class DeleteOperationHandler implements OperationHandler {
     execute(operation: DeleteElementOperation): void {
         const elementIds = operation.elementIds;
         if (!elementIds || elementIds.length === 0) {
-            console.log('Elements to delete are not specified');
+            this.logger.warn('Elements to delete are not specified');
             return;
         }
         const index = this.modelState.index;
         this.allDependantsIds = new Set<string>();
         const success = elementIds.every(eId => this.delete(eId, index));
         if (!success) {
-            console.log('Could not delete all elements as requested (see messages above to find out why)');
+            this.logger.warn('Could not delete all elements as requested (see messages above to find out why)');
         }
     }
 
@@ -49,17 +53,15 @@ export class DeleteOperationHandler implements OperationHandler {
             return true;
         }
 
-        let element;
-        try {
-            element = index.get(elementId);
-        } catch {
-            console.log('Element not found: ' + elementId);
+        const element = index.find(elementId);
+        if (!element) {
+            this.logger.warn('Element not found: ' + elementId);
             return false;
         }
 
         const nodeToDelete = this.findTopLevelElement(element);
         if (!nodeToDelete.parent) {
-            console.log("The requested node doesn't have a parent; it can't be deleted");
+            this.logger.warn("The requested node doesn't have a parent; it can't be deleted");
             return false;
         }
 
