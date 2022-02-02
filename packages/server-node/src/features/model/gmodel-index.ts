@@ -50,7 +50,13 @@ export class GModelIndex {
         const typeSet = this.typeToElements.get(element.type) ?? [];
         typeSet.push(element);
         this.typeToElements.set(element.type, typeSet);
-        (element.children ?? []).forEach(child => this.doIndex(child));
+        (element.children ?? []).forEach(child => {
+            this.doIndex(child);
+            // Double check wether the parent reference of the child is set correctly
+            if (!child.parent) {
+                child.parent = element;
+            }
+        });
     }
 
     find(elementId: string, predicate?: (test: GModelElement) => boolean): GModelElement | undefined {
