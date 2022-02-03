@@ -19,7 +19,6 @@ import {
     Dimension,
     flatPush,
     isSModelElementSchema,
-    isSModelRootSchema,
     JsonPrimitive,
     MaybeArray,
     Point,
@@ -28,7 +27,6 @@ import {
 } from '@eclipse-glsp/protocol';
 import * as uuid from 'uuid';
 export type GModelElementConstructor<G extends GModelElement = GModelElement> = new () => G;
-
 /**
  * Represents a `GModeElement` serialized as plain JSON object.
  */
@@ -75,6 +73,9 @@ export abstract class GModelElement implements GModelElementSchema {
      */
     args?: Args;
 
+    /**
+     * Retrieve the {@link GModelRoot} element by traversing up the parent hierachy.
+     */
     get root(): GModelRoot {
         let current: GModelElement = this;
         while (!(current instanceof GModelRoot)) {
@@ -183,7 +184,7 @@ export abstract class GModelElementBuilder<G extends GModelElement> {
 export type GModelRootSchema = SModelRootSchema;
 
 export function isGModelRootSchema(schema: any): schema is GModelRootSchema {
-    return isSModelRootSchema(schema);
+    return isSModelElementSchema(schema);
 }
 
 export class GModelRoot extends GModelElement implements SModelRootSchema {

@@ -26,26 +26,6 @@ export class GEdge extends GModelElement {
     sourceId: string;
     targetId: string;
     routerKind?: string;
-    private _source: GModelElement;
-    private _target: GModelElement;
-
-    get source(): GModelElement {
-        return this._source;
-    }
-
-    set source(value: GModelElement) {
-        this._source = value;
-        this.sourceId = value.id;
-    }
-
-    get target(): GModelElement {
-        return this._target;
-    }
-
-    set target(value: GModelElement) {
-        this._target = value;
-        this.targetId = value.id;
-    }
 }
 
 export namespace GEdge {
@@ -56,7 +36,7 @@ export namespace GEdge {
 
 export class GEdgeBuilder<G extends GEdge = GEdge> extends GModelElementBuilder<G> {
     source(source: GModelElement): this {
-        this.proxy.source = source;
+        this.proxy.sourceId = source.id;
         return this;
     }
 
@@ -66,7 +46,7 @@ export class GEdgeBuilder<G extends GEdge = GEdge> extends GModelElementBuilder<
     }
 
     target(target: GModelElement): this {
-        this.proxy.target = target;
+        this.proxy.targetId = target.id;
         return this;
     }
 

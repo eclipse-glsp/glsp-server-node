@@ -9,4 +9,4 @@ The initial initial implementation was contributed on behalf of STMicroelectroni
 
 ### Changes
 
--   [diagram] Implement LayoutEngine API for server-side autolayouting & provide an integration package for layout engines based on ELK. [#509](https://github.com/eclipse-glsp/glsp-server-node/pull/2) - Contributed on behalf of STMicroelectronics
+-   [diagram] Implement LayoutEngine API for server-side autolayouting & provide an integration package for layout engines based on ELK. [#509](https://github.com/eclipse-glsp/glsp-server-node/pull/2) [#514](https://github.com/eclipse-glsp/glsp-server-node/pull/5) - Contributed on behalf of STMicroelectronics

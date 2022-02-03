@@ -14,16 +14,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+import { GModelRoot } from '@eclipse-glsp/graph';
 import { MaybePromise } from '@eclipse-glsp/protocol';
 
 /**
  * A layout engine is able to compute layout information for a model.
  */
 export interface LayoutEngine {
-    /*
-     * Compute a layout for the model state and modify the model accordingly.
+    /**
+     * Computes a layout for the model state and modify the model accordingly.
+     * @returns the layouted {@link GModelRoot}.
      */
-    layout(): MaybePromise<void>;
+    layout(): MaybePromise<GModelRoot>;
 }
 
 export const LayoutEngine = Symbol('LayoutEngine');

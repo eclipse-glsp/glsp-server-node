@@ -13,14 +13,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GlspLayoutConfigurator, SModelIndex } from '@eclipse-glsp/layout-elk';
+import { AbstractLayoutConfigurator, LayoutOptions } from '@eclipse-glsp/layout-elk';
 import { GGraph } from '@eclipse-glsp/server-node';
-import { LayoutOptions } from 'elkjs';
 import { injectable } from 'inversify';
 
 @injectable()
-export class WorkflowLayoutConfigurator extends GlspLayoutConfigurator {
-    protected graphOptions(sgraph: GGraph, index: SModelIndex): LayoutOptions | undefined {
+export class WorkflowLayoutConfigurator extends AbstractLayoutConfigurator {
+    protected graphOptions(graph: GGraph): LayoutOptions | undefined {
         return {
             'elk.algorithm': 'layered'
         };
