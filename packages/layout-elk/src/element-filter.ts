@@ -36,7 +36,6 @@ export interface ElementFilter {
  * Edges that have no source or target are filtered out. In addition, edges that are connected to a filtered element are filtered out
  * as well. The filter behavior for each of the basic types can be customized by overriding the corresponding `filter` method.
  * (e.g. {@link DefaultElementFilter.filterNode})
- *
  */
 @injectable()
 export class DefaultElementFilter implements ElementFilter {
@@ -62,20 +61,14 @@ export class DefaultElementFilter implements ElementFilter {
 
     protected filterEdge(edge: GEdge): boolean {
         const source = this.modelState.index.get(edge.sourceId);
-        if (!source) {
-            return false;
-        }
 
-        if ((source instanceof GNode && !this.filterNode(source)) || (source instanceof GPort && !this.filterPort(source))) {
+        if (!source || (source instanceof GNode && !this.filterNode(source)) || (source instanceof GPort && !this.filterPort(source))) {
             return false;
         }
 
         const target = this.modelState.index.get(edge.targetId);
-        if (!target) {
-            return false;
-        }
 
-        if ((target instanceof GNode && !this.filterNode(target)) || (target instanceof GPort && !this.filterPort(target))) {
+        if (!target || (target instanceof GNode && !this.filterNode(target)) || (target instanceof GPort && !this.filterPort(target))) {
             return false;
         }
         return true;
