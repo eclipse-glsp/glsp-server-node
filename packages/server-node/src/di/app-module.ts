@@ -51,8 +51,9 @@ export function createWinstonInstance<T extends LaunchOptions>(options: T): wins
 
     if (options.fileLog) {
         const date = new Date();
-        const dateString = `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}_
-            ${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
+        const dateString = `${date.getDate()}-${
+            date.getMonth() + 1
+        }-${date.getFullYear()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
 
         const filename = `GLSP-Server_${dateString}.log`;
         transports.push(new winston.transports.File({ dirname: options.logDir, filename, format: fileLogFormat }));
