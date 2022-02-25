@@ -43,7 +43,7 @@ import {
     TriggerNodeCreationAction,
     UpdateModelAction
 } from '@eclipse-glsp/protocol';
-import { RequestContextActionsHandler } from '../features/contextactions/request-context-actions-handler';
+import { interfaces } from 'inversify';
 import { ActionDispatcher, DefaultActionDispatcher } from '../actions/action-dispatcher';
 import { ActionHandlerConstructor, ActionHandlerFactory } from '../actions/action-handler';
 import { ActionHandlerRegistry, ActionHandlerRegistryInitializer } from '../actions/action-handler-registry';
@@ -51,14 +51,31 @@ import { ClientActionHandler } from '../actions/client-action-handler';
 import { RequestTypeHintsActionHandler } from '../diagram/request-type-hints-action-handler';
 import { ContextActionsProvider } from '../features/contextactions/context-actions-provider';
 import { ContextActionsProviderRegistry } from '../features/contextactions/context-actions-provider-registry';
+import { RequestContextActionsHandler } from '../features/contextactions/request-context-actions-handler';
+import { ContextEditValidator } from '../features/directediting/context-edit-validator';
+import {
+    ContextEditValidatorRegistry,
+    DefaultContextEditValidatorRegistry
+} from '../features/directediting/context-edit-validator-registry';
+import { RequestEditValidationHandler } from '../features/directediting/request-edit-validation-handler';
 import { DefaultGModelSerializer, GModelSerializer } from '../features/model/gmodel-serializer';
 import { ModelSubmissionHandler } from '../features/model/model-submission-handler';
 import { RequestModelActionHandler } from '../features/model/request-model-action-handler';
+import { NavigationTargetProvider } from '../features/navigation/navigation-target-provider';
+import {
+    DefaultNavigationTargetProviderRegistry,
+    NavigationTargetProviderRegistry
+} from '../features/navigation/navigation-target-provider-registry';
+import { RequestNavigationTargetsActionHandler } from '../features/navigation/request-navigation-targets-action-handler';
+import { ResolveNavigationTargetsActionHandler } from '../features/navigation/resolve-navigation-targets-action-handler';
+import { RequestPopupModelActionHandler } from '../features/popup/request-popup-model-action-handler';
+import { RequestMarkersHandler } from '../features/validation/request-markers-handler';
 import { CompoundOperationHandler } from '../operations/compound-operation-handler';
 import { OperationActionHandler } from '../operations/operation-action-handler';
 import { OperationHandlerConstructor, OperationHandlerFactory } from '../operations/operation-handler';
 import { OperationHandlerRegistry, OperationHandlerRegistryInitializer } from '../operations/operation-handler-registry';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
+import { GLSPModule } from './glsp-module';
 import { ClassMultiBinding, InstanceMultiBinding } from './multi-binding';
 import {
     ClientActionKinds,
@@ -69,22 +86,6 @@ import {
     NavigationTargetProviders,
     Operations
 } from './service-identifiers';
-import { RequestPopupModelActionHandler } from '../features/popup/request-popup-model-action-handler';
-import {
-    ContextEditValidatorRegistry,
-    DefaultContextEditValidatorRegistry
-} from '../features/directediting/context-edit-validator-registry';
-import { RequestEditValidationHandler } from '../features/directediting/request-edit-validation-handler';
-import { NavigationTargetProvider } from '../features/navigation/navigation-target-provider';
-import {
-    DefaultNavigationTargetProviderRegistry,
-    NavigationTargetProviderRegistry
-} from '../features/navigation/navigation-target-provider-registry';
-import { ResolveNavigationTargetsActionHandler } from '../features/navigation/resolve-navigation-targets-action-handler';
-import { RequestNavigationTargetsActionHandler } from '../features/navigation/request-navigation-targets-action-handler';
-import { RequestMarkersHandler } from '../features/validation/request-markers-handler';
-import { interfaces } from 'inversify';
-import { GLSPModule } from './glsp-module';
 
 /**
  * The diagram module is the central configuration artifact for configuring a client session specific injector. For each
@@ -174,7 +175,7 @@ export abstract class DiagramModule extends GLSPModule {
         this.configureMultiBinding(new ClassMultiBinding<ContextActionsProvider>(ContextActionsProviders), binding =>
             this.configureContextActionProviders(binding)
         );
-        this.configureMultiBinding(new ClassMultiBinding<ContextActionsProvider>(ContextEditValidators), binding =>
+        this.configureMultiBinding(new ClassMultiBinding<ContextEditValidator>(ContextEditValidators), binding =>
             this.configureContextEditValidators(binding)
         );
     }
@@ -205,7 +206,7 @@ export abstract class DiagramModule extends GLSPModule {
         // empty as default
     }
 
-    protected configureContextEditValidators(binding: ClassMultiBinding<ContextActionsProvider>): void {
+    protected configureContextEditValidators(binding: ClassMultiBinding<ContextEditValidator>): void {
         // empty as default
     }
 
