@@ -91,7 +91,9 @@ The example server can be launched with:
 yarn start
 ```
 
-To debug you can use the `Debug workflow example GLSP Server` launch configuration. Note that you need to use the start:debug scripts or ...(without GLSP server) launch configurations for the Theia applications for them to connect to this GLSP server.
+To debug you can use the `Debug workflow example GLSP Server` launch configuration.
+This starts the example server in a dedicated process. To test the server you have to connect a workflow GLSP client that supports JSON-RPC via socket.
+We recommend to use the client provided by the [`glsp-integration`](https://github.com/eclipse-glsp/glsp-theia-integration#how-to-start-the-workflow-diagram-example-server-from-the-sources).
 
 ## More information
 
