@@ -13,17 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GGraph } from '@eclipse-glsp/graph';
 import { Action, GLSPServerStatusAction, isRequestModelAction, RequestModelAction, ServerMessageAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../../actions/action-dispatcher';
 import { ActionHandler } from '../../actions/action-handler';
 import { Logger } from '../../utils/logger';
-import { ModelSourceLoader } from './model-source-loader';
 import { ModelState } from './model-state';
 import { ModelSubmissionHandler } from './model-submission-handler';
-
-export const EMPTY_ROOT = GGraph.builder().id('empty');
+import { SourceModelStorage } from './source-model-storage';
 
 @injectable()
 export class RequestModelActionHandler implements ActionHandler {
@@ -32,8 +29,8 @@ export class RequestModelActionHandler implements ActionHandler {
     @inject(Logger)
     private logger: Logger;
 
-    @inject(ModelSourceLoader)
-    protected modelSourceLoader: ModelSourceLoader;
+    @inject(SourceModelStorage)
+    protected sourceModelStorage: SourceModelStorage;
 
     @inject(ActionDispatcher)
     protected actionDispatcher: ActionDispatcher;
@@ -50,7 +47,7 @@ export class RequestModelActionHandler implements ActionHandler {
             this.modelState.setAll(action.options ?? {});
 
             this.notifyClient('Model loading in progress');
-            await this.modelSourceLoader.loadSourceModel(action);
+            await this.sourceModelStorage.loadSourceModel(action);
             this.notifyClient();
         }
         return this.submissionHandler.submitModel();

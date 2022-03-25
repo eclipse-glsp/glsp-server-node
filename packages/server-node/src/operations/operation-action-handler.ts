@@ -47,6 +47,7 @@ export class OperationActionHandler implements ActionHandler {
         // TODO: Create GModelRecordingCommand;
         await handler.execute(operation);
         this.modelState.index.indexRoot(this.modelState.root);
+        this.modelState.isDirty = true;
         // TODO: this.modelState.execute(command)
         return this.modelSubmissionHandler.submitModel(); // TODO: Add SetDirtyStateAction.Reason.Operation
     }
