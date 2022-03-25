@@ -13,14 +13,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, MaybePromise, SaveModelAction, SetDirtyStateAction } from '@eclipse-glsp/protocol';
+import { Action, DirtyStateChangeReason, MaybePromise, SaveModelAction, SetDirtyStateAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { GModelState } from '../base-impl/gmodel-state';
-import { ClientOptionsUtil } from '../utils/client-options-util';
-import { ActionHandler } from './action-handler';
-import { writeFileSync } from 'fs';
-import { GModelSerializer } from '../features/model/gmodel-serializer';
+import { SourceModelStorage } from '../features/model/source-model-storage';
 import { GLSPServerError } from '../utils/glsp-server-error';
+import { ActionHandler } from './action-handler';
 
 @injectable()
 export class SaveModelActionHandler implements ActionHandler {
@@ -29,29 +27,16 @@ export class SaveModelActionHandler implements ActionHandler {
     @inject(GModelState)
     protected modelState: GModelState;
 
-    @inject(GModelSerializer)
-    protected modelSerializer: GModelSerializer;
+    @inject(SourceModelStorage)
+    protected sourceModelStorage: SourceModelStorage;
 
     execute(action: Action): MaybePromise<Action[]> {
-        this.saveModelState(action);
-        return [new SetDirtyStateAction(this.modelState.isDirty)]; // TODO: set reason to SAVE
-    }
-
-    protected saveModelState(action: SaveModelAction): void {
         try {
-            const data = this.modelSerializer.createSchema(this.modelState.root);
-            // eslint-disable-next-line no-null/no-null
-            writeFileSync(this.modelState.sourceUri!, JSON.stringify(data, null, 2));
-            if (this.saveIsDone(action)) {
-                // TODO: call save is done when available
-            }
+            this.sourceModelStorage.saveSourceModel(action);
+            this.modelState.isDirty = false; // TODO: call save is done when available
         } catch (err) {
-            throw new GLSPServerError(`An error occured during save process: ${err}`);
+            throw new GLSPServerError(`An error occurred during save process: ${err}`);
         }
-    }
-
-    protected saveIsDone(action: SaveModelAction): boolean {
-        const sourceUri = this.modelState.sourceUri;
-        return action.fileUri ? ClientOptionsUtil.adaptUri(action.fileUri) === sourceUri : true;
+        return [new SetDirtyStateAction(this.modelState.isDirty, DirtyStateChangeReason.SAVE)];
     }
 }
