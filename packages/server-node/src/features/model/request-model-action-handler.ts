@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, GLSPServerStatusAction, isRequestModelAction, RequestModelAction, ServerMessageAction } from '@eclipse-glsp/protocol';
+import { Action, RequestModelAction, ServerMessageAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../../actions/action-dispatcher';
 import { ActionHandler } from '../../actions/action-handler';
@@ -41,23 +41,21 @@ export class RequestModelActionHandler implements ActionHandler {
     @inject(ModelSubmissionHandler)
     protected submissionHandler: ModelSubmissionHandler;
 
-    async execute(action: Action): Promise<Action[]> {
+    async execute(action: RequestModelAction): Promise<Action[]> {
         this.logger.debug('Execute RequestModelAction:', action);
-        if (isRequestModelAction(action)) {
-            this.modelState.setAll(action.options ?? {});
+        this.modelState.setAll(action.options ?? {});
 
-            this.notifyClient('Model loading in progress');
-            await this.sourceModelStorage.loadSourceModel(action);
-            this.notifyClient();
-        }
+        this.notifyClient('Model loading in progress');
+        await this.sourceModelStorage.loadSourceModel(action);
+        this.notifyClient();
         return this.submissionHandler.submitModel();
     }
 
     protected notifyClient(message?: string): void {
         const severity = message ? 'INFO' : 'NONE';
         this.actionDispatcher.dispatchAll(
-            new GLSPServerStatusAction(severity, message ?? ''),
-            new ServerMessageAction(severity, message ?? '')
+            ServerMessageAction.create(message ?? '', { severity }),
+            ServerMessageAction.create(message ?? '', { severity })
         );
     }
 }

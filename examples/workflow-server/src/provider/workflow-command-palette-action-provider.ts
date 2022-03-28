@@ -24,7 +24,6 @@ import {
     GModelState,
     GNode,
     LabeledAction,
-    ORIGIN_POINT,
     Point
 } from '@eclipse-glsp/server-node';
 import { inject, injectable } from 'inversify';
@@ -34,7 +33,7 @@ import { ModelTypes } from '../util/model-types';
 @injectable()
 export class WorkflowCommandPaletteActionProvider extends CommandPaletteActionProvider {
     @inject(GModelState)
-    protected modelState: GModelState;
+    protected override modelState: GModelState;
 
     getPaletteActions(selectedElementIds: string[], selectedElements: GModelElement[], position: Point, args?: Args): LabeledAction[] {
         const actions: LabeledAction[] = [];
@@ -43,28 +42,33 @@ export class WorkflowCommandPaletteActionProvider extends CommandPaletteActionPr
         }
         const index = this.modelState.index;
         // Create actions
+        const location = position ?? Point.ORIGIN;
         actions.push(
-            new LabeledAction(
-                'Create Automated Task',
-                [new CreateNodeOperation(ModelTypes.AUTOMATED_TASK, position ?? ORIGIN_POINT)],
-                'fa-plus-square'
-            ),
-            new LabeledAction(
-                'Create Manual Task',
-                [new CreateNodeOperation(ModelTypes.MANUAL_TASK, position ?? ORIGIN_POINT)],
-                'fa-plus-square'
-            ),
-            new LabeledAction(
-                'Create Merge Node',
-                [new CreateNodeOperation(ModelTypes.MERGE_NODE, position ?? ORIGIN_POINT)],
-                'fa-plus-square'
-            ),
-            new LabeledAction(
-                'Create Decision Node',
-                [new CreateNodeOperation(ModelTypes.DECISION_NODE, position ?? ORIGIN_POINT)],
-                'fa-plus-square'
-            ),
-            new LabeledAction('Create Category', [new CreateNodeOperation(ModelTypes.CATEGORY, position ?? ORIGIN_POINT)], 'fa-plus-square')
+            {
+                label: 'Create Automated Task',
+                actions: [CreateNodeOperation.create(ModelTypes.AUTOMATED_TASK, { location })],
+                icon: 'fa-plus-square'
+            },
+            {
+                label: 'Create Manual Task',
+                actions: [CreateNodeOperation.create(ModelTypes.MANUAL_TASK, { location })],
+                icon: 'fa-plus-square'
+            },
+            {
+                label: 'Create Merge Node',
+                actions: [CreateNodeOperation.create(ModelTypes.MERGE_NODE, { location })],
+                icon: 'fa-plus-square'
+            },
+            {
+                label: 'Create Decision Node',
+                actions: [CreateNodeOperation.create(ModelTypes.DECISION_NODE, { location })],
+                icon: 'fa-plus-square'
+            },
+            {
+                label: 'Create Category',
+                actions: [CreateNodeOperation.create(ModelTypes.CATEGORY, { location })],
+                icon: 'fa-plus-square'
+            }
         );
         // Create edge action between two nodes
         if (selectedElements.length === 1) {
@@ -89,16 +93,14 @@ export class WorkflowCommandPaletteActionProvider extends CommandPaletteActionPr
             }
         }
         // Delete action
-        if (selectedElements.length === 1) {
-            actions.push(new LabeledAction('Delete', [new DeleteElementOperation(selectedElementIds)], 'fa-minus-square'));
-        } else if (selectedElements.length > 1) {
-            actions.push(new LabeledAction('Delete All', [new DeleteElementOperation(selectedElementIds)], 'fa-minus-square'));
-        }
+
+        const label = selectedElementIds.length === 1 ? 'Delete' : 'Delete All';
+        actions.push({ label, actions: [DeleteElementOperation.create(selectedElementIds)], icon: 'fa-minus-square' });
 
         return actions;
     }
 
-    private createEdgeActions(source: GNode, targets: GNode[]): LabeledAction[] {
+    protected createEdgeActions(source: GNode, targets: GNode[]): LabeledAction[] {
         const actions: LabeledAction[] = [];
         targets.forEach(node => actions.push(this.createEdgeAction(`Create Edge to ${this.getLabel(node)}`, source, node)));
         targets.forEach(node =>
@@ -107,15 +109,31 @@ export class WorkflowCommandPaletteActionProvider extends CommandPaletteActionPr
         return actions;
     }
 
-    private createWeightedEdgeAction(label: string, source: GNode, node: GNode): LabeledAction {
-        return new LabeledAction(label, [new CreateEdgeOperation(ModelTypes.WEIGHTED_EDGE, source.id, node.id)], 'fa-plus-square');
+    protected createWeightedEdgeAction(label: string, source: GNode, node: GNode): LabeledAction {
+        return {
+            label,
+            actions: [
+                CreateEdgeOperation.create({
+                    elementTypeId: ModelTypes.WEIGHTED_EDGE,
+                    sourceElementId: source.id,
+                    targetElementId: node.id
+                })
+            ],
+            icon: 'fa-plus-square'
+        };
     }
 
-    private createEdgeAction(label: string, source: GNode, node: GNode): LabeledAction {
-        return new LabeledAction(label, [new CreateEdgeOperation(DefaultTypes.EDGE, source.id, node.id)], 'fa-plus-square');
+    protected createEdgeAction(label: string, source: GNode, node: GNode): LabeledAction {
+        return {
+            label,
+            actions: [
+                CreateEdgeOperation.create({ elementTypeId: DefaultTypes.EDGE, sourceElementId: source.id, targetElementId: node.id })
+            ],
+            icon: 'fa-plus-square'
+        };
     }
 
-    private getLabel(node: GNode): string {
+    protected getLabel(node: GNode): string {
         if (node instanceof TaskNode) {
             return node.name;
         }

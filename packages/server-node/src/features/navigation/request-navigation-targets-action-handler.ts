@@ -34,6 +34,6 @@ export class RequestNavigationTargetsActionHandler implements ActionHandler {
             const targets = provider.getTargets(editorContext);
             targets.forEach(target => allTargets.push(target));
         }
-        return [new SetNavigationTargetsAction(allTargets, action.requestId, editorContext.args)];
+        return [SetNavigationTargetsAction.create(allTargets, { args: editorContext.args })];
     }
 }

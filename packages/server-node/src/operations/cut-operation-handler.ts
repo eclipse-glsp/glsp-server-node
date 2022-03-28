@@ -28,7 +28,7 @@ export class CutOperationHandler implements OperationHandler {
     execute(operation: CutOperation): void {
         const cutableElementIds = this.getElementToCut(operation);
         if (cutableElementIds.length > 0) {
-            this.actionDispatcher.dispatch(new DeleteElementOperation(cutableElementIds));
+            this.actionDispatcher.dispatch(DeleteElementOperation.create(cutableElementIds));
         }
     }
 

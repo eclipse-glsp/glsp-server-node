@@ -45,12 +45,10 @@
     "@types/uuid": "8.3.1"
   },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.13",
-    "reflect-metadata": "^0.1.13",
-    "typescript": "^3.9.2"
+    "@types/fs-extra": "^9.0.13"
   },
   "scripts": {
-    "clean": "rimraf lib",
+    "clean": "rimraf tsconfig.tsbuildinfo lib",
     "build": "yarn run clean && tsc",
     "test": "mocha --config ../../.mocharc.json \"./src/**/*.spec.?(ts|tsx)\"",
     "test:ci": "export JUNIT_REPORT_PATH=./report.xml && yarn test --reporter mocha-jenkins-reporter",

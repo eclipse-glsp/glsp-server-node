@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, DirtyStateChangeReason, MaybePromise, SaveModelAction, SetDirtyStateAction } from '@eclipse-glsp/protocol';
+import { Action, MaybePromise, SaveModelAction, SetDirtyStateAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { GModelState } from '../base-impl/gmodel-state';
 import { SourceModelStorage } from '../features/model/source-model-storage';
@@ -30,13 +30,13 @@ export class SaveModelActionHandler implements ActionHandler {
     @inject(SourceModelStorage)
     protected sourceModelStorage: SourceModelStorage;
 
-    execute(action: Action): MaybePromise<Action[]> {
+    execute(action: SaveModelAction): MaybePromise<Action[]> {
         try {
             this.sourceModelStorage.saveSourceModel(action);
             this.modelState.isDirty = false; // TODO: call save is done when available
         } catch (err) {
             throw new GLSPServerError(`An error occurred during save process: ${err}`);
         }
-        return [new SetDirtyStateAction(this.modelState.isDirty, DirtyStateChangeReason.SAVE)];
+        return [SetDirtyStateAction.create(this.modelState.isDirty, { reason: 'save' })];
     }
 }

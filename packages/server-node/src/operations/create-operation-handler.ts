@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GEdge, GGraph, GModelElement, GNode, GPort, isGBoundsAware } from '@eclipse-glsp/graph';
+import { GBoundsAware, GEdge, GGraph, GModelElement, GModelRoot, GNode, GPort, isGBoundsAware } from '@eclipse-glsp/graph';
 import {
     Args,
     CreateEdgeOperation,
@@ -23,13 +23,11 @@ import {
     Point,
     SelectAction,
     TriggerEdgeCreationAction,
-    TriggerElementCreationAction,
     TriggerNodeCreationAction
 } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
 import { GModelState } from '../base-impl/gmodel-state';
-import { absoluteToRelative } from '../utils/geometry-util';
 import { OperationHandler } from './operation-handler';
 
 /**
@@ -48,11 +46,11 @@ export abstract class CreateOperationHandler implements OperationHandler {
      *
      * @returns A list of {@link TriggerElementCreationAction}s.
      */
-    getTriggerActions(): TriggerElementCreationAction[] {
+    getTriggerActions(): (TriggerEdgeCreationAction | TriggerNodeCreationAction)[] {
         if (this.operationType === CreateNodeOperation.KIND) {
-            return this.elementTypeIds.map(typeId => new TriggerNodeCreationAction(typeId));
+            return this.elementTypeIds.map(typeId => TriggerNodeCreationAction.create(typeId));
         } else if (this.operationType === CreateEdgeOperation.KIND) {
-            return this.elementTypeIds.map(typeId => new TriggerEdgeCreationAction(typeId));
+            return this.elementTypeIds.map(typeId => TriggerEdgeCreationAction.create(typeId));
         }
         return [];
     }
@@ -74,7 +72,7 @@ export abstract class CreateNodeOperationHandler extends CreateOperationHandler 
         return CreateNodeOperation.KIND;
     }
 
-    abstract elementTypeIds: string[];
+    abstract override elementTypeIds: string[];
 
     execute(operation: CreateNodeOperation): void {
         const container = this.getContainer(operation) ?? this.modelState.root;
@@ -85,7 +83,7 @@ export abstract class CreateNodeOperationHandler extends CreateOperationHandler 
         if (element) {
             container.children.push(element);
             element.parent = container;
-            this.actionDispatcher.dispatchAfterNextUpdate(new SelectAction(), new SelectAction([element.id]));
+            this.actionDispatcher.dispatchAfterNextUpdate(SelectAction.create({ selectedElementsIDs: [element.id] }));
         }
     }
 
@@ -144,4 +142,38 @@ export abstract class CreateEdgeOperationHandler extends CreateOperationHandler 
     }
 
     abstract createEdge(source: GModelElement, target: GModelElement, modelState: GModelState): GEdge | undefined;
+}
+
+/**
+ * Convert a point in absolute coordinates to a point relative to the specified GBoundsAware.
+ * Note: this method only works if the specified {@link GBoundsAware} is part of a
+ * hierarchy of {@link GBoundsAware}. If any of its parents (recursively) does not implement
+ * {@link GBoundsAware}, this method will throw an exception.
+ *
+ * @param absolutePoint
+ * @param modelElement
+ * @returns
+ *         A new point, relative to the coordinates space of the specified {@link GBoundsAware}
+ * @throws Error if the modelElement is not part of a {@link GBoundsAware} hierarchy
+ */
+export function absoluteToRelative(absolutePoint: Point, modelElement: GModelElement & GBoundsAware): Point {
+    let parentElement;
+    if (!(modelElement instanceof GModelRoot)) {
+        parentElement = modelElement.parent;
+    }
+
+    let relativeToParent: Point;
+    if (!parentElement) {
+        relativeToParent = { x: absolutePoint.x, y: absolutePoint.y };
+    } else {
+        if (!isGBoundsAware(parentElement)) {
+            throw new Error(`The element is not part of a GBoundsAware hierarchy: ${modelElement}`);
+        }
+        relativeToParent = absoluteToRelative(absolutePoint, parentElement);
+    }
+
+    const x = modelElement.position?.x ?? 0;
+    const y = modelElement.position?.y ?? 0;
+
+    return { x: relativeToParent.x - x, y: relativeToParent.y - y };
 }

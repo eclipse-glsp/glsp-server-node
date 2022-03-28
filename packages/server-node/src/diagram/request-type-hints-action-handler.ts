@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, isRequestTypeHintsAction, RequestTypeHintsAction, SetTypeHintsAction } from '@eclipse-glsp/protocol';
+import { Action, RequestTypeHintsAction, SetTypeHintsAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
 import { DiagramConfiguration } from './diagram-configuration';
@@ -23,11 +23,13 @@ export class RequestTypeHintsActionHandler implements ActionHandler {
     @inject(DiagramConfiguration) protected diagramConfiguration: DiagramConfiguration;
     static KINDS = [RequestTypeHintsAction.KIND];
 
-    execute(action: Action): Action[] {
-        if (isRequestTypeHintsAction(action)) {
-            return [new SetTypeHintsAction(this.diagramConfiguration.shapeTypeHints, this.diagramConfiguration.edgeTypeHints)];
-        }
-        return [];
+    execute(action: RequestTypeHintsAction): Action[] {
+        return [
+            SetTypeHintsAction.create({
+                shapeHints: this.diagramConfiguration.shapeTypeHints,
+                edgeHints: this.diagramConfiguration.edgeTypeHints
+            })
+        ];
     }
 
     readonly actionKinds = [RequestTypeHintsAction.KIND];

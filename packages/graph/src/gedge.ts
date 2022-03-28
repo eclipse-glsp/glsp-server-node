@@ -21,7 +21,7 @@ export class GEdge extends GModelElement {
         return new GEdgeBuilder(GEdge).type(DefaultTypes.EDGE);
     }
 
-    type = DefaultTypes.EDGE;
+    override type = DefaultTypes.EDGE;
     routingPoints: Point[] = [];
     sourceId: string;
     targetId: string;

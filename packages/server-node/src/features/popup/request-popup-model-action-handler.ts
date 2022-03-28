@@ -46,7 +46,7 @@ export class RequestPopupModelActionHandler implements ActionHandler {
                 const popupModel = this.popupModelFactory.createPopupModel(hoverElement, action);
                 if (popupModel) {
                     const modelSchema = this.modelSerializer.createSchema(popupModel);
-                    return [new SetPopupModelAction(modelSchema)];
+                    return [SetPopupModelAction.create(modelSchema)];
                 }
                 return [];
             }

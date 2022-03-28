@@ -22,9 +22,9 @@ export class WorkflowGLSPServer extends DefaultGLSPServer {
     TIMESTAMP_KEY = 'timestamp';
 
     @inject(Logger)
-    protected logger: Logger;
+    protected override logger: Logger;
 
-    protected handleInitializeArgs(result: InitializeResult, args: Args | undefined): MaybePromise<InitializeResult> {
+    protected override handleInitializeArgs(result: InitializeResult, args: Args | undefined): MaybePromise<InitializeResult> {
         if (!args) {
             return result;
         }

@@ -37,15 +37,15 @@ export class RequestClipboardDataActionHandler implements ActionHandler {
     protected modelSerializer: GModelSerializer;
 
     execute(action: RequestClipboardDataAction): MaybePromise<Action[]> {
-        const jsonArray: SModelElementSchema[] = [];
+        const schemas: SModelElementSchema[] = [];
         const index = this.modelState.index;
         const selectedElements = index.getAll(action.editorContext.selectedElementIds);
-        const clipboardData: ClipboardData = {};
+        const clipboardData: ClipboardData = { format: 'application/json' };
         selectedElements.forEach(element => {
-            jsonArray.push(this.modelSerializer.createSchema(element));
+            schemas.push(this.modelSerializer.createSchema(element));
         });
         // eslint-disable-next-line no-null/no-null
-        clipboardData['application/json'] = JSON.stringify(jsonArray, null, 2);
-        return [new SetClipboardDataAction(clipboardData)];
+        clipboardData['application/json'] = JSON.stringify(schemas, undefined, 2);
+        return [SetClipboardDataAction.create(clipboardData)];
     }
 }

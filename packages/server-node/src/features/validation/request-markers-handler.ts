@@ -13,13 +13,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { GGraph } from '@eclipse-glsp/graph';
 import { Action, Marker, RequestMarkersAction, SetMarkersAction } from '@eclipse-glsp/protocol';
 import { inject, injectable, optional } from 'inversify';
-import { GModelState } from '../../base-impl/gmodel-state';
 import { ActionHandler } from '../../actions/action-handler';
-import { ModelValidator } from './model-validator';
+import { GModelState } from '../../base-impl/gmodel-state';
 import { GLSPServerError } from '../../utils/glsp-server-error';
-import { GGraph } from '@eclipse-glsp/graph';
+import { ModelValidator } from './model-validator';
 
 @injectable()
 export class RequestMarkersHandler implements ActionHandler {
@@ -46,6 +46,6 @@ export class RequestMarkersHandler implements ActionHandler {
                 markers = markers.concat(await this.validator.validate([modelElement]));
             }
         }
-        return [new SetMarkersAction(markers)];
+        return [SetMarkersAction.create(markers)];
     }
 }

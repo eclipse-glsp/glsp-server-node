@@ -15,6 +15,8 @@
  ********************************************************************************/
 import { GNode } from '@eclipse-glsp/graph';
 import { RequestEditValidationAction, SetEditValidationResultAction, ValidationStatus } from '@eclipse-glsp/protocol';
+import { expect } from 'chai';
+import * as sinon from 'sinon';
 import { GModelState } from '../../base-impl/gmodel-state';
 import { TestContextEditValidator, TestLabelEditValidator } from '../../test/mock-util';
 import { GModelIndex } from '../model/gmodel-index';
@@ -22,8 +24,6 @@ import { ContextEditValidator } from './context-edit-validator';
 import { DefaultContextEditValidatorRegistry } from './context-edit-validator-registry';
 import { LabelEditValidator } from './label-edit-validator';
 import { RequestEditValidationHandler } from './request-edit-validation-handler';
-import * as sinon from 'sinon';
-import { expect } from 'chai';
 
 describe('Test RequestEditValidationHandler', () => {
     const contextEditValidators: ContextEditValidator[] = [new TestContextEditValidator()];
@@ -40,11 +40,13 @@ describe('Test RequestEditValidationHandler', () => {
     requestEditValidationHandler['contextEditValidatorRegistry'] = contextEditValidatorsRegistry;
 
     it('requestContextEditValidation with ok result', async () => {
-        const actions = await requestEditValidationHandler.execute(new RequestEditValidationAction('test', 'undefined', 'ok'));
+        const actions = await requestEditValidationHandler.execute(
+            RequestEditValidationAction.create({ contextId: 'test', modelElementId: '', text: 'ok' })
+        );
         expect(actions).to.have.length(1);
         const action = actions[0];
 
-        expect(action).instanceOf(SetEditValidationResultAction);
+        expect(SetEditValidationResultAction.is(action)).to.be.true;
         const setEditValidationResultAction = action as SetEditValidationResultAction;
         const status = setEditValidationResultAction.status;
 
@@ -53,11 +55,13 @@ describe('Test RequestEditValidationHandler', () => {
     });
 
     it('requestContextEditValidation with warning result', async () => {
-        const actions = await requestEditValidationHandler.execute(new RequestEditValidationAction('test', 'undefined', 'warning'));
+        const actions = await requestEditValidationHandler.execute(
+            RequestEditValidationAction.create({ contextId: 'test', modelElementId: '', text: 'warning' })
+        );
         expect(actions).to.have.length(1);
         const action = actions[0];
 
-        expect(action).instanceOf(SetEditValidationResultAction);
+        expect(SetEditValidationResultAction.is(action)).to.be.true;
         const setEditValidationResultAction = action as SetEditValidationResultAction;
         const status = setEditValidationResultAction.status;
 
@@ -66,11 +70,13 @@ describe('Test RequestEditValidationHandler', () => {
     });
 
     it('requestContextEditValidation with error result', async () => {
-        const actions = await requestEditValidationHandler.execute(new RequestEditValidationAction('test', 'undefined', 'error'));
+        const actions = await requestEditValidationHandler.execute(
+            RequestEditValidationAction.create({ contextId: 'test', modelElementId: '', text: 'error' })
+        );
         expect(actions).to.have.length(1);
         const action = actions[0];
 
-        expect(action).instanceOf(SetEditValidationResultAction);
+        expect(SetEditValidationResultAction.is(action)).to.be.true;
         const setEditValidationResultAction = action as SetEditValidationResultAction;
         const status = setEditValidationResultAction.status;
 
@@ -80,12 +86,12 @@ describe('Test RequestEditValidationHandler', () => {
 
     it('requestLabelEditValidation with ok result', async () => {
         const actions = await requestEditValidationHandler.execute(
-            new RequestEditValidationAction(LabelEditValidator.CONTEXT_ID, 'undefined', 'ok')
+            RequestEditValidationAction.create({ contextId: LabelEditValidator.CONTEXT_ID, modelElementId: '', text: 'ok' })
         );
         expect(actions).to.have.length(1);
         const action = actions[0];
 
-        expect(action).instanceOf(SetEditValidationResultAction);
+        expect(SetEditValidationResultAction.is(action)).to.be.true;
         const setEditValidationResultAction = action as SetEditValidationResultAction;
         const status = setEditValidationResultAction.status;
 
@@ -95,12 +101,12 @@ describe('Test RequestEditValidationHandler', () => {
 
     it('requestLabelEditValidation with warning result', async () => {
         const actions = await requestEditValidationHandler.execute(
-            new RequestEditValidationAction(LabelEditValidator.CONTEXT_ID, 'undefined', 'warning')
+            RequestEditValidationAction.create({ contextId: LabelEditValidator.CONTEXT_ID, modelElementId: '', text: 'warning' })
         );
         expect(actions).to.have.length(1);
         const action = actions[0];
 
-        expect(action).instanceOf(SetEditValidationResultAction);
+        expect(SetEditValidationResultAction.is(action)).to.be.true;
         const setEditValidationResultAction = action as SetEditValidationResultAction;
         const status = setEditValidationResultAction.status;
 
@@ -110,12 +116,12 @@ describe('Test RequestEditValidationHandler', () => {
 
     it('requestLabelEditValidation with error result', async () => {
         const actions = await requestEditValidationHandler.execute(
-            new RequestEditValidationAction(LabelEditValidator.CONTEXT_ID, 'undefined', 'error')
+            RequestEditValidationAction.create({ contextId: LabelEditValidator.CONTEXT_ID, modelElementId: '', text: 'error' })
         );
         expect(actions).to.have.length(1);
         const action = actions[0];
 
-        expect(action).instanceOf(SetEditValidationResultAction);
+        expect(SetEditValidationResultAction.is(action)).to.be.true;
         const setEditValidationResultAction = action as SetEditValidationResultAction;
         const status = setEditValidationResultAction.status;
 

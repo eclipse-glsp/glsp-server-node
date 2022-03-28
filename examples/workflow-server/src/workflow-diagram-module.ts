@@ -56,7 +56,7 @@ import { WorkflowPopupFactory } from './workflow-popup-factory';
 
 @injectable()
 export class WorkflowServerModule extends ServerModule {
-    configure(bind: interfaces.Bind, unbind: interfaces.Unbind, isBound: interfaces.IsBound, rebind: interfaces.Rebind): void {
+    override configure(bind: interfaces.Bind, unbind: interfaces.Unbind, isBound: interfaces.IsBound, rebind: interfaces.Rebind): void {
         super.configure(bind, unbind, isBound, rebind);
         bind(WorkflowGLSPServer).toSelf().inSingletonScope();
         rebind(GLSPServer).toService(WorkflowGLSPServer);
@@ -70,7 +70,12 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
         return 'workflow-diagram';
     }
 
-    protected configure(bind: interfaces.Bind, unbind: interfaces.Unbind, isBound: interfaces.IsBound, rebind: interfaces.Rebind): void {
+    protected override configure(
+        bind: interfaces.Bind,
+        unbind: interfaces.Unbind,
+        isBound: interfaces.IsBound,
+        rebind: interfaces.Rebind
+    ): void {
         super.configure(bind, unbind, isBound, rebind);
         bind(DiagramConfiguration).to(WorkflowDiagramConfiguration).inSingletonScope();
         bind(NavigationTargetResolver).to(WorkflowNavigationTargetResolver).inSingletonScope();
@@ -82,7 +87,7 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
         bind(ToolPaletteItemProvider).to(DefaultToolPaletteItemProvider).inSingletonScope();
     }
 
-    protected configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
+    protected override configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
         super.configureOperationHandlers(binding);
         binding.add(CreateAutomatedTaskHandler);
         binding.add(CreateManualTaskHandler);
@@ -95,7 +100,7 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
         binding.add(CreateCategoryHandler);
     }
 
-    protected configureNavigationTargetProviders(binding: ClassMultiBinding<NavigationTargetProvider>): void {
+    protected override configureNavigationTargetProviders(binding: ClassMultiBinding<NavigationTargetProvider>): void {
         super.configureNavigationTargetProviders(binding);
         binding.add(NextNodeNavigationTargetProvider);
         binding.add(PreviousNodeNavigationTargetProvider);

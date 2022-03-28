@@ -13,18 +13,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { ModelTypes } from '../util/model-types';
-import { injectable } from 'inversify';
-import { CreateActivityNodeHandler } from './create-activity-node-handler';
 import { GModelState, Point } from '@eclipse-glsp/server-node';
+import { injectable } from 'inversify';
 import { ActivityNodeBuilder } from '../graph-extension';
+import { ModelTypes } from '../util/model-types';
+import { CreateActivityNodeHandler } from './create-activity-node-handler';
 
 @injectable()
 export class CreateMergeNodeHandler extends CreateActivityNodeHandler {
     elementTypeIds = [ModelTypes.MERGE_NODE];
     label = 'Merge Node';
 
-    protected builder(point: Point | undefined, modelState: GModelState): ActivityNodeBuilder {
+    protected override builder(point: Point | undefined, modelState: GModelState): ActivityNodeBuilder {
         return super.builder(point, modelState).addCssClass('merge');
     }
 }

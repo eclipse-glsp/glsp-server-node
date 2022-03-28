@@ -24,15 +24,28 @@ export class WorkflowContextMenuItemProvider extends ContextMenuItemProvider {
     protected modelState: GModelState;
 
     getItems(selectedElementIds: string[], position: Point, args?: Args): MenuItem[] {
-        if (this.modelState.isReadonly) {
+        if (this.modelState.isReadonly || selectedElementIds.length !== 0) {
             return [];
         }
         const snappedPosition = GridSnapper.snap(position);
-        const newAutTask = new MenuItem('newAutoTask', 'Automated Task', [
-            new CreateNodeOperation(ModelTypes.AUTOMATED_TASK, snappedPosition)
-        ]);
-        const newManTask = new MenuItem('newManualTask', 'Manual Task', [new CreateNodeOperation(ModelTypes.MANUAL_TASK, snappedPosition)]);
-        const newChildMenu = new MenuItem('new', 'New', undefined, [newAutTask, newManTask], 'add', '0_new');
+        const newAutTask: MenuItem = {
+            id: 'newAutoTask',
+            label: 'Automated Task',
+            actions: [CreateNodeOperation.create(ModelTypes.AUTOMATED_TASK, { location: snappedPosition })]
+        };
+        const newManTask: MenuItem = {
+            id: 'newManualTask',
+            label: 'Manual Task',
+            actions: [CreateNodeOperation.create(ModelTypes.MANUAL_TASK, { location: snappedPosition })]
+        };
+        const newChildMenu: MenuItem = {
+            id: 'new',
+            label: 'New',
+            actions: [],
+            children: [newAutTask, newManTask],
+            icon: 'add',
+            group: '0_new'
+        };
         return [newChildMenu];
     }
 }

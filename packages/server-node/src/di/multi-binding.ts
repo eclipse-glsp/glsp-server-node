@@ -31,30 +31,29 @@ export abstract class MultiBinding<T> {
 
     abstract applyBindings(context: ModuleContext): void;
 
-    add(newBinding: T): boolean {
-        return distinctAdd(this.bindings, newBinding);
+    add(newBinding: T): void {
+        distinctAdd(this.bindings, newBinding);
     }
 
-    addAll(newBindings: T[]): boolean;
-    addAll(...newBindings: T[]): boolean;
-    addAll(...newBindings: MaybeArray<T>[]): boolean {
+    addAll(newBindings: T[]): void;
+    addAll(...newBindings: T[]): void;
+    addAll(...newBindings: MaybeArray<T>[]): void {
         const result: T[] = [];
         flatPush(result, newBindings);
-        return result.every(newBinding => this.add(newBinding));
+        result.forEach(newBinding => this.add(newBinding));
     }
 
-    remove(toRemove: T): boolean {
-        return remove(this.bindings, toRemove);
+    remove(toRemove: T): void {
+        remove(this.bindings, toRemove);
     }
 
-    removeAll(toRemove: T[]): boolean {
-        return toRemove.every(binding => this.remove(binding));
+    removeAll(toRemove: T[]): void {
+        return toRemove.forEach(binding => this.remove(binding));
     }
 
     rebind(oldBinding: T, newBinding: T): void {
-        if (this.remove(oldBinding)) {
-            this.add(newBinding);
-        }
+        this.remove(oldBinding);
+        this.add(newBinding);
     }
 
     contains(binding: T): boolean {

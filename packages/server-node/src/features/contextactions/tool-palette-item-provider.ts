@@ -20,7 +20,7 @@ import {
     EditorContext,
     LabeledAction,
     MaybePromise,
-    TriggerElementCreationAction
+    PaletteItem
 } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { CreateOperationHandler } from '../../operations/create-operation-handler';
@@ -71,8 +71,8 @@ export class DefaultToolPaletteItemProvider extends ToolPaletteItemProvider {
         const nodes = this.createPaletteItem(handlers, CreateNodeOperation.KIND);
         const edges = this.createPaletteItem(handlers, CreateEdgeOperation.KIND);
         return [
-            PaletteItem.createPaletteGroup('node-group', 'Nodes', nodes, 'symbol-property', 'A'),
-            PaletteItem.createPaletteGroup('edge-group', 'Edges', edges, 'symbol-property', 'B')
+            { id: 'node-group', label: 'Nodes', actions: [], children: nodes, icon: 'symbol-property', sortString: 'A' },
+            { id: 'edge-group', label: 'Edges', actions: [], children: edges, icon: 'symbol-property', sortString: 'B' }
         ];
     }
 
@@ -84,28 +84,7 @@ export class DefaultToolPaletteItemProvider extends ToolPaletteItemProvider {
             .sort((a, b) => a.sortString.localeCompare(b.sortString));
     }
 
-    create(action: TriggerElementCreationAction, label: string): PaletteItem {
-        return new PaletteItem(`palette-item${this.counter}`, label, action);
-    }
-}
-
-export class PaletteItem extends LabeledAction {
-    id: string;
-    sortString: string;
-    children: PaletteItem[];
-
-    constructor(id: string, label: string, initializeAction?: TriggerElementCreationAction, icon?: string) {
-        super(label, initializeAction ? [initializeAction] : [], icon);
-        this.sortString = label.charAt(0);
-        this.id = id;
-    }
-
-    static createPaletteGroup(id: string, label: string, children: PaletteItem[], icon?: string, sortString?: string): PaletteItem {
-        const item = new PaletteItem(id, label, undefined, icon);
-        item.children = children;
-        if (sortString) {
-            item.sortString = sortString;
-        }
-        return item;
+    create(action: PaletteItem.TriggerElementCreationAction, label: string): PaletteItem {
+        return { id: `palette-item${this.counter}`, sortString: label.charAt(0), label, actions: [action] };
     }
 }

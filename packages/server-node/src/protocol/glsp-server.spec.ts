@@ -14,7 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { DisposeClientSessionParameters, InitializeClientSessionParameters, InitializeParameters } from '@eclipse-glsp/protocol';
+import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
+import * as sinon from 'sinon';
 import { GlobalActionProvider } from '../actions/global-action-provider';
 import { ClientSessionManager } from '../session/client-session-manager';
 import * as mock from '../test/mock-util';
@@ -22,8 +24,6 @@ import { Logger } from '../utils/logger';
 import { GLSPClientProxy, JsonRpcGLSPClientProxy } from './glsp-client-proxy';
 import { DefaultGLSPServer } from './glsp-server';
 import { GLSPServerListener } from './glsp-server-listener';
-import * as sinon from 'sinon';
-import { expect } from 'chai';
 
 describe('test DefaultGLSPServer', () => {
     const container = new Container();
@@ -72,19 +72,28 @@ describe('test DefaultGLSPServer', () => {
     });
 
     it('addListener - add existing listener', () => {
-        expect(glspServer.addListener(listener1)).false;
+        const originalSize = glspServer['serverListeners'].length;
+        glspServer.addListener(listener1);
+        expect(glspServer['serverListeners'].length).to.be.equal(originalSize);
     });
 
     it('addListener - add new listener', () => {
-        expect(glspServer.addListener(listener2)).true;
+        const originalSize = glspServer['serverListeners'].length;
+        glspServer.addListener(listener2);
+        expect(glspServer['serverListeners']).to.include(listener2);
+        expect(glspServer['serverListeners'].length).to.be.equal(originalSize + 1);
     });
 
     it('removeListener - remove non-existing listener', () => {
-        expect(glspServer.removeListener({})).false;
+        const originalSize = glspServer['serverListeners'].length;
+        glspServer.removeListener({});
+        expect(glspServer['serverListeners'].length).to.be.equal(originalSize);
     });
 
     it('removeListener - remove existing listener', () => {
-        expect(glspServer.removeListener(listener2)).true;
+        const originalSize = glspServer['serverListeners'].length;
+        glspServer.removeListener(listener2);
+        expect(glspServer['serverListeners'].length).to.be.equal(originalSize - 1);
     });
 
     it('initialize - with wrong protocol version', async () => {

@@ -19,17 +19,17 @@
  * Parts of the implementation is derived from Sprotty's SModel API
  * (https://github.com/eclipse/sprotty/blob/master/packages/sprotty/src/base/model/smodel.ts)
  */
-import { DefaultTypes as types, Dimension, ORIGIN_POINT, Point } from '@eclipse-glsp/protocol';
+import { DefaultTypes as types, Dimension, Point } from '@eclipse-glsp/protocol';
 import { GBoundsAware, GBoundsAwareBuilder } from './gbound-aware';
 import { GModelRoot, GModelRootBuilder } from './gmodel-element';
 
 export class GGraph extends GModelRoot implements GBoundsAware {
-    static builder(): GGraphBuilder {
+    static override builder(): GGraphBuilder {
         return new GGraphBuilder(GGraph);
     }
 
-    type = types.GRAPH;
-    position: Point = ORIGIN_POINT;
+    override type = types.GRAPH;
+    position: Point = Point.ORIGIN;
     size?: Dimension;
     [GBoundsAware] = true;
 }

@@ -30,7 +30,7 @@ import { ModelTypes } from './util/model-types';
 export class ActivityNode extends GNode {
     nodeType: string;
 
-    static builder(): ActivityNodeBuilder {
+    static override builder(): ActivityNodeBuilder {
         return new ActivityNodeBuilder(ActivityNode);
     }
 }
@@ -48,7 +48,7 @@ export class TaskNode extends GNode {
     taskType: string;
     references: string;
 
-    static builder(): TaskNodeBuilder {
+    static override builder(): TaskNodeBuilder {
         return new TaskNodeBuilder(TaskNode).layout('vbox').addArgs(ArgsUtil.cornerRadius(5));
     }
 }
@@ -75,20 +75,12 @@ export class TaskNodeBuilder<T extends TaskNode = TaskNode> extends GNodeBuilder
     }
 
     children(): this {
-        this.proxy.children.push(this.createCompartment());
         return this;
     }
 
-    protected createCompartment(): GCompartment {
-        const layoutOptions: Args = {};
-        return new GCompartmentBuilder(GCompartment)
-            .type(ModelTypes.COMP_HEADER)
-            .id(this.proxy.id + '_header')
-            .layout('hbox')
-            .addLayoutOptions(layoutOptions)
-            .add(this.createCompartmentIcon())
-            .add(this.createCompartmentHeader())
-            .build();
+    override build(): T {
+        this.layout('hbox').addLayoutOption('paddingRight', 10).add(this.createCompartmentIcon()).add(this.createCompartmentHeader());
+        return super.build();
     }
 
     protected createCompartmentHeader(): GLabel {
@@ -100,20 +92,9 @@ export class TaskNodeBuilder<T extends TaskNode = TaskNode> extends GNodeBuilder
     }
 
     protected createCompartmentIcon(): GCompartment {
-        return new GCompartmentBuilder(GCompartment)
-            .type(ModelTypes.ICON)
+        return GCompartment.builder()
             .id(this.proxy.id + '_icon')
-            .layout('stack')
-            .addLayoutOptions({ hAlign: 'center', resizeContainer: false })
-            .add(this.createCompartmentIconLabel())
-            .build();
-    }
-
-    protected createCompartmentIconLabel(): GLabel {
-        return new GLabelBuilder(GLabel)
-            .type(ModelTypes.LABEL_ICON)
-            .id(this.proxy.id + '_ticon')
-            .text(`${this.proxy.taskType.toUpperCase().charAt(0)}`)
+            .type(ModelTypes.ICON)
             .build();
     }
 }
@@ -121,7 +102,7 @@ export class TaskNodeBuilder<T extends TaskNode = TaskNode> extends GNodeBuilder
 export class WeightedEdge extends GEdge {
     probability?: string;
 
-    static builder(): WeightedEdgeBuilder {
+    static override builder(): WeightedEdgeBuilder {
         return new WeightedEdgeBuilder(WeightedEdge).type(ModelTypes.WEIGHTED_EDGE);
     }
 }
@@ -136,7 +117,7 @@ export class WeightedEdgeBuilder<E extends WeightedEdge = WeightedEdge> extends 
 export class Category extends ActivityNode {
     name: string;
 
-    static builder(): CategoryNodeBuilder {
+    static override builder(): CategoryNodeBuilder {
         return new CategoryNodeBuilder(Category)
             .layout('vbox')
             .addLayoutOptions({ hAlign: 'center', hGrab: false, vGrab: false })

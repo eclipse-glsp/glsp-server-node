@@ -22,7 +22,7 @@ export class GButton extends GShapeElement {
         return new GButtonBuilder(constructor ?? GButton).type(DefaultTypes.BUTTON_EXPAND);
     }
 
-    type = DefaultTypes.BUTTON_EXPAND;
+    override type = DefaultTypes.BUTTON_EXPAND;
     enabled = true;
 }
 

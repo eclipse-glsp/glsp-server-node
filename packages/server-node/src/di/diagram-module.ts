@@ -20,7 +20,6 @@ import {
     DeleteMarkersAction,
     ExportSvgAction,
     FitToScreenAction,
-    GLSPServerStatusAction,
     ModelSourceChangedAction,
     NavigateToExternalTargetAction,
     NavigateToTargetAction,
@@ -28,6 +27,7 @@ import {
     SelectAction,
     SelectAllAction,
     ServerMessageAction,
+    ServerStatusAction,
     SetClipboardDataAction,
     SetContextActions,
     SetDirtyStateAction,
@@ -239,7 +239,7 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(SetResolvedNavigationTargetAction.KIND);
         binding.add(SetTypeHintsAction.KIND);
         // binding.add(SetViewportAction.KIND);  TODO: Add missing action to protocol
-        binding.add(GLSPServerStatusAction.KIND);
+        binding.add(ServerStatusAction.KIND);
         binding.add(TriggerNodeCreationAction.KIND);
         binding.add(TriggerEdgeCreationAction.KIND);
         binding.add(UpdateModelAction.KIND);

@@ -6,6 +6,14 @@ module.exports = {
         project: 'tsconfig.json'
     },
     rules: {
-        'no-shadow': 'off'
+        'no-shadow': 'off',
+        'no-restricted-imports': [
+            'warn',
+            {
+                name: 'sprotty-protocol',
+                message:
+                    "The sprotty-protocol default exports are customized and reexported by GLSP. Please import from '@eclipse-glsp/client' instead"
+            }
+        ]
     }
 };

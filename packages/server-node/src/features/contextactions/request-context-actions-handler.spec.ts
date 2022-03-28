@@ -13,14 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { RequestContextActions, SetContextActions } from '@eclipse-glsp/protocol';
+import { PaletteItem, RequestContextActions, SetContextActions } from '@eclipse-glsp/protocol';
+import { expect } from 'chai';
 import { OperationHandlerRegistry } from '../../operations/operation-handler-registry';
 import * as mock from '../../test/mock-util';
 import { ContextActionsProvider } from './context-actions-provider';
 import { ContextActionsProviderRegistry } from './context-actions-provider-registry';
 import { RequestContextActionsHandler } from './request-context-actions-handler';
-import { DefaultToolPaletteItemProvider, PaletteItem } from './tool-palette-item-provider';
-import { expect } from 'chai';
+import { DefaultToolPaletteItemProvider } from './tool-palette-item-provider';
 
 describe('Test RequestContextActionsHandler', () => {
     const operationHandlerRegistry = new OperationHandlerRegistry();
@@ -48,26 +48,28 @@ describe('Test RequestContextActionsHandler', () => {
     requestContextActionsHandler['contextActionsProviderRegistry'] = contextActionsProviderRegistry;
 
     it('request ToolPaletteContextActions', async () => {
-        const actions = await requestContextActionsHandler.execute(new RequestContextActions('tool-palette', { selectedElementIds: [] }));
+        const actions = await requestContextActionsHandler.execute(
+            RequestContextActions.create({ contextId: 'tool-palette', editorContext: { selectedElementIds: [] } })
+        );
         expect(actions).to.have.length(1);
         const action = actions[0];
 
-        expect(action).instanceOf(SetContextActions);
+        expect(SetContextActions.is(action)).to.be.true;
         const setContextActions = action as SetContextActions;
         expect(setContextActions.actions).to.have.length(2);
 
-        expect(setContextActions.actions[0]).instanceOf(PaletteItem);
+        expect(PaletteItem.is(setContextActions.actions[0])).to.be.true;
         const firstPaletteItem = setContextActions.actions[0] as PaletteItem;
         expect(firstPaletteItem.label).to.be.equal('Nodes');
         expect(firstPaletteItem.children).to.have.length(2);
-        expect(firstPaletteItem.children[0].label).to.be.equal('ANode');
-        expect(firstPaletteItem.children[1].label).to.be.equal('BNode');
+        expect(firstPaletteItem.children?.[0].label).to.be.equal('ANode');
+        expect(firstPaletteItem.children?.[1].label).to.be.equal('BNode');
 
-        expect(setContextActions.actions[1]).instanceOf(PaletteItem);
+        expect(PaletteItem.is(setContextActions.actions[1])).to.be.true;
         const secondPaletteItem = setContextActions.actions[1] as PaletteItem;
         expect(secondPaletteItem.label).to.be.equal('Edges');
         expect(secondPaletteItem.children).to.have.length(2);
-        expect(secondPaletteItem.children[0].label).to.be.equal('AEdge');
-        expect(secondPaletteItem.children[1].label).to.be.equal('BEdge');
+        expect(secondPaletteItem.children?.[0].label).to.be.equal('AEdge');
+        expect(secondPaletteItem.children?.[1].label).to.be.equal('BEdge');
     });
 });

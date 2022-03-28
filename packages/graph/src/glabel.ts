@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { DefaultTypes, ORIGIN_POINT, Point } from '@eclipse-glsp/protocol';
+import { DefaultTypes, Point } from '@eclipse-glsp/protocol';
 import { GAlignable, GAlignableBuilder } from './galignable';
 import { EdgePlacement, GEdgeLayoutable, GEdgeLayoutableBuilder } from './gedge-layoutable';
 import { GModelElementConstructor } from './gmodel-element';
@@ -24,9 +24,9 @@ export class GLabel extends GShapeElement implements GAlignable, GEdgeLayoutable
         return new GLabelBuilder(constructor ?? GLabel).type(DefaultTypes.LABEL);
     }
 
-    type = DefaultTypes.LABEL;
+    override type = DefaultTypes.LABEL;
     text: string;
-    alignment: Point = ORIGIN_POINT;
+    alignment: Point = Point.ORIGIN;
     edgePlacement?: EdgePlacement;
     [GAlignable] = true;
     [GEdgeLayoutable] = true;

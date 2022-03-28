@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, Args, EditorContext, LabeledAction, Point } from '@eclipse-glsp/protocol';
+import { Args, EditorContext, LabeledAction, MenuItem, Point } from '@eclipse-glsp/protocol';
 import { injectable } from 'inversify';
 import { ContextActionsProvider } from './context-actions-provider';
 
@@ -48,37 +48,5 @@ export abstract class ContextMenuItemProvider implements ContextActionsProvider 
     getActions(editorContext: EditorContext): LabeledAction[] {
         const position = editorContext.lastMousePosition ? editorContext.lastMousePosition : { x: 0, y: 0 };
         return this.getItems(editorContext.selectedElementIds, position, editorContext.args);
-    }
-}
-
-export class MenuItem extends LabeledAction {
-    readonly id: string;
-    readonly sortString?: string;
-    readonly group?: string;
-    readonly parentId?: string;
-    readonly children?: MenuItem[];
-    readonly isEnabled?: boolean;
-    readonly isToggled?: boolean;
-
-    constructor(
-        id: string,
-        label: string,
-        actions?: Action[],
-        children?: MenuItem[],
-        icon?: string,
-        sortString?: string,
-        group?: string,
-        parentId?: string,
-        isEnabled = true,
-        isToggled = false
-    ) {
-        super(label, actions ? actions : [], icon);
-        this.id = id;
-        this.sortString = sortString;
-        this.group = group;
-        this.parentId = parentId;
-        this.children = children;
-        this.isEnabled = isEnabled;
-        this.isToggled = isToggled;
     }
 }
