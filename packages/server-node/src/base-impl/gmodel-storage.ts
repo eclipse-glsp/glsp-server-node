@@ -14,22 +14,24 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GGraph, GModelRoot } from '@eclipse-glsp/graph';
-import { isSModelRootSchema, RequestModelAction } from '@eclipse-glsp/protocol';
+import { isSModelRootSchema, MaybePromise, RequestModelAction, SaveModelAction } from '@eclipse-glsp/protocol';
+import { writeFileSync } from 'fs';
 import * as fs from 'fs-extra';
 import { inject, injectable } from 'inversify';
 import { GModelSerializer } from '../features/model/gmodel-serializer';
-import { ModelSourceLoader } from '../features/model/model-source-loader';
+import { SourceModelStorage } from '../features/model/source-model-storage';
 import { getOrThrow, GLSPServerError } from '../utils/glsp-server-error';
 import { Logger } from '../utils/logger';
 import { GModelState } from './gmodel-state';
 
-export const EMTPY_ROOT = GGraph.builder().id('empty').build();
+export const EMPTY_ROOT = GGraph.builder().id('empty').build();
 
 /**
- * A {@link ModelSourceLoader}  that reads the graph model directly from a JSON file and uses it as source model.
+ * A {@link SourceModelStorage} that reads and writes the graph model directly from / into
+ * a JSON file and uses it as source model.
  */
 @injectable()
-export class GModelLoader implements ModelSourceLoader {
+export class GModelStorage implements SourceModelStorage {
     @inject(Logger)
     protected logger: Logger;
 
@@ -39,7 +41,7 @@ export class GModelLoader implements ModelSourceLoader {
     @inject(GModelState)
     protected modelState: GModelState;
 
-    loadSourceModel(action: RequestModelAction): void {
+    loadSourceModel(action: RequestModelAction): MaybePromise<void> {
         const sourceUri = getOrThrow(
             this.modelState.sourceUri,
             `Invalid RequestModelAction! Missing argument with key '${GModelState.SOURCE_URI}'`
@@ -53,7 +55,7 @@ export class GModelLoader implements ModelSourceLoader {
         try {
             const fileContent = this.readFile(url);
             if (!fileContent) {
-                return EMTPY_ROOT;
+                return EMPTY_ROOT;
             }
             if (!isSModelRootSchema(fileContent)) {
                 throw new Error('The loaded root object is not of type SModelRootSchema');
@@ -70,6 +72,15 @@ export class GModelLoader implements ModelSourceLoader {
             return JSON.parse(data);
         } catch (error) {
             throw new GLSPServerError(`Could not read & parse file contents of '${url}' as json`, error);
+        }
+    }
+
+    saveSourceModel(action: SaveModelAction): MaybePromise<void> {
+        try {
+            const data = this.modelSerializer.createSchema(this.modelState.root);
+            writeFileSync(this.modelState.sourceUri!, JSON.stringify(data, undefined, 2));
+        } catch (error) {
+            throw new GLSPServerError(`Could not load model from file: ${this.modelState.sourceUri}`, error);
         }
     }
 }

@@ -117,7 +117,7 @@ import {
  * The following bindings are required in either a subclass or an additional module:
  * - {@link DiagramType} via the subclasses diagramType property
  * - {@link DiagramConfiguration}
- * - {@link ModelSourceLoader}
+ * - {@link SourceModelStorage}
  * - {@link GModelState}
  * - {@link GModelFactory}
  * - {@link CommandStack}

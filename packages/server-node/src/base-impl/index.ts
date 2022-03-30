@@ -15,5 +15,5 @@
  ********************************************************************************/
 
 export * from './gmodel-diagram-module';
-export * from './gmodel-loader';
 export * from './gmodel-state';
+export * from './gmodel-storage';

@@ -7,6 +7,5 @@ coverage/
 *.log
 *.jar
 
-yarn.lock
 /.metadata/
 yarn-error.log

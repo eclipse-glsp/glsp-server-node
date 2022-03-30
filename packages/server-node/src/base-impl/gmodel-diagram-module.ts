@@ -25,16 +25,16 @@ import { ApplyLabelEditOperationHandler } from '../features/directediting/apply-
 import { LayoutOperationHandler } from '../features/layout/layout-operation-handler';
 import { GModelFactory, GModelFactoryNullImpl } from '../features/model/gmodel-factory';
 import { GModelIndex } from '../features/model/gmodel-index';
-import { ModelSourceLoader } from '../features/model/model-source-loader';
 import { ModelState } from '../features/model/model-state';
+import { SourceModelStorage } from '../features/model/source-model-storage';
 import { CutOperationHandler } from '../operations/cut-operation-handler';
 import { OperationHandlerConstructor } from '../operations/operation-handler';
 import { PasteOperationHandler } from '../operations/paste-operation-handler';
 import { ReconnectEdgeOperationHandler } from '../operations/reconnect-edge-operation-handler';
 import { ComputedBoundsActionHandler } from './computed-bounds-action-handler';
 import { DeleteOperationHandler } from './delete-operation-handler';
-import { GModelLoader } from './gmodel-loader';
 import { GModelState } from './gmodel-state';
+import { GModelStorage } from './gmodel-storage';
 
 /**
  * Extension of the {@link DiagramModule} to provide GModel integration.
@@ -42,7 +42,7 @@ import { GModelState } from './gmodel-state';
  * Contains all bindings of {@link DiagramModule}.
  *
  * Additionally binds:
- * - {@link ModelSourceLoader} to {@link GModelLoader}
+ * - {@link SourceModelStorage} to {@link GModelLoader}
  * - {@link CommandStack} to {@link DefaultCommandStack}
  * - {@link ModelState} to {@link GModelState}
  * - {@link GModelFactory} to {@link GModelFactoryNullImpl}
@@ -59,7 +59,7 @@ export abstract class GModelDiagramModule extends DiagramModule {
     protected configure(bind: interfaces.Bind, unbind: interfaces.Unbind, isBound: interfaces.IsBound, rebind: interfaces.Rebind): void {
         super.configure(bind, unbind, isBound, rebind);
 
-        bind(ModelSourceLoader).to(GModelLoader);
+        bind(SourceModelStorage).to(GModelStorage);
         bind(CommandStack).to(DefaultCommandStack).inSingletonScope();
 
         // bind GModelState

@@ -22,7 +22,7 @@ export const GModelFactory = Symbol('GModelFactory');
  *
  * The responsibility of a {@link GModelFactory} implementation is to define how a {@link GModelState} is to be
  * translated into a {@link GModelRoot} that is sent to the client for rendering. Before a {@link GModelFactory}
- * is invoked, the {@link ModelSourceLoader} has already been executed for loading the source model into the
+ * is invoked, the {@link SourceModelStorage} has already been executed for loading the source model into the
  * {@link GModelState}. The {@link GModelFactory} then produces the {@link GModelRoot} from the source model in the
  * {@link GModelState}. Implementations of {@link GModelFactory} are usually specific to the type of source model, as
  * they need to understand the source model in order to translate it into a graph model.
@@ -37,7 +37,7 @@ export const GModelFactory = Symbol('GModelFactory');
  * shall be put into the model state too. Typically the {@link GModelIndex} is extended for a particular model source
  * type as well.
  *
- * @see ModelSourceLoader
+ * @see SourceModelStorage
  * @see GModelIndex
  */
 export interface GModelFactory {
