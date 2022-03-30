@@ -52,6 +52,7 @@ import { RequestTypeHintsActionHandler } from '../diagram/request-type-hints-act
 import { ContextActionsProvider } from '../features/contextactions/context-actions-provider';
 import { ContextActionsProviderRegistry } from '../features/contextactions/context-actions-provider-registry';
 import { RequestContextActionsHandler } from '../features/contextactions/request-context-actions-handler';
+import { ContextEditValidator } from '../features/directediting/context-edit-validator';
 import {
     ContextEditValidatorRegistry,
     DefaultContextEditValidatorRegistry
@@ -174,7 +175,7 @@ export abstract class DiagramModule extends GLSPModule {
         this.configureMultiBinding(new ClassMultiBinding<ContextActionsProvider>(ContextActionsProviders), binding =>
             this.configureContextActionProviders(binding)
         );
-        this.configureMultiBinding(new ClassMultiBinding<ContextActionsProvider>(ContextEditValidators), binding =>
+        this.configureMultiBinding(new ClassMultiBinding<ContextEditValidator>(ContextEditValidators), binding =>
             this.configureContextEditValidators(binding)
         );
     }
@@ -205,7 +206,7 @@ export abstract class DiagramModule extends GLSPModule {
         // empty as default
     }
 
-    protected configureContextEditValidators(binding: ClassMultiBinding<ContextActionsProvider>): void {
+    protected configureContextEditValidators(binding: ClassMultiBinding<ContextEditValidator>): void {
         // empty as default
     }
 
