@@ -14,13 +14,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GEdge, getDefaultMapping, GGraph, GNode } from '@eclipse-glsp/graph';
+import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
 import { DiagramConfiguration } from '../../diagram/diagram-configuration';
 import * as mock from '../../test/mock-util';
 import { GLSPServerError } from '../../utils/glsp-server-error';
 import { Logger } from '../../utils/logger';
 import { DefaultGModelSerializer } from './gmodel-serializer';
-import { expect } from 'chai';
 
 class TestNode extends GNode {
     foo(): void {
@@ -81,7 +81,7 @@ describe('test DefaultGModelSerializer', () => {
 
     it('createElement - with node schema', () => {
         const node = serializer.createElement(testNodeSchema);
-        expect(node instanceof TestNode).true;
+        expect(node).to.be.an.instanceOf(TestNode);
         expect(node).to.be.deep.equal(testNodeSchema);
         expect((node as TestNode).foo).to.not.be.undefined;
     });
@@ -89,7 +89,7 @@ describe('test DefaultGModelSerializer', () => {
     it('createElement- with sub type of registered schema', () => {
         testNodeSchema.type = 'node:rectangular';
         const node = serializer.createElement(testNodeSchema);
-        expect(node instanceof TestNode).true;
+        expect(node).to.be.an.instanceOf(TestNode);
         expect(node).to.be.deep.equal(testNodeSchema);
         expect((node as TestNode).foo).to.not.be.undefined;
     });
@@ -97,7 +97,7 @@ describe('test DefaultGModelSerializer', () => {
     it('createElement - with parent', () => {
         const parent = new GNode();
         const child = serializer.createElement(testNodeSchema, parent);
-        expect(child instanceof TestNode).true;
+        expect(child).to.be.an.instanceOf(TestNode);
         expect(child).to.be.deep.equal(testNodeSchemaWithParent);
         expect(child.parent).to.be.equal(parent);
     });
@@ -113,13 +113,13 @@ describe('test DefaultGModelSerializer', () => {
 
     it('createRoot - with registered root schema', () => {
         const root = serializer.createRoot(testRootSchema);
-        expect(root instanceof GGraph).true;
+        expect(root).to.be.an.instanceOf(GGraph);
         expect(root.children.length).to.be.equal(3);
         const node1 = root.children[0];
-        expect(node1 instanceof TestNode).true;
+        expect(node1).to.be.an.instanceOf(TestNode);
         const node2 = root.children[1];
-        expect(node2 instanceof TestNode).true;
-        expect(root.children[2] instanceof GEdge).true;
+        expect(node2).to.be.an.instanceOf(TestNode);
+        expect(root.children[2]).to.be.an.instanceOf(GEdge);
         const edge = root.children[2] as GEdge;
         expect(edge.sourceId).to.be.equal(node1.id);
         expect(edge.targetId).to.be.equal(node2.id);

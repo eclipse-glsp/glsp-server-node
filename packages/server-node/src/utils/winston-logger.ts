@@ -66,7 +66,7 @@ export class WinstonLogger extends Logger {
         return params.map(param => this.toString(param)).join(',\n');
     }
 
-    toString(param: unknown): string {
+    override toString(param: unknown): string {
         if (param instanceof Error) {
             return `${param.message}
             ${param.stack || ''}`;

@@ -24,7 +24,7 @@ export class GIssue {
 }
 
 export class GIssueMarker extends GShapeElement {
-    type = DefaultTypes.ISSUE_MARKER;
+    override type = DefaultTypes.ISSUE_MARKER;
     issues: GIssue[] = [];
 }
 

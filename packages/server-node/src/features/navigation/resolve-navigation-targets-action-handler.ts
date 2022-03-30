@@ -16,8 +16,8 @@
 import { Action, ResolveNavigationTargetAction, SetResolvedNavigationTargetAction } from '@eclipse-glsp/protocol';
 import { inject, injectable, optional } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
-import { NavigationTargetResolver } from './navigation-target-resolver';
 import { Logger } from '../../utils/logger';
+import { NavigationTargetResolver } from './navigation-target-resolver';
 
 @injectable()
 export class ResolveNavigationTargetsActionHandler implements ActionHandler {
@@ -37,6 +37,6 @@ export class ResolveNavigationTargetsActionHandler implements ActionHandler {
         }
         const target = action.navigationTarget;
         const resolution = await this.navigationTargetResolver.resolve(target);
-        return [new SetResolvedNavigationTargetAction(resolution.elementIds, resolution.args)];
+        return [SetResolvedNavigationTargetAction.create(resolution.elementIds, { args: resolution.args })];
     }
 }

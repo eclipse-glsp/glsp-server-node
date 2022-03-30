@@ -14,13 +14,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Disposable } from './disposable';
 import { expect } from 'chai';
+import { Disposable } from './disposable';
 
 describe('test Disposable', () => {
     let doDisposeCalled: boolean;
     const disposable = new (class extends Disposable {
-        protected doDispose(): void {
+        protected override doDispose(): void {
             doDisposeCalled = true;
         }
     })();

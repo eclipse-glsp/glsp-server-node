@@ -19,7 +19,7 @@ import { injectable } from 'inversify';
 
 @injectable()
 export class WorkflowLayoutConfigurator extends AbstractLayoutConfigurator {
-    protected graphOptions(graph: GGraph): LayoutOptions | undefined {
+    protected override graphOptions(graph: GGraph): LayoutOptions | undefined {
         return {
             'elk.algorithm': 'layered'
         };

@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, isCreateOperation, MaybePromise, Operation, ServerMessageAction } from '@eclipse-glsp/protocol';
+import { Action, CreateOperation, MaybePromise, Operation, ServerMessageAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
 import { GModelState } from '../base-impl/gmodel-state';
@@ -30,10 +30,14 @@ export class OperationActionHandler implements ActionHandler {
 
     constructor(@inject(Operations) readonly actionKinds: string[]) {}
 
-    execute(action: Action): MaybePromise<Action[]> {
+    execute(action: Operation): MaybePromise<Action[]> {
         if (this.handles(action)) {
             if (this.modelState.isReadonly) {
-                return [new ServerMessageAction('WARNING', `Server is in readonly-mode! Could not execute operation: ${action.kind}`)];
+                return [
+                    ServerMessageAction.create(`Server is in readonly-mode! Could not execute operation: ${action.kind}`, {
+                        severity: 'WARNING'
+                    })
+                ];
             }
             const operationHandler = OperationActionHandler.getOperationHandler(action, this.operationHandlerRegistry);
             if (operationHandler) {
@@ -60,6 +64,6 @@ export class OperationActionHandler implements ActionHandler {
     }
 
     static getOperationHandler(operation: Operation, registry: OperationHandlerRegistry): OperationHandler | undefined {
-        return isCreateOperation(operation) ? registry.get(`${operation.kind}_${operation.elementTypeId}`) : registry.get(operation.kind);
+        return CreateOperation.is(operation) ? registry.get(`${operation.kind}_${operation.elementTypeId}`) : registry.get(operation.kind);
     }
 }

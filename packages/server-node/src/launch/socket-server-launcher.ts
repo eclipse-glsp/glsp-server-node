@@ -23,7 +23,7 @@ const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed';
 
 @injectable()
 export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnectOpts> {
-    @inject(Logger) protected logger: Logger;
+    @inject(Logger) protected override logger: Logger;
 
     protected currentConnections: jsonrpc.MessageConnection[] = [];
     protected startupCompleteMessage = START_UP_COMPLETE_MSG;

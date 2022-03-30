@@ -22,5 +22,5 @@ export class GPort extends GShapeElement {
         return new GShapeElementBuilder(GPort).type(DefaultTypes.PORT);
     }
 
-    type = DefaultTypes.PORT;
+    override type = DefaultTypes.PORT;
 }

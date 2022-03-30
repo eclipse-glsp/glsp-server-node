@@ -36,11 +36,11 @@ describe('Test DefaultToolPaletteItemProvider', () => {
         expect(items).to.have.length(2);
         expect(items[0].label).to.be.equal('Nodes');
         expect(items[0].children).to.have.length(2);
-        expect(items[0].children[0].label).to.be.equal('ANode');
-        expect(items[0].children[1].label).to.be.equal('BNode');
+        expect(items[0].children?.[0].label).to.be.equal('ANode');
+        expect(items[0].children?.[1].label).to.be.equal('BNode');
         expect(items[1].label).to.be.equal('Edges');
         expect(items[1].children).to.have.length(2);
-        expect(items[1].children[0].label).to.be.equal('AEdge');
-        expect(items[1].children[1].label).to.be.equal('BEdge');
+        expect(items[1].children?.[0].label).to.be.equal('AEdge');
+        expect(items[1].children?.[1].label).to.be.equal('BEdge');
     });
 });

@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, flatPush, isAction, isRequestAction, isUpdateModelAction, MaybeArray, ResponseAction } from '@eclipse-glsp/protocol';
+import { Action, flatPush, MaybeArray, RequestAction, ResponseAction, UpdateModelAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
 import { ClientActionKinds, ClientId } from '../di/service-identifiers';
@@ -96,7 +96,7 @@ export class DefaultActionDispatcher extends Disposable implements ActionDispatc
             responses.push(...response);
         }
 
-        if (isUpdateModelAction(action) && this.postUpdateQueue.length > 0) {
+        if (UpdateModelAction.is(action) && this.postUpdateQueue.length > 0) {
             responses.push(...this.postUpdateQueue);
             this.postUpdateQueue = [];
         }
@@ -133,7 +133,7 @@ export class DefaultActionDispatcher extends Disposable implements ActionDispatc
         }
     }
 
-    doDispose(): void {
+    override doDispose(): void {
         this.actionQueue.clear();
     }
 }
@@ -146,12 +146,8 @@ export class DefaultActionDispatcher extends Disposable implements ActionDispatc
  * @returns given response action with id set if applicable
  */
 export function respond(request: Action, response: Action): Action {
-    if (isRequestAction(request) && isResponseAction(response)) {
+    if (RequestAction.is(request) && ResponseAction.is(response)) {
         (response as any).responseId = request.requestId;
     }
     return response;
-}
-
-function isResponseAction(action?: any): action is ResponseAction {
-    return isAction(action) && 'responseId' in action && typeof action['responseId'] === 'string';
 }

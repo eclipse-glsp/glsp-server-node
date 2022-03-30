@@ -13,14 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Point, GModelState } from '@eclipse-glsp/server-node';
-import { CreateActivityNodeHandler } from './create-activity-node-handler';
+import { GModelState, Point } from '@eclipse-glsp/server-node';
 import { injectable } from 'inversify';
 import { ActivityNodeBuilder } from '../graph-extension';
+import { CreateActivityNodeHandler } from './create-activity-node-handler';
 
 @injectable()
 export abstract class CreateForkOrJoinNodeHandler extends CreateActivityNodeHandler {
-    protected builder(point: Point | undefined, modelState: GModelState): ActivityNodeBuilder {
+    protected override builder(point: Point | undefined, modelState: GModelState): ActivityNodeBuilder {
         return super.builder(point, modelState).addCssClass('forkOrJoin').size(10, 50);
     }
 }

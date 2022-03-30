@@ -19,12 +19,14 @@ import {
     CompoundOperation,
     CreateNodeOperation,
     InitializeResult,
-    isRequestBoundsAction,
     Point,
+    RequestBoundsAction,
     RequestModelAction
 } from '@eclipse-glsp/protocol';
+import { expect } from 'chai';
 import { Container, ContainerModule, injectable, interfaces } from 'inversify';
 import * as path from 'path';
+import * as sinon from 'sinon';
 import { GModelDiagramModule } from '../base-impl/gmodel-diagram-module';
 import { InstanceMultiBinding } from '../di/multi-binding';
 import { ServerModule } from '../di/server-module';
@@ -44,22 +46,25 @@ const protocolVersion = '0.9.0';
 const diagramType = 'testDiagram';
 const clientId = 'session1';
 const sourceUri = path.resolve(__dirname, 'minimal.json');
-import * as sinon from 'sinon';
-import { expect } from 'chai';
 
 class TestDiagramModule extends GModelDiagramModule {
     diagramType = diagramType;
 
-    protected configure(bind: interfaces.Bind, unbind: interfaces.Unbind, isBound: interfaces.IsBound, rebind: interfaces.Rebind): void {
+    protected override configure(
+        bind: interfaces.Bind,
+        unbind: interfaces.Unbind,
+        isBound: interfaces.IsBound,
+        rebind: interfaces.Rebind
+    ): void {
         super.configure(bind, unbind, isBound, rebind);
         bind(DiagramConfiguration).toConstantValue(
             new (class extends mock.StubDiagramConfiguration {
-                typeMapping = getDefaultMapping();
+                override typeMapping = getDefaultMapping();
             })()
         );
     }
 
-    configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
+    override configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
         super.configureOperationHandlers(binding);
         binding.add(CreateANodeOperationHandler);
     }
@@ -106,8 +111,10 @@ describe('Integration tests for a glsp server created by SocketServerLauncher', 
         expect(() =>
             glspServer.process({
                 clientId,
-                action: new RequestModelAction({
-                    ['sourceUri']: sourceUri
+                action: RequestModelAction.create({
+                    options: {
+                        ['sourceUri']: sourceUri
+                    }
                 })
             })
         ).to.throw;
@@ -137,27 +144,27 @@ describe('Integration tests for a glsp server created by SocketServerLauncher', 
     });
 
     it('process - RequestModelAction should send RequestBoundsAction to client', async () => {
-        glspServer.process({ clientId, action: new RequestModelAction({ ['sourceUri']: sourceUri }) });
+        glspServer.process({ clientId, action: RequestModelAction.create({ options: { ['sourceUri']: sourceUri } }) });
         // Action handling is done async. We have to add a delay to ensure that we receive all responses
         await mock.delay(200);
         const result = spy_client_process.getCalls().map(call => call.args);
         expect(spy_client_process.calledOnce);
         expect(result[result.length - 1][0].clientId).to.be.equals(clientId);
-        expect(isRequestBoundsAction(result[result.length - 2][0].action)).true;
+        expect(RequestBoundsAction.is(result[result.length - 2][0].action)).true;
     });
 
     it('check OperationHandlerRegistry for defined operations', () => {
         expect(operationHandlerRegistry.keys()).to.contain(`${CreateNodeOperation.KIND}_ANode`);
-        expect(operationHandlerRegistry.get(`${CreateNodeOperation.KIND}_ANode`)).instanceOf(CreateANodeOperationHandler);
+        expect(operationHandlerRegistry.get(`${CreateNodeOperation.KIND}_ANode`)).to.be.an.instanceOf(CreateANodeOperationHandler);
         expect(operationHandlerRegistry.keys()).to.contain(CompoundOperation.KIND);
-        expect(operationHandlerRegistry.get(CompoundOperation.KIND)).instanceOf(CompoundOperationHandler);
+        expect(operationHandlerRegistry.get(CompoundOperation.KIND)).to.be.an.instanceOf(CompoundOperationHandler);
     });
 
     it('correct handler is triggered on process', () => {
         const handler = operationHandlerRegistry.get(`${CreateNodeOperation.KIND}_ANode`)!;
         const spy_operationHandler_execute = sinon.stub(handler, 'execute');
 
-        glspServer.process({ clientId, action: new CreateNodeOperation('ANode') });
+        glspServer.process({ clientId, action: CreateNodeOperation.create('ANode') });
         expect(spy_operationHandler_execute.calledOnce);
     });
 });

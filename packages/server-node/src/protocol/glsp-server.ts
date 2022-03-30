@@ -273,8 +273,9 @@ export class DefaultGLSPServer implements JsonRpcGLSPServer {
     protected handleProcessError(message: ActionMessage, reason: any): void | PromiseLike<void> {
         const errorMsg = `Could not process action: '${message.action.kind}`;
         this.logger.error(errorMsg, reason);
+        const details = reason?.cause?.toString() ?? '';
         if (reason instanceof GLSPServerError) {
-            const errorAction = new ServerMessageAction('ERROR', errorMsg, reason.cause?.toString());
+            const errorAction = ServerMessageAction.create(errorMsg, { severity: 'ERROR', details });
             this.glspClient.process({ clientId: message.clientId, action: errorAction });
         }
     }
@@ -300,11 +301,13 @@ export class DefaultGLSPServer implements JsonRpcGLSPServer {
     }
 
     addListener(listener: GLSPServerListener): boolean {
-        return distinctAdd(this.serverListeners, listener);
+        distinctAdd(this.serverListeners, listener);
+        return true;
     }
 
     removeListener(listener: GLSPServerListener): boolean {
-        return remove(this.serverListeners, listener);
+        remove(this.serverListeners, listener);
+        return true;
     }
 
     protected getListenersToNotify(method: keyof GLSPServerListener): GLSPServerListener[] {

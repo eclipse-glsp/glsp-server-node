@@ -23,9 +23,9 @@ export class GCompartment extends GShapeElement implements GLayoutContainer, GLa
         return new GCompartmentBuilder(GCompartment).type(DefaultTypes.COMPARTMENT);
     }
 
-    type = DefaultTypes.COMPARTMENT;
+    override type = DefaultTypes.COMPARTMENT;
     layout?: string;
-    layoutOptions?: Args;
+    override layoutOptions?: Args;
     [GLayoutContainer] = true;
     [GLayoutable] = true;
 }
@@ -35,13 +35,13 @@ export class GCompartmentBuilder<G extends GCompartment = GCompartment> extends 
         return GLayoutContainerBuilder.layout(this, layout);
     }
 
-    addLayoutOption(key: string, value: JsonPrimitive): this {
+    override addLayoutOption(key: string, value: JsonPrimitive): this {
         return GLayoutableBuilder.addLayoutOption(this, key, value);
     }
 
-    addLayoutOptions(layoutOptions: Args): this;
-    addLayoutOptions(layoutOptions: Map<string, JsonPrimitive>): this;
-    addLayoutOptions(layoutOptions: Args | Map<string, JsonPrimitive>): this {
+    override addLayoutOptions(layoutOptions: Args): this;
+    override addLayoutOptions(layoutOptions: Map<string, JsonPrimitive>): this;
+    override addLayoutOptions(layoutOptions: Args | Map<string, JsonPrimitive>): this {
         return GLayoutableBuilder.addLayoutOptions(this, layoutOptions);
     }
 }

@@ -35,7 +35,7 @@ export class ActionHandlerRegistry extends MultiRegistry<string, ActionHandler> 
      * @param action The action
      * @returns A list of all registered handlers that can handle the given action.
      */
-    get(key: string): ActionHandler[] {
+    override get(key: string): ActionHandler[] {
         const result = super.get(key);
         return result.sort((a, b) => a.priority ?? 0 - (b.priority ?? 0));
     }

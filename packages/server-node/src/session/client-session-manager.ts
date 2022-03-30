@@ -180,7 +180,7 @@ export class DefaultClientSessionManager extends Disposable implements ClientSes
         this.dispose();
     }
 
-    protected doDispose(): void {
+    protected override doDispose(): void {
         Array.from(this.clientSessions.keys()).forEach(id => this.disposeClientSession(id));
         this.listeners.clear();
     }

@@ -13,8 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GGraph, GModelRoot } from '@eclipse-glsp/graph';
-import { isSModelRootSchema, MaybePromise, RequestModelAction, SaveModelAction } from '@eclipse-glsp/protocol';
+import { GGraph, GModelElementSchema, GModelRoot } from '@eclipse-glsp/graph';
+import { MaybePromise, RequestModelAction, SaveModelAction } from '@eclipse-glsp/protocol';
 import { writeFileSync } from 'fs';
 import * as fs from 'fs-extra';
 import { inject, injectable } from 'inversify';
@@ -57,7 +57,7 @@ export class GModelStorage implements SourceModelStorage {
             if (!fileContent) {
                 return EMPTY_ROOT;
             }
-            if (!isSModelRootSchema(fileContent)) {
+            if (!GModelElementSchema.is(fileContent)) {
                 throw new Error('The loaded root object is not of type SModelRootSchema');
             }
             return this.modelSerializer.createRoot(fileContent);

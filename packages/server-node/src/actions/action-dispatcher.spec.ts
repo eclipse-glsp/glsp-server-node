@@ -13,7 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { Action, UpdateModelAction } from '@eclipse-glsp/protocol';
+import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
+import * as sinon from 'sinon';
 import { ClientActionKinds, ClientId } from '../di/service-identifiers';
 import { ClientSessionManager } from '../session/client-session-manager';
 import * as mock from '../test/mock-util';
@@ -21,9 +24,6 @@ import { Logger } from '../utils/logger';
 import { DefaultActionDispatcher } from './action-dispatcher';
 import { ActionHandler } from './action-handler';
 import { ActionHandlerRegistry } from './action-handler-registry';
-import * as sinon from 'sinon';
-import { expect } from 'chai';
-import { Action, UpdateModelAction } from '@eclipse-glsp/protocol';
 
 function waitSync(timeInMillis: number): void {
     const start = Date.now();
@@ -256,7 +256,7 @@ describe('test DefaultActionDispatcher', () => {
     describe('test dispatch after next update', () => {
         it('dispatchAfterNextUpdate', async () => {
             // Mock setup
-            const updateModelAction = new UpdateModelAction({ id: 'newRoot', type: 'myType' });
+            const updateModelAction = UpdateModelAction.create({ id: 'newRoot', type: 'myType' });
             const intermediateAction = 'intermediate';
             const postUpdateAction = 'postUpdate';
             const handler = new mock.StubActionHandler([updateModelAction.kind, intermediateAction]);

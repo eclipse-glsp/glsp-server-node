@@ -14,7 +14,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GModelRootSchema } from '@eclipse-glsp/graph';
-import { Action, RequestBoundsAction, SetDirtyStateAction, SetModelAction, UpdateModelAction } from '@eclipse-glsp/protocol';
+import {
+    Action,
+    DirtyStateChangeReason,
+    RequestBoundsAction,
+    SetDirtyStateAction,
+    SetModelAction,
+    UpdateModelAction
+} from '@eclipse-glsp/protocol';
 import { inject, injectable, optional } from 'inversify';
 import { DiagramConfiguration, ServerLayoutKind } from '../../diagram/diagram-configuration';
 import { LayoutEngine } from '../layout/layout-engine';
@@ -49,15 +56,15 @@ export class ModelSubmissionHandler {
      * @param reason The optional reason that caused the model update.
      * @returns A list of actions to be processed in order to submit the model.
      */
-    submitModel(reason?: string): Action[] {
+    submitModel(reason?: DirtyStateChangeReason): Action[] {
         this.modelFactory.createModel();
         this.modelState.root.revision = (this.modelState.root.revision ?? 0) + 1;
         const root = this.serializeGModel();
 
         if (this.diagramConfiguration.needsClientLayout) {
-            return [new RequestBoundsAction(root), new SetDirtyStateAction(this.modelState.isDirty, reason)];
+            return [RequestBoundsAction.create(root), SetDirtyStateAction.create(this.modelState.isDirty, { reason })];
         }
-        return [new SetModelAction(root)];
+        return [SetModelAction.create(root)];
     }
 
     /**
@@ -74,16 +81,20 @@ export class ModelSubmissionHandler {
      * @param reason The optional reason that caused the model update.
      * @returns A list of actions to be processed in order to submit the model.
      */
-    submitModelDirectly(reason?: string): Action[] {
+    submitModelDirectly(reason?: DirtyStateChangeReason): Action[] {
         const root = this.serializeGModel();
 
         if (this.diagramConfiguration.layoutKind === ServerLayoutKind.AUTOMATIC && this.layoutEngine) {
             this.layoutEngine.layout();
         }
         const result: Action[] = [];
-        result.push(root.revision === 0 ? new SetModelAction(root) : new UpdateModelAction(root, this.diagramConfiguration.animatedUpdate));
+        result.push(
+            root.revision === 0
+                ? SetModelAction.create(root)
+                : UpdateModelAction.create(root, { animate: this.diagramConfiguration.animatedUpdate })
+        );
         if (!this.diagramConfiguration.needsClientLayout) {
-            result.push(new SetDirtyStateAction(this.modelState.isDirty, reason));
+            result.push(SetDirtyStateAction.create(this.modelState.isDirty, { reason }));
         }
         return result;
     }

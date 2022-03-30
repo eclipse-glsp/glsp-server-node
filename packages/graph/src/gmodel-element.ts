@@ -18,7 +18,6 @@ import {
     Bounds,
     Dimension,
     flatPush,
-    isSModelElementSchema,
     JsonPrimitive,
     MaybeArray,
     Point,
@@ -26,14 +25,20 @@ import {
     SModelRootSchema
 } from '@eclipse-glsp/protocol';
 import * as uuid from 'uuid';
+
 export type GModelElementConstructor<G extends GModelElement = GModelElement> = new () => G;
 /**
  * Represents a `GModeElement` serialized as plain JSON object.
  */
 export type GModelElementSchema = SModelElementSchema;
 
-export function isGModelElementSchema(schema: any): schema is GModelElementSchema {
-    return isSModelElementSchema(schema);
+export namespace GModelElementSchema {
+    /**
+     * Typeguard function to check wether the given object is an {@link GModelElementSchema}.
+     * @param object The object to check.
+     * @returns A type literal indicating wether the given object is of type {@link GModelElementSchema}.
+     */
+    export const is = SModelElementSchema.is;
 }
 
 /**
@@ -182,10 +187,6 @@ export abstract class GModelElementBuilder<G extends GModelElement> {
 }
 
 export type GModelRootSchema = SModelRootSchema;
-
-export function isGModelRootSchema(schema: any): schema is GModelRootSchema {
-    return isSModelElementSchema(schema);
-}
 
 export class GModelRoot extends GModelElement implements SModelRootSchema {
     static builder(): GModelRootBuilder {

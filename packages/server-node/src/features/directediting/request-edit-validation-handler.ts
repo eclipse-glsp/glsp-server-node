@@ -15,8 +15,8 @@
  ********************************************************************************/
 import { Action, MaybePromise, RequestEditValidationAction, SetEditValidationResultAction, ValidationStatus } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { ContextEditValidatorRegistry } from '../../features/directediting/context-edit-validator-registry';
 import { ActionHandler } from '../../actions/action-handler';
+import { ContextEditValidatorRegistry } from '../../features/directediting/context-edit-validator-registry';
 import { Logger } from '../../utils/logger';
 
 @injectable()
@@ -33,11 +33,11 @@ export class RequestEditValidationHandler implements ActionHandler {
         const validator = this.contextEditValidatorRegistry.get(action.contextId);
         if (validator) {
             const validationStatus = validator.validate(action);
-            return [new SetEditValidationResultAction(validationStatus)];
+            return [SetEditValidationResultAction.create(validationStatus)];
         } else {
             const message = `No validator registered for the context '${action.contextId}'`;
             this.logger.warn(message);
-            return [new SetEditValidationResultAction({ severity: ValidationStatus.Severity.WARNING, message: message })];
+            return [SetEditValidationResultAction.create({ severity: ValidationStatus.Severity.WARNING, message: message })];
         }
     }
 }

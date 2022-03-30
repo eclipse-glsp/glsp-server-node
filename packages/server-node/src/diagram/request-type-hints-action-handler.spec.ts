@@ -13,19 +13,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import {
-    EdgeTypeHint,
-    isSetTypeHintsAction,
-    RequestModelAction,
-    RequestTypeHintsAction,
-    SetTypeHintsAction,
-    ShapeTypeHint
-} from '@eclipse-glsp/protocol';
+import { EdgeTypeHint, RequestTypeHintsAction, SetTypeHintsAction, ShapeTypeHint } from '@eclipse-glsp/protocol';
+import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
 import * as mock from '../test/mock-util';
 import { DiagramConfiguration } from './diagram-configuration';
 import { RequestTypeHintsActionHandler } from './request-type-hints-action-handler';
-import { expect } from 'chai';
 
 describe('test RequestTypeHintsActionHandler', () => {
     const container = new Container();
@@ -55,18 +48,12 @@ describe('test RequestTypeHintsActionHandler', () => {
     const handler = container.resolve(RequestTypeHintsActionHandler);
 
     it('execute with correct action', () => {
-        const result = handler.execute(new RequestTypeHintsAction());
+        const result = handler.execute(RequestTypeHintsAction.create());
 
         expect(result).to.have.length(1);
-        expect(isSetTypeHintsAction(result[0])).true;
+        expect(SetTypeHintsAction.is(result[0])).true;
         expect(result).to.be.deep.equal([
             { edgeHints: [edgeTypeHint], kind: 'setTypeHints', shapeHints: [shapeTypeHint], responseId: '' } as SetTypeHintsAction
         ]);
-    });
-
-    it('execute with wrong action', () => {
-        const result = handler.execute(new RequestModelAction());
-
-        expect(result).to.be.deep.equal([]);
     });
 });

@@ -9,3 +9,5 @@ coverage/
 
 /.metadata/
 yarn-error.log
+
+tsconfig.tsbuildinfo

@@ -14,10 +14,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { CompoundOperation, CreateEdgeOperation, CreateNodeOperation } from '@eclipse-glsp/protocol';
+import { expect } from 'chai';
 import * as mock from '../test/mock-util';
 import { CompoundOperationHandler } from './compound-operation-handler';
 import { OperationHandlerRegistry } from './operation-handler-registry';
-import { expect } from 'chai';
 
 describe('Test OperationHandlerRegistry', () => {
     const stubANode = new mock.StubCreateNodeOperationHandler('ANode');
@@ -30,7 +30,7 @@ describe('Test OperationHandlerRegistry', () => {
         operationHandlerRegistry.registerHandler(new CompoundOperationHandler());
         expect(operationHandlerRegistry.keys()).to.have.length(1);
         expect(operationHandlerRegistry.keys()).to.contain(CompoundOperation.KIND);
-        expect(operationHandlerRegistry.get(CompoundOperation.KIND)).instanceOf(CompoundOperationHandler);
+        expect(operationHandlerRegistry.get(CompoundOperation.KIND)).to.be.an.instanceOf(CompoundOperationHandler);
     });
 
     it('register CreateOperationActionHandlers', () => {

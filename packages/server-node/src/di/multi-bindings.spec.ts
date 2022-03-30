@@ -13,9 +13,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { expect } from 'chai';
 import { Container, ContainerModule, injectable } from 'inversify';
 import { ClassMultiBinding, InstanceMultiBinding } from './multi-binding';
-import { expect } from 'chai';
 
 @injectable()
 class TestClass {}
@@ -33,7 +33,7 @@ describe('test implementations of MultiBinding', () => {
     describe('test basic functionaly (ClassMultiBinding) ', () => {
         const binding = new ClassMultiBinding('TestClass');
         it('add - new binding', () => {
-            expect(binding.add(TestClass1)).true;
+            binding.add(TestClass1);
             expect(binding.contains(TestClass1)).true;
 
             const result = binding.getAll();
@@ -42,26 +42,26 @@ describe('test implementations of MultiBinding', () => {
         });
 
         it('add - existing binding', () => {
-            expect(binding.add(TestClass1)).false;
+            binding.add(TestClass1);
             expect(binding.getAll().length).to.be.equal(1);
             expect(binding.getAll()[0]).to.be.equal(TestClass1);
         });
 
         it('remove - existing binding', () => {
             expect(binding.contains(TestClass1)).true;
-            expect(binding.remove(TestClass1)).true;
+            binding.remove(TestClass1);
             expect(binding.contains(TestClass1)).false;
             expect(binding.getAll()).to.have.length(0);
         });
 
         it('remove - non-existing binding', () => {
             const previousSize = binding.getAll().length;
-            expect(binding.remove(TestClass2)).false;
+            binding.remove(TestClass2);
             expect(binding.getAll()).to.have.length(previousSize);
         });
 
         it('addAll - TestClass1 & TestClass2', () => {
-            expect(binding.addAll([TestClass1, TestClass2])).true;
+            binding.addAll([TestClass1, TestClass2]);
 
             const result = binding.getAll();
             expect(result.length).to.be.equal(2);
@@ -86,7 +86,7 @@ describe('test implementations of MultiBinding', () => {
         });
 
         it('removeAll- TestClass1 & TestClass3', () => {
-            expect(binding.removeAll([TestClass1, TestClass3])).true;
+            binding.removeAll([TestClass1, TestClass3]);
             const result = binding.getAll();
             expect(result).to.have.length(0);
         });

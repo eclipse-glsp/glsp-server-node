@@ -46,9 +46,9 @@ describe('test configureELKLayoutModule', () => {
         const container = new Container();
         container.load(baseModule, elkModule);
         const filter = container.get<ElementFilter>(ElementFilter);
-        expect(filter).to.be.instanceOf(DefaultElementFilter);
+        expect(filter).to.be.an.instanceOf(DefaultElementFilter);
         const configurator = container.get<LayoutConfigurator>(LayoutConfigurator);
-        expect(configurator).to.be.instanceOf(FallbackLayoutConfigurator);
+        expect(configurator).to.be.an.instanceOf(FallbackLayoutConfigurator);
         const graphOptions = configurator.apply(new GGraph());
         expect(graphOptions).not.to.be.undefined;
         expect(graphOptions!['elk.algorithm']).to.equal(algorithm);
@@ -75,7 +75,7 @@ describe('test configureELKLayoutModule', () => {
         const container = new Container();
         container.load(baseModule, elkModule);
         const configurator = container.get<LayoutConfigurator>(LayoutConfigurator);
-        expect(configurator).to.be.instanceOf(CustomLayoutConfigurator);
+        expect(configurator).to.be.an.instanceOf(CustomLayoutConfigurator);
     });
 
     it('configure with custom element filter', () => {
@@ -84,6 +84,6 @@ describe('test configureELKLayoutModule', () => {
         const container = new Container();
         container.load(baseModule, elkModule);
         const filter = container.get<ElementFilter>(ElementFilter);
-        expect(filter).to.be.instanceOf(CustomElementFilter);
+        expect(filter).to.be.an.instanceOf(CustomElementFilter);
     });
 });

@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GModelRoot, isGAlignable, isGBoundsAware } from '@eclipse-glsp/graph';
-import { Action, ComputedBoundsAction, isComputedBoundsAction } from '@eclipse-glsp/protocol';
+import { Action, ComputedBoundsAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
 import { GModelIndex } from '../features/model/gmodel-index';
@@ -34,7 +34,7 @@ export class ComputedBoundsActionHandler implements ActionHandler {
 
     actionKinds = [ComputedBoundsAction.KIND];
     execute(action: Action): Action[] {
-        if (isComputedBoundsAction(action)) {
+        if (ComputedBoundsAction.is(action)) {
             const model = this.modelState.root;
             if (action.revision === model.revision) {
                 this.applyBounds(model, action);

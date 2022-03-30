@@ -32,6 +32,6 @@ export class RequestContextActionsHandler implements ActionHandler {
             const provider = this.contextActionsProviderRegistry.get(action.contextId)!;
             (await provider.getActions(editorContext)).forEach(returnAction => actions.push(returnAction));
         }
-        return [new SetContextActions(actions, undefined, action.editorContext.args)];
+        return [SetContextActions.create(actions, { args: action.editorContext.args })];
     }
 }

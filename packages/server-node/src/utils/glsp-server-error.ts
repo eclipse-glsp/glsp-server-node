@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 export class GLSPServerError extends Error {
-    constructor(message: string, readonly cause?: Record<string, unknown>) {
+    constructor(message: string, readonly cause?: unknown) {
         super(message);
     }
 }

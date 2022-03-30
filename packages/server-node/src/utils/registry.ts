@@ -119,7 +119,8 @@ export class MultiRegistry<K, V> {
     deregister(key: K, element: V): boolean {
         const instances = this.elements.get(key);
         if (instances) {
-            return remove(instances, element);
+            remove(instances, element);
+            return true;
         }
         return false;
     }

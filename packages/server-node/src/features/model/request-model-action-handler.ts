@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, GLSPServerStatusAction, isRequestModelAction, RequestModelAction, ServerMessageAction } from '@eclipse-glsp/protocol';
+import { Action, RequestModelAction, ServerMessageAction, ServerStatusAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../../actions/action-dispatcher';
 import { ActionHandler } from '../../actions/action-handler';
@@ -41,23 +41,27 @@ export class RequestModelActionHandler implements ActionHandler {
     @inject(ModelSubmissionHandler)
     protected submissionHandler: ModelSubmissionHandler;
 
-    async execute(action: Action): Promise<Action[]> {
+    async execute(action: RequestModelAction): Promise<Action[]> {
         this.logger.debug('Execute RequestModelAction:', action);
-        if (isRequestModelAction(action)) {
-            this.modelState.setAll(action.options ?? {});
+        this.modelState.setAll(action.options ?? {});
 
-            this.notifyClient('Model loading in progress');
-            await this.sourceModelStorage.loadSourceModel(action);
-            this.notifyClient();
-        }
+        this.notifyClient('Model loading in progress');
+        await this.sourceModelStorage.loadSourceModel(action);
+        // Clear the previous notification.
+        this.notifyClient();
         return this.submissionHandler.submitModel();
     }
 
-    protected notifyClient(message?: string): void {
-        const severity = message ? 'INFO' : 'NONE';
+    /**
+     * Send a message and status notification with the given message to the client.
+     * An empty message is an indication for the client to clear previously received notifications.
+     * @param message The message that should be sent to the client
+     */
+    protected notifyClient(message = ''): void {
+        const severity = message.length > 0 ? 'INFO' : 'NONE';
         this.actionDispatcher.dispatchAll(
-            new GLSPServerStatusAction(severity, message ?? ''),
-            new ServerMessageAction(severity, message ?? '')
+            ServerMessageAction.create(message, { severity }),
+            ServerStatusAction.create(message, { severity })
         );
     }
 }

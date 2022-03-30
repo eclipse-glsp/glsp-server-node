@@ -56,7 +56,12 @@ import { GModelStorage } from './gmodel-storage';
  */
 @injectable()
 export abstract class GModelDiagramModule extends DiagramModule {
-    protected configure(bind: interfaces.Bind, unbind: interfaces.Unbind, isBound: interfaces.IsBound, rebind: interfaces.Rebind): void {
+    protected override configure(
+        bind: interfaces.Bind,
+        unbind: interfaces.Unbind,
+        isBound: interfaces.IsBound,
+        rebind: interfaces.Rebind
+    ): void {
         super.configure(bind, unbind, isBound, rebind);
 
         bind(SourceModelStorage).to(GModelStorage);
@@ -70,14 +75,14 @@ export abstract class GModelDiagramModule extends DiagramModule {
         bind(GModelIndex).toSelf().inSingletonScope();
     }
 
-    protected configureActionHandlers(binding: InstanceMultiBinding<ActionHandlerConstructor>): void {
+    protected override configureActionHandlers(binding: InstanceMultiBinding<ActionHandlerConstructor>): void {
         super.configureActionHandlers(binding);
         binding.add(ComputedBoundsActionHandler);
         binding.add(SaveModelActionHandler);
         binding.add(RequestClipboardDataActionHandler);
     }
 
-    protected configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
+    protected override configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
         super.configureOperationHandlers(binding);
         binding.add(ApplyLabelEditOperationHandler);
         binding.add(ChangeBoundsOperationHandler);

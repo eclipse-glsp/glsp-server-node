@@ -13,6 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
 import { DiagramModules, InjectionContainer } from '../di/service-identifiers';
@@ -22,7 +23,6 @@ import { GLSPServerError } from '../utils/glsp-server-error';
 import { Logger } from '../utils/logger';
 import { DefaultClientSessionFactory } from './client-session-factory';
 import { ClientSessionInitializer } from './client-session-initializer';
-import { expect } from 'chai';
 
 describe('test DefaultClientSessionFactory', () => {
     const clientSessionId = 'myClientId';
@@ -51,7 +51,7 @@ describe('test DefaultClientSessionFactory', () => {
         expect(session.id).to.be.equal(clientSessionId);
         expect(session.diagramType).to.be.equal(diagramType);
         expect(session.container.parent).to.be.equal(container);
-        expect(session.actionDispatcher instanceof mock.StubActionDispatcher).true;
+        expect(session.actionDispatcher).to.be.an.instanceOf(mock.StubActionDispatcher);
     });
 
     it('create - unknown diagram type', () => {

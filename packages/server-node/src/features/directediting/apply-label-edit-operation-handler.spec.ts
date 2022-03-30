@@ -15,11 +15,11 @@
  ********************************************************************************/
 import { GLabel } from '@eclipse-glsp/graph';
 import { ApplyLabelEditOperation } from '@eclipse-glsp/protocol';
+import { expect } from 'chai';
+import * as sinon from 'sinon';
 import { GModelState } from '../../base-impl/gmodel-state';
 import { GModelIndex } from '../model/gmodel-index';
 import { ApplyLabelEditOperationHandler } from './apply-label-edit-operation-handler';
-import * as sinon from 'sinon';
-import { expect } from 'chai';
 
 describe('Test ApplyLabelEditOperationHandler', () => {
     const label = new GLabel();
@@ -30,7 +30,7 @@ describe('Test ApplyLabelEditOperationHandler', () => {
     Object.defineProperty(applyLabelEditOperationHandler, 'modelState', { value: modelState });
 
     it('text is changed after ApplyLabelEditOperation', async () => {
-        expect(applyLabelEditOperationHandler.execute(new ApplyLabelEditOperation('undefined', 'test'))).to.not.throw;
+        expect(applyLabelEditOperationHandler.execute(ApplyLabelEditOperation.create({ labelId: 'myId', text: 'test' }))).to.not.throw;
         expect(label.text).to.be.equal('test');
     });
 });

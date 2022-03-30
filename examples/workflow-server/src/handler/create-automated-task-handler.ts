@@ -13,18 +13,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { GModelState, Point } from '@eclipse-glsp/server-node';
+import { injectable } from 'inversify';
+import { TaskNodeBuilder } from '../graph-extension';
 import { ModelTypes } from '../util/model-types';
 import { CreateTaskHandler } from './create-task-handler';
-import { injectable } from 'inversify';
-import { Point, GModelState } from '@eclipse-glsp/server-node';
-import { TaskNodeBuilder } from '../graph-extension';
 
 @injectable()
 export class CreateAutomatedTaskHandler extends CreateTaskHandler {
     elementTypeIds = [ModelTypes.AUTOMATED_TASK];
     label = 'Automated Task';
 
-    protected builder(point: Point | undefined, modelState: GModelState): TaskNodeBuilder {
+    protected override builder(point: Point | undefined, modelState: GModelState): TaskNodeBuilder {
         return super.builder(point, modelState).addCssClass('automated');
     }
 }

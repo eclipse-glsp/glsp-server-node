@@ -22,7 +22,7 @@ export class GNode extends GShapeElement implements GLayoutContainer {
         return new GNodeBuilder(GNode).type(DefaultTypes.NODE);
     }
 
-    type = DefaultTypes.NODE;
+    override type = DefaultTypes.NODE;
     layout?: string;
     [GLayoutContainer] = true;
 }

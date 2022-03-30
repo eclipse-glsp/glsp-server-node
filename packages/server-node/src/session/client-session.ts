@@ -56,7 +56,7 @@ export class DefaultClientSession extends Disposable implements ClientSession {
         super();
     }
 
-    protected doDispose(): void {
+    protected override doDispose(): void {
         if (isIDisposable(this.actionDispatcher)) {
             this.actionDispatcher.dispose();
         }

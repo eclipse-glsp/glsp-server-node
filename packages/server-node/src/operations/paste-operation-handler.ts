@@ -14,13 +14,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GBoundsAware, GModelElement, isGBoundsAware } from '@eclipse-glsp/graph';
-import { ORIGIN_POINT, PasteOperation, Point, SModelElementSchema } from '@eclipse-glsp/protocol';
+import { PasteOperation, Point, SModelElementSchema } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
+import * as uuid from 'uuid';
 import { GModelState } from '../base-impl/gmodel-state';
 import { GModelSerializer } from '../features/model/gmodel-serializer';
 import { OperationHandler } from '../operations/operation-handler';
-import { shift } from '../utils/geometry-util';
-import * as uuid from 'uuid';
 
 @injectable()
 export class PasteOperationHandler implements OperationHandler {
@@ -50,7 +49,7 @@ export class PasteOperationHandler implements OperationHandler {
         if (lastMousePosition) {
             const referenceElement = this.getReferenceElementForPasteOffset(elements);
             if (referenceElement) {
-                const position = referenceElement.position ?? ORIGIN_POINT;
+                const position = referenceElement.position ?? Point.ORIGIN;
                 offset.x = lastMousePosition.x - position.x;
                 offset.y = lastMousePosition.y - position.y;
             }
@@ -62,7 +61,7 @@ export class PasteOperationHandler implements OperationHandler {
         let minY = Number.MAX_VALUE;
         for (const element of elements) {
             if (isGBoundsAware(element)) {
-                const position = element.position ?? ORIGIN_POINT;
+                const position = element.position ?? Point.ORIGIN;
                 if (minY > position.y) {
                     minY = position.y;
                     return element;
@@ -109,8 +108,12 @@ export class PasteOperationHandler implements OperationHandler {
     }
 }
 
-export type TypeGuard<T> = (object: unknown) => object is T;
-
-export function filterByType<T extends GModelElement>(elements: GModelElement[], guard: TypeGuard<T>): T[] {
-    return elements.filter(element => guard(element)) as T[];
+export function shift(elements: GModelElement[], offset: Point): void {
+    elements
+        .filter(element => isGBoundsAware(element))
+        .map(element => element as unknown as GBoundsAware)
+        .forEach(gBoundsAware => {
+            const position = gBoundsAware.position ?? Point.ORIGIN;
+            gBoundsAware.position = { x: position.x + offset.x, y: position.y + offset.y };
+        });
 }

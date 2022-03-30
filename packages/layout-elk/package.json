@@ -39,12 +39,12 @@
   ],
   "dependencies": {
     "sprotty-elk": "next",
-    "inversify": "^5.0.1",
+    "inversify": "^5.1.1",
     "@eclipse-glsp/server-node": "0.9.0",
     "elkjs": "^0.7.1"
   },
   "scripts": {
-    "clean": "rimraf lib",
+    "clean": "rimraf tsconfig.tsbuildinfo lib",
     "build": "yarn run clean && tsc",
     "test": "mocha --config ../../.mocharc.json \"./src/**/*.spec.?(ts|tsx)\"",
     "test:ci": "export JUNIT_REPORT_PATH=./report.xml && yarn test --reporter mocha-jenkins-reporter",

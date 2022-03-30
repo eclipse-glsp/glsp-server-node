@@ -95,7 +95,7 @@ export class FallbackLayoutConfigurator extends AbstractLayoutConfigurator {
         };
     }
 
-    protected graphOptions(sgraph: GGraph): LayoutOptions | undefined {
+    protected override graphOptions(sgraph: GGraph): LayoutOptions | undefined {
         return this.fallbackGraphOptions;
     }
 }
