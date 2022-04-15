@@ -64,7 +64,6 @@ export abstract class GModelDiagramModule extends DiagramModule {
     ): void {
         super.configure(bind, unbind, isBound, rebind);
 
-        bind(SourceModelStorage).to(GModelStorage);
         bind(CommandStack).to(DefaultCommandStack).inSingletonScope();
 
         // bind GModelState
@@ -73,6 +72,10 @@ export abstract class GModelDiagramModule extends DiagramModule {
 
         bind(GModelFactory).to(GModelFactoryNullImpl).inSingletonScope();
         bind(GModelIndex).toSelf().inSingletonScope();
+    }
+
+    override bindSourceModelStorage(): interfaces.Newable<SourceModelStorage> {
+        return GModelStorage;
     }
 
     protected override configureActionHandlers(binding: InstanceMultiBinding<ActionHandlerConstructor>): void {

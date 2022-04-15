@@ -32,6 +32,7 @@ import { InstanceMultiBinding } from '../di/multi-binding';
 import { ServerModule } from '../di/server-module';
 import { InjectionContainer } from '../di/service-identifiers';
 import { DiagramConfiguration } from '../diagram/diagram-configuration';
+import { SourceModelStorage } from '../features/model/source-model-storage';
 import { SocketServerLauncher } from '../launch/socket-server-launcher';
 import { CompoundOperationHandler } from '../operations/compound-operation-handler';
 import { CreateNodeOperationHandler } from '../operations/create-operation-handler';
@@ -62,6 +63,10 @@ class TestDiagramModule extends GModelDiagramModule {
                 override typeMapping = getDefaultMapping();
             })()
         );
+    }
+
+    override bindSourceModelStorage(): interfaces.Newable<SourceModelStorage> {
+        throw new Error('Method not implemented.');
     }
 
     override configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {

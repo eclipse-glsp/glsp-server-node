@@ -61,6 +61,7 @@ import { RequestEditValidationHandler } from '../features/directediting/request-
 import { DefaultGModelSerializer, GModelSerializer } from '../features/model/gmodel-serializer';
 import { ModelSubmissionHandler } from '../features/model/model-submission-handler';
 import { RequestModelActionHandler } from '../features/model/request-model-action-handler';
+import { SourceModelStorage } from '../features/model/source-model-storage';
 import { NavigationTargetProvider } from '../features/navigation/navigation-target-provider';
 import {
     DefaultNavigationTargetProviderRegistry,
@@ -147,6 +148,8 @@ export abstract class DiagramModule extends GLSPModule {
         bind(ContextActionsProviderRegistry).toSelf().inSingletonScope();
         bind(ContextEditValidatorRegistry).to(DefaultContextEditValidatorRegistry).inSingletonScope();
 
+        bind(SourceModelStorage).to(this.bindSourceModelStorage()).inSingletonScope();
+
         // factory bindings
         bind<ActionHandlerFactory>(ActionHandlerFactory).toDynamicValue(ctx => constructor => ctx.container.resolve(constructor));
         bind<OperationHandlerFactory>(OperationHandlerFactory).toDynamicValue(ctx => constructor => ctx.container.resolve(constructor));
@@ -197,6 +200,8 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(RequestNavigationTargetsActionHandler);
         binding.add(ResolveNavigationTargetsActionHandler);
     }
+
+    abstract bindSourceModelStorage(): interfaces.Newable<SourceModelStorage>;
 
     protected configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
         binding.add(CompoundOperationHandler);
