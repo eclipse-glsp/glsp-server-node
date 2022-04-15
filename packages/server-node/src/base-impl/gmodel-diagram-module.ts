@@ -18,6 +18,7 @@ import { ActionHandlerConstructor } from '../actions/action-handler';
 import { SaveModelActionHandler } from '../actions/save-model-action-handler';
 import { ChangeBoundsOperationHandler } from '../base-impl/change-bounds-operation-handler';
 import { CommandStack, DefaultCommandStack } from '../command/command-stack';
+import { BindingTarget } from '../di/binding-target';
 import { DiagramModule } from '../di/diagram-module';
 import { InstanceMultiBinding } from '../di/multi-binding';
 import { RequestClipboardDataActionHandler } from '../features/clipboard/request-clipboard-data-action-handler';
@@ -74,7 +75,7 @@ export abstract class GModelDiagramModule extends DiagramModule {
         bind(GModelIndex).toSelf().inSingletonScope();
     }
 
-    override bindSourceModelStorage(): interfaces.Newable<SourceModelStorage> {
+    override bindSourceModelStorage(): BindingTarget<SourceModelStorage> {
         return GModelStorage;
     }
 

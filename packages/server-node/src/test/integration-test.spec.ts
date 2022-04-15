@@ -28,6 +28,7 @@ import { Container, ContainerModule, injectable, interfaces } from 'inversify';
 import * as path from 'path';
 import * as sinon from 'sinon';
 import { GModelDiagramModule } from '../base-impl/gmodel-diagram-module';
+import { BindingTarget } from '../di/binding-target';
 import { InstanceMultiBinding } from '../di/multi-binding';
 import { ServerModule } from '../di/server-module';
 import { InjectionContainer } from '../di/service-identifiers';
@@ -65,7 +66,7 @@ class TestDiagramModule extends GModelDiagramModule {
         );
     }
 
-    override bindSourceModelStorage(): interfaces.Newable<SourceModelStorage> {
+    override bindSourceModelStorage(): BindingTarget<SourceModelStorage> {
         throw new Error('Method not implemented.');
     }
 

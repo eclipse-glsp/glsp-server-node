@@ -76,6 +76,7 @@ import { OperationActionHandler } from '../operations/operation-action-handler';
 import { OperationHandlerConstructor, OperationHandlerFactory } from '../operations/operation-handler';
 import { OperationHandlerRegistry, OperationHandlerRegistryInitializer } from '../operations/operation-handler-registry';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
+import { BindingScope, BindingTarget, bindTarget } from './binding-target';
 import { GLSPModule } from './glsp-module';
 import { ClassMultiBinding, InstanceMultiBinding } from './multi-binding';
 import {
@@ -148,10 +149,10 @@ export abstract class DiagramModule extends GLSPModule {
         bind(ContextActionsProviderRegistry).toSelf().inSingletonScope();
         bind(ContextEditValidatorRegistry).to(DefaultContextEditValidatorRegistry).inSingletonScope();
 
-        bind(SourceModelStorage).to(this.bindSourceModelStorage()).inSingletonScope();
+        bindTarget(bind, SourceModelStorage, this.bindSourceModelStorage(), BindingScope.SINGLETON);
 
         // factory bindings
-        bind<ActionHandlerFactory>(ActionHandlerFactory).toDynamicValue(ctx => constructor => ctx.container.resolve(constructor));
+        bindTarget(bind, ActionHandlerFactory, this.bindActionHandlerFactory());
         bind<OperationHandlerFactory>(OperationHandlerFactory).toDynamicValue(ctx => constructor => ctx.container.resolve(constructor));
 
         // bind Kinds
@@ -201,7 +202,11 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(ResolveNavigationTargetsActionHandler);
     }
 
-    abstract bindSourceModelStorage(): interfaces.Newable<SourceModelStorage>;
+    protected abstract bindSourceModelStorage(): BindingTarget<SourceModelStorage>;
+
+    protected bindActionHandlerFactory(): BindingTarget<ActionHandlerFactory> {
+        return { dynamicValue: ctx => constructor => ctx.container.resolve(constructor) };
+    }
 
     protected configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
         binding.add(CompoundOperationHandler);
