@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { AnyObject, Constructor, hasObjectProp } from '@eclipse-glsp/protocol';
+import { AnyObject, Constructor } from '@eclipse-glsp/protocol';
 import { interfaces } from 'inversify';
 /**
  * Collection of utility types and functions to enable flexible service binding with dedicated
@@ -21,32 +21,46 @@ import { interfaces } from 'inversify';
  */
 
 /**
- * Binds the given service identifier to the given {@link BindingTarget}. If a {@link BindingScopeType} is
- * present the service identifier will be bound in the corresponding scope. If the service identifier is
+ * Binds the given service identifier to the given {@link BindingTarget}. If the service identifier is
  * a {@link Constructor} and the target is the same constructor the service identifier will be bound to itself.
  * @param bind The inversify bind function (typically provided from a GLSP DI module)
  * @param serviceIdentifier The service identifier that should be bound.
  * @param target The binding target.
- * @param scope The options scope in which the service identifier should be bound.
+ * @returns The corresponding {@link interfaces.BindingInWhenOnSyntax}.
  */
-export function bindTarget<T>(
-    bind: interfaces.Bind,
+export function applyBindingTarget<T>(
+    context: { bind: interfaces.Bind; isBound: interfaces.IsBound },
     serviceIdentifier: interfaces.ServiceIdentifier<T>,
-    target: BindingTarget<T>,
-    scope = BindingScope.NONE
-): void {
+    target: BindingTarget<T>
+): interfaces.BindingInWhenOnSyntax<T> {
     if (isConstructor(target)) {
         // If service identifier and target are the same constructor => self binding
-        const to = serviceIdentifier === target ? bind(serviceIdentifier).toSelf() : bind(serviceIdentifier).to(target);
-        BindingScope.apply(to, scope);
+        return serviceIdentifier === target //
+            ? context.bind(serviceIdentifier).toSelf()
+            : context.bind(serviceIdentifier).to(target);
     } else if (ServiceTarget.is(target)) {
-        bind(serviceIdentifier).toService(target.service);
+        if (!context.isBound(target.service)) {
+            throw new Error(`The target service ${target.service.toString()} is not bound!. Cannot apply target binding`);
+        }
+        context.bind(serviceIdentifier).toService(target.service);
+        return NoOPSyntax.serviceSyntax(serviceIdentifier);
     } else if (ConstantValueTarget.is(target)) {
-        bind(serviceIdentifier).toConstantValue(target.constantValue);
+        const whenOnSyntax = context.bind(serviceIdentifier).toConstantValue(target.constantValue);
+        return NoOPSyntax.constantValueSyntax(serviceIdentifier, whenOnSyntax);
     } else {
-        const to = bind(serviceIdentifier).toDynamicValue(context => target.dynamicValue(context));
-        BindingScope.apply(to, scope);
+        return context.bind(serviceIdentifier).toDynamicValue(_context => target.dynamicValue(_context));
     }
+}
+
+export function applyOptionalBindingTarget<T>(
+    context: { bind: interfaces.Bind; isBound: interfaces.IsBound },
+    serviceIdentifier: interfaces.ServiceIdentifier<T>,
+    target?: BindingTarget<T>
+): interfaces.BindingInWhenOnSyntax<T> | undefined {
+    if (target) {
+        return applyBindingTarget(context, serviceIdentifier, target);
+    }
+    return undefined;
 }
 
 /**
@@ -63,7 +77,7 @@ export interface ConstantValueTarget<T> {
 
 export namespace ConstantValueTarget {
     export function is(object: any): object is ConstantValueTarget<unknown> {
-        return AnyObject.is(object) && hasObjectProp(object, 'constantValue');
+        return AnyObject.is(object) && 'constantValue' in object;
     }
 }
 
@@ -88,40 +102,64 @@ export interface DynamicValueTarget<T> {
 }
 
 /**
- *
+ * No-op binding syntax definitions for `constantValue` and `toService` bindings.
+ * Using this no-op syntaxes allows the {@link applyBindingTarget} function to return a {@interfaces.BindingInWhenOnSyntax}
+ * independently of the actual {@link BindingTarget}.
  */
-export enum BindingScope {
-    NONE = 0,
-    SINGLETON = 1,
-    TRANSIENT = 2,
-    REQUEST = 3
-}
+namespace NoOPSyntax {
+    export function constantValueSyntax(
+        serviceIdentifier: interfaces.ServiceIdentifier<any>,
+        syntax: interfaces.BindingWhenOnSyntax<any>
+    ): interfaces.BindingInWhenOnSyntax<any> {
+        const noOpReturn = (scope: string): interfaces.BindingWhenOnSyntax<any> => {
+            console.warn(
+                `${serviceIdentifier.toString()} has been bound to 'constantValue'. Binding in ${scope} scope has no effect.` +
+                    'Constant value bindings are effectively Singleton bindings.'
+            );
+            return syntax;
+        };
+        return {
+            ...syntax,
+            inSingletonScope: () => noOpReturn('Singleton'),
+            inRequestScope: () => noOpReturn('Request'),
+            inTransientScope: () => noOpReturn('Transient')
+        };
+    }
 
-export namespace BindingScope {
-    /**
-     * Applies the given {@link BindingScope} to the given {@link interfaces.BindingInWhenOnSyntax}
-     * i.e. executes the syntax function that corresponds to the given scope.
-     * @param syntax The syntax object the scope should be applied to.
-     * @param scope The scope that should be applied.
-     * @returns The {@link BindingWhenOnSyntax} after scope application.
-     */
-    export function apply<T>(syntax: interfaces.BindingInWhenOnSyntax<T>, scope: BindingScope): interfaces.BindingWhenOnSyntax<T> {
-        switch (scope) {
-            case BindingScope.NONE:
-                return syntax;
-            case BindingScope.SINGLETON:
-                return syntax.inSingletonScope();
-            case BindingScope.TRANSIENT:
-                return syntax.inTransientScope();
-            case BindingScope.REQUEST:
-                return syntax.inRequestScope();
-        }
+    export function serviceSyntax(serviceIdentifier: interfaces.ServiceIdentifier<any>): interfaces.BindingInWhenOnSyntax<any> {
+        const noOpReturn = (): interfaces.BindingInWhenOnSyntax<any> => {
+            const errorMsg =
+                `${serviceIdentifier.toString()} has been bound to 'service'.` +
+                "Using 'in','when' or 'on' bindings after" +
+                "a 'toService' binding is not possible.";
+            const error = new Error(errorMsg);
+            error.name = 'NoOpInvocation';
+            throw error;
+        };
+        return {
+            onActivation: noOpReturn,
+            when: noOpReturn,
+            whenAnyAncestorIs: noOpReturn,
+            whenAnyAncestorMatches: noOpReturn,
+            whenAnyAncestorNamed: noOpReturn,
+            whenAnyAncestorTagged: noOpReturn,
+            whenInjectedInto: noOpReturn,
+            whenNoAncestorIs: noOpReturn,
+            whenNoAncestorMatches: noOpReturn,
+            whenNoAncestorNamed: noOpReturn,
+            whenNoAncestorTagged: noOpReturn,
+            whenParentNamed: noOpReturn,
+            whenParentTagged: noOpReturn,
+            whenTargetIsDefault: noOpReturn,
+            whenTargetNamed: noOpReturn,
+            whenTargetTagged: noOpReturn,
+            inRequestScope: noOpReturn,
+            inSingletonScope: noOpReturn,
+            inTransientScope: noOpReturn
+        };
     }
 }
 
-export type BindingScopeType = keyof typeof BindingScope;
-
-// TODO: Move into `@eclipse-glsp/protocol` alongside the `Constructor` definition
 export function isConstructor(object: any): object is Constructor<unknown> {
     return typeof object === 'function' && !!object.prototype && !!(object.prototype as any).constructor;
 }

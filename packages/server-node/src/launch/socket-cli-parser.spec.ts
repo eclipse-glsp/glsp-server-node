@@ -13,9 +13,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { expect } from 'chai';
 import { LogLevel } from '../utils/logger';
 import { createSocketCliParser, defaultSocketLaunchOptions, SocketLaunchOptions } from './socket-cli-parser';
-import { expect } from 'chai';
 
 describe('test createCliParser', () => {
     const parser = createSocketCliParser();
@@ -29,11 +29,11 @@ describe('test createCliParser', () => {
     });
 
     it('parse - invalid port (below lower range)', () => {
-        expect(() => parser.parse([...argv, '--port', '-1'])).to.throw;
+        expect(() => parser.parse([...argv, '--port', '-1'])).to.throw();
     });
 
     it('parse - invalid port (below upper range)', () => {
-        expect(() => parser.parse([...argv, '--port', '65536'])).to.throw;
+        expect(() => parser.parse([...argv, '--port', '65536'])).to.throw();
     });
 
     it('parse - valid port', () => {

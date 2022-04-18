@@ -16,7 +16,7 @@
 import { expect } from 'chai';
 import { Container, ContainerModule, interfaces } from 'inversify';
 import * as sinon from 'sinon';
-import { BindingScope, bindTarget } from './binding-target';
+import { applyBindingTarget } from './binding-target';
 // Simple no op classes to construct inversify binding syntaxes.
 class Target {}
 
@@ -25,19 +25,26 @@ class SubTarget extends Target {}
 describe('BindingTarget', () => {
     describe('bindTarget()', () => {
         // Setup nested spies for the fluent inversify binding API
-        let bind: sinon.SinonStub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], interfaces.BindingToSyntax<any>>;
+        let context: {
+            bind: sinon.SinonStub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], interfaces.BindingToSyntax<any>>;
+            isBound: sinon.SinonStub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], boolean>;
+        };
         let toSyntax: sinon.SinonStubbedInstance<interfaces.BindingToSyntax<any>>;
-        let inWhenOnSyntax: sinon.SinonStubbedInstance<interfaces.BindingInWhenOnSyntax<any>>;
         let whenOnSyntax: sinon.SinonStubbedInstance<interfaces.BindingWhenOnSyntax<any>>;
 
         const setupStubs = (): {
-            bind: sinon.SinonStub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], interfaces.BindingToSyntax<any>>;
+            context: {
+                bind: sinon.SinonStub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], interfaces.BindingToSyntax<any>>;
+                isBound: sinon.SinonStub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], boolean>;
+            };
             toSyntax: sinon.SinonStubbedInstance<interfaces.BindingToSyntax<any>>;
             inWhenOnSyntax: sinon.SinonStubbedInstance<interfaces.BindingInWhenOnSyntax<any>>;
             whenOnSyntax: sinon.SinonStubbedInstance<interfaces.BindingWhenOnSyntax<any>>;
         } => {
             const container = new Container();
             const bind = sinon.stub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], interfaces.BindingToSyntax<any>>();
+            const isBound = sinon.stub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], boolean>();
+
             let toSyntax: sinon.SinonStubbedInstance<interfaces.BindingToSyntax<any>> = {} as any;
             let inWhenOnSyntax: sinon.SinonStubbedInstance<interfaces.BindingInWhenOnSyntax<any>> = {} as any;
             container.load(
@@ -54,8 +61,9 @@ describe('BindingTarget', () => {
                     toSyntax.toService.returns();
                 })
             );
+
             return {
-                bind,
+                context: { bind, isBound },
                 toSyntax,
                 inWhenOnSyntax,
                 whenOnSyntax
@@ -64,126 +72,70 @@ describe('BindingTarget', () => {
 
         beforeEach(() => {
             const stubs = setupStubs();
-            bind = stubs.bind;
+            context = stubs.context;
             toSyntax = stubs.toSyntax;
-            inWhenOnSyntax = stubs.inWhenOnSyntax;
             whenOnSyntax = stubs.whenOnSyntax;
         });
 
         describe('Bind to constructor', () => {
             it('Should bind the service identifier `to` the given target with no scope', () => {
-                bindTarget(bind, Target, SubTarget);
+                applyBindingTarget(context, Target, SubTarget);
                 expect(toSyntax.to.calledOnceWith(SubTarget)).to.be.true;
-                expectNoScopeBinding();
-            });
-
-            it('Should bind the service identifier `to` the given target in singleton scope', () => {
-                bindTarget(bind, Target, SubTarget, BindingScope.SINGLETON);
-                expect(toSyntax.to.calledOnceWith(SubTarget)).to.be.true;
-                expect(inWhenOnSyntax.inSingletonScope.calledOnce).to.be.true;
-                expect(inWhenOnSyntax.inRequestScope.callCount).to.be.equal(0);
-                expect(inWhenOnSyntax.inTransientScope.callCount).to.be.equal(0);
             });
 
             it('Should bind the service identifier `toSelf` with no scope', () => {
-                bindTarget(bind, Target, Target);
+                applyBindingTarget(context, Target, Target);
                 expect(toSyntax.toSelf.calledOnce).to.be.true;
-                expectNoScopeBinding();
-            });
-
-            it('Should bind the service identifier `toSelf` in RequestScope', () => {
-                bindTarget(bind, Target, Target, BindingScope.REQUEST);
-                expect(toSyntax.toSelf.calledOnce).to.be.true;
-                expect(inWhenOnSyntax.inRequestScope.calledOnce).to.be.true;
-                expect(inWhenOnSyntax.inSingletonScope.callCount).to.be.equal(0);
-                expect(inWhenOnSyntax.inTransientScope.callCount).to.be.equal(0);
             });
         });
 
         describe('Bind to service', () => {
             it('Should bind the service identifier `service` using the given target service with no scope', () => {
-                bindTarget(bind, Target, { service: SubTarget });
+                context.isBound.returns(true);
+                applyBindingTarget(context, Target, { service: SubTarget });
                 expect(toSyntax.toService.calledOnceWith(SubTarget)).to.be.true;
-                expectNoScopeBinding();
+            });
+            it('Should throw an error because the given target service is not bound', () => {
+                context.isBound.returns(false);
+                expect(() => applyBindingTarget(context, Target, { service: SubTarget })).to.throw();
+            });
+            it('The return syntax should be no op and invocation of a syntax function should throw an error', () => {
+                context.isBound.returns(true);
+                const syntax = applyBindingTarget(context, Target, { service: SubTarget });
+                expect(() => {
+                    syntax.inSingletonScope();
+                }).to.throw(
+                    `${Target.toString()} has been bound to 'service'.` +
+                        "Using 'in','when' or 'on' bindings after" +
+                        "a 'toService' binding is not possible."
+                );
             });
         });
 
         describe('Bind to constant value', () => {
-            it('Should bind the service identifier `toService` using the given target with no scope', () => {
+            it('Should bind the service identifier `toConstantValue` using the given target with no scope', () => {
                 const subTarget = new SubTarget();
-                bindTarget(bind, Target, { constantValue: subTarget });
+                applyBindingTarget(context, Target, { constantValue: subTarget });
                 expect(toSyntax.toConstantValue.calledOnceWith(subTarget)).to.be.true;
-                expectNoScopeBinding();
+            });
+            it("The return syntax's in functions should be no op and invocation should log a warning", () => {
+                const spy = sinon.spy(console, 'warn');
+                const subTarget = new SubTarget();
+                const syntax = applyBindingTarget(context, Target, { constantValue: subTarget });
+                syntax.inSingletonScope();
+                expect(
+                    spy.calledWith(
+                        `${Target.toString()} has been bound to 'constantValue'. Binding in Singleton scope has no effect.` +
+                            'Constant value bindings are effectively Singleton bindings.'
+                    )
+                ).to.be.true;
             });
         });
 
         describe('Bind to dynamic value', () => {
             it('Should bind the service identifier `toDynamicValue` using the given factory function with no scope', () => {
-                bindTarget(bind, Target, { dynamicValue: context => new SubTarget() });
-                expect(toSyntax.toDynamicValue.calledOnce).to.be.true;
-                expectNoScopeBinding();
-            });
-
-            it('Should bind the service identifier `toDynamicValue` using the given factory function in transient scope', () => {
-                bindTarget(bind, Target, { dynamicValue: context => new SubTarget() }, BindingScope.TRANSIENT);
-                expect(toSyntax.toDynamicValue.calledOnce).to.be.true;
-                expect(inWhenOnSyntax.inTransientScope.calledOnce).to.be.true;
-                expect(inWhenOnSyntax.inSingletonScope.callCount).to.be.equal(0);
-                expect(inWhenOnSyntax.inRequestScope.callCount).to.be.equal(0);
-            });
-        });
-
-        function expectNoScopeBinding(): void {
-            expect(inWhenOnSyntax.inRequestScope.callCount).to.be.equal(0);
-            expect(inWhenOnSyntax.inTransientScope.callCount).to.be.equal(0);
-            expect(inWhenOnSyntax.inSingletonScope.callCount).to.be.equal(0);
-        }
-    });
-
-    describe('BindingScope', () => {
-        describe('apply()', () => {
-            let syntax: interfaces.BindingInWhenOnSyntax<unknown>;
-            const container = new Container();
-            container.load(
-                new ContainerModule(bind => {
-                    syntax = bind('Test').to(Target);
-                })
-            );
-            const sandbox = sinon.createSandbox();
-            let syntaxSpy: sinon.SinonSpiedInstance<interfaces.BindingInWhenOnSyntax<unknown>>;
-            beforeEach(() => {
-                syntaxSpy = sandbox.spy(syntax);
-            });
-
-            afterEach(() => {
-                sandbox.restore();
-            });
-            describe('BindingsScope.NONE', () => {
-                it('Should return the initially given syntax', () => {
-                    const result = BindingScope.apply(syntax, BindingScope.NONE);
-                    expect(result).to.be.equal(syntax);
-                });
-            });
-
-            describe('BindingsScope.SINGLETON', () => {
-                it('Should execute `inSingletonScope` on the given syntax', () => {
-                    BindingScope.apply(syntax, BindingScope.SINGLETON);
-                    expect(syntaxSpy.inSingletonScope.calledOnce).to.be.true;
-                });
-            });
-
-            describe('BindingsScope.REQUEST', () => {
-                it('Should execute `inRequestScope` on the given syntax', () => {
-                    BindingScope.apply(syntax, BindingScope.REQUEST);
-                    expect(syntaxSpy.inRequestScope.calledOnce).to.be.true;
-                });
-            });
-
-            describe('BindingsScope.TRANSIENT', () => {
-                it('Should execute `inTransientScope` on the given syntax', () => {
-                    BindingScope.apply(syntax, BindingScope.TRANSIENT);
-                    expect(syntaxSpy.inTransientScope.calledOnce).to.be.true;
-                });
+                applyBindingTarget(context, Target, { dynamicValue: context => new SubTarget() });
+                expect(toSyntax.toDynamicValue.calledOnce);
             });
         });
     });

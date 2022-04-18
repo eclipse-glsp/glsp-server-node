@@ -17,8 +17,7 @@ import { injectable, interfaces } from 'inversify';
 import { ActionHandlerConstructor } from '../actions/action-handler';
 import { SaveModelActionHandler } from '../actions/save-model-action-handler';
 import { ChangeBoundsOperationHandler } from '../base-impl/change-bounds-operation-handler';
-import { CommandStack, DefaultCommandStack } from '../command/command-stack';
-import { BindingTarget } from '../di/binding-target';
+import { applyBindingTarget, BindingTarget } from '../di/binding-target';
 import { DiagramModule } from '../di/diagram-module';
 import { InstanceMultiBinding } from '../di/multi-binding';
 import { RequestClipboardDataActionHandler } from '../features/clipboard/request-clipboard-data-action-handler';
@@ -64,19 +63,25 @@ export abstract class GModelDiagramModule extends DiagramModule {
         rebind: interfaces.Rebind
     ): void {
         super.configure(bind, unbind, isBound, rebind);
-
-        bind(CommandStack).to(DefaultCommandStack).inSingletonScope();
-
-        // bind GModelState
-        bind(GModelState).toSelf().inSingletonScope();
-        bind(ModelState).toService(GModelState);
-
-        bind(GModelFactory).to(GModelFactoryNullImpl).inSingletonScope();
-        bind(GModelIndex).toSelf().inSingletonScope();
+        const context = this.context;
+        applyBindingTarget(context, GModelIndex, this.bindGModelIndex()).inSingletonScope();
     }
 
-    override bindSourceModelStorage(): BindingTarget<SourceModelStorage> {
+    protected override bindSourceModelStorage(): BindingTarget<SourceModelStorage> {
         return GModelStorage;
+    }
+
+    protected override bindGModelFactory(): BindingTarget<GModelFactory> {
+        return GModelFactoryNullImpl;
+    }
+
+    protected override bindModelState(): BindingTarget<ModelState> {
+        applyBindingTarget(this.context, GModelState, this.bindGModelState()).inSingletonScope();
+        return { service: GModelState };
+    }
+
+    protected bindGModelState(): BindingTarget<GModelState> {
+        return GModelState;
     }
 
     protected override configureActionHandlers(binding: InstanceMultiBinding<ActionHandlerConstructor>): void {
@@ -84,6 +89,10 @@ export abstract class GModelDiagramModule extends DiagramModule {
         binding.add(ComputedBoundsActionHandler);
         binding.add(SaveModelActionHandler);
         binding.add(RequestClipboardDataActionHandler);
+    }
+
+    protected bindGModelIndex(): BindingTarget<GModelIndex> {
+        return GModelIndex;
     }
 
     protected override configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {

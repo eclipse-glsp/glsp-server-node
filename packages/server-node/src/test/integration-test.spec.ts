@@ -24,7 +24,7 @@ import {
     RequestModelAction
 } from '@eclipse-glsp/protocol';
 import { expect } from 'chai';
-import { Container, ContainerModule, injectable, interfaces } from 'inversify';
+import { Container, ContainerModule, injectable } from 'inversify';
 import * as path from 'path';
 import * as sinon from 'sinon';
 import { GModelDiagramModule } from '../base-impl/gmodel-diagram-module';
@@ -33,7 +33,6 @@ import { InstanceMultiBinding } from '../di/multi-binding';
 import { ServerModule } from '../di/server-module';
 import { InjectionContainer } from '../di/service-identifiers';
 import { DiagramConfiguration } from '../diagram/diagram-configuration';
-import { SourceModelStorage } from '../features/model/source-model-storage';
 import { SocketServerLauncher } from '../launch/socket-server-launcher';
 import { CompoundOperationHandler } from '../operations/compound-operation-handler';
 import { CreateNodeOperationHandler } from '../operations/create-operation-handler';
@@ -50,25 +49,14 @@ const clientId = 'session1';
 const sourceUri = path.resolve(__dirname, 'minimal.json');
 
 class TestDiagramModule extends GModelDiagramModule {
-    diagramType = diagramType;
-
-    protected override configure(
-        bind: interfaces.Bind,
-        unbind: interfaces.Unbind,
-        isBound: interfaces.IsBound,
-        rebind: interfaces.Rebind
-    ): void {
-        super.configure(bind, unbind, isBound, rebind);
-        bind(DiagramConfiguration).toConstantValue(
-            new (class extends mock.StubDiagramConfiguration {
+    protected bindDiagramConfiguration(): BindingTarget<DiagramConfiguration> {
+        return {
+            constantValue: new (class extends mock.StubDiagramConfiguration {
                 override typeMapping = getDefaultMapping();
             })()
-        );
+        };
     }
-
-    override bindSourceModelStorage(): BindingTarget<SourceModelStorage> {
-        throw new Error('Method not implemented.');
-    }
+    diagramType = diagramType;
 
     override configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
         super.configureOperationHandlers(binding);
@@ -123,7 +111,7 @@ describe('Integration tests for a glsp server created by SocketServerLauncher', 
                     }
                 })
             })
-        ).to.throw;
+        ).to.throw();
     });
 
     it('initialize - should return valid initializeResult', async () => {

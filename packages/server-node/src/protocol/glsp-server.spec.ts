@@ -24,6 +24,7 @@ import { Logger } from '../utils/logger';
 import { GLSPClientProxy, JsonRpcGLSPClientProxy } from './glsp-client-proxy';
 import { DefaultGLSPServer } from './glsp-server';
 import { GLSPServerListener } from './glsp-server-listener';
+import assert = require('assert');
 
 describe('test DefaultGLSPServer', () => {
     const container = new Container();
@@ -66,9 +67,9 @@ describe('test DefaultGLSPServer', () => {
     });
 
     it('Test calls before server initialization (should throw errors)', async () => {
-        expect(async () => glspServer.initializeClientSession({ clientSessionId: 'id', diagramType: 'type' })).to.throw;
-        expect(async () => glspServer.disposeClientSession({ clientSessionId: 'id' })).to.throw;
-        expect(async () => glspServer.process({ clientId: 'id', action: { kind: 'action' } })).to.throw;
+        assert.rejects(() => glspServer.initializeClientSession({ clientSessionId: 'id', diagramType: 'type' }));
+        assert.rejects(() => glspServer.disposeClientSession({ clientSessionId: 'id' }));
+        assert.throws(() => glspServer.process({ clientId: 'id', action: { kind: 'action' } }));
     });
 
     it('addListener - add existing listener', () => {
@@ -98,7 +99,7 @@ describe('test DefaultGLSPServer', () => {
 
     it('initialize - with wrong protocol version', async () => {
         const initializeParameters: InitializeParameters = { applicationId, protocolVersion: 'abc' };
-        await expect(async () => glspServer.initialize(initializeParameters)).to.throw;
+        assert.rejects(glspServer.initialize(initializeParameters));
     });
 
     it('initialize - with correct parameters', async () => {
@@ -121,7 +122,7 @@ describe('test DefaultGLSPServer', () => {
 
     it('initialize -  subsequent call with other parameters', async () => {
         const initializeParameters = { applicationId: 'someOtherApp', protocolVersion: 'AnotherProtocolVersion' };
-        await expect(async () => glspServer.initialize(initializeParameters)).to.throw;
+        await assert.rejects(() => glspServer.initialize(initializeParameters));
     });
 
     it('initialize client session', async () => {
