@@ -18,6 +18,7 @@ import { MaybePromise, RequestModelAction, SaveModelAction } from '@eclipse-glsp
 import { writeFileSync } from 'fs';
 import * as fs from 'fs-extra';
 import { inject, injectable } from 'inversify';
+import { fileURLToPath } from 'url';
 import { GModelSerializer } from '../features/model/gmodel-serializer';
 import { SourceModelStorage } from '../features/model/source-model-storage';
 import { getOrThrow, GLSPServerError } from '../utils/glsp-server-error';
@@ -51,9 +52,10 @@ export class GModelStorage implements SourceModelStorage {
         this.modelState.root = root;
     }
 
-    protected loadFromFile(url: string): GModelRoot {
+    protected loadFromFile(sourceUri: string): GModelRoot {
         try {
-            const fileContent = this.readFile(url);
+            const path = this.isFileUrl(sourceUri) ? fileURLToPath(sourceUri) : sourceUri;
+            const fileContent = this.readFile(path);
             if (!fileContent) {
                 return EMPTY_ROOT;
             }
@@ -62,8 +64,12 @@ export class GModelStorage implements SourceModelStorage {
             }
             return this.modelSerializer.createRoot(fileContent);
         } catch (error) {
-            throw new GLSPServerError(`Could not load model from file: ${url}`, error);
+            throw new GLSPServerError(`Could not load model from file: ${sourceUri}`, error);
         }
+    }
+
+    protected isFileUrl(sourceUri: string): boolean {
+        return sourceUri.startsWith('file://');
     }
 
     protected readFile(url: string): unknown {
