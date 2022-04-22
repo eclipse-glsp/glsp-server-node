@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { distinctAdd, flatPush, MaybeArray, remove } from '@eclipse-glsp/protocol';
-import { interfaces } from 'inversify';
+import { applyBindingTarget, BindingTarget } from './binding-target';
 import { ModuleContext } from './glsp-module';
 
 /**
@@ -22,9 +22,9 @@ import { ModuleContext } from './glsp-module';
  * Instead of directly binding to the service identifier a new multi binding object can be created. This object
  * should then be passed to a overridable configuration-function (i.e. configure(binding:V)=>void). This gives subclasses of the
  * `GLSPModule` the chance to manipulate the binding configuration using the provided manipulation methods (e.g. add,remove, rebind).
- * Once the configuration is finished the binding can be finalized using the {@link MultiBinding.applyBindings} method.
+ * Once the configuration is finished the binding can be finalized using the {@link AbstractMultiBinding.applyBindings} method.
  */
-export abstract class MultiBinding<T> {
+export abstract class AbstractMultiBinding<T> {
     protected bindings: T[] = [];
 
     constructor(readonly identifier: string | symbol) {}
@@ -66,24 +66,23 @@ export abstract class MultiBinding<T> {
 }
 
 /**
- * Implementation of {@link MultiBinding} for multi-injected values that should be bound to classes using the
- * `bind(serviceIdentifier).to(MyCustomBinding) syntax.
+ * Implementation of {@link AbstractMultiBinding} for multi-injected values that using an arbitrary {@link BindingTarget}.
  *
- * @typeparam T the base type of the classes.
+ * @typeparam T the base type of {@link BindingTarget}.
  */
-export class ClassMultiBinding<T> extends MultiBinding<interfaces.Newable<T>> {
+export class MultiBinding<T> extends AbstractMultiBinding<BindingTarget<T>> {
     applyBindings(context: ModuleContext): void {
-        this.bindings.forEach(binding => context.bind(this.identifier).to(binding));
+        this.bindings.forEach(binding => applyBindingTarget(context, this.identifier, binding));
     }
 }
 
 /**
- * Implementation of {@link MultiBinding} for multi-injected values that should be bound to concrete instance using the
+ * Implementation of {@link AbstractMultiBinding} for multi-injected values that should be bound to concrete instance using the
  * `bind(serviceIdentifier).toConstantValue(MyCustomBinding) syntax.
  *
  * * @typeparam T the type of the instances
  */
-export class InstanceMultiBinding<T> extends MultiBinding<T> {
+export class InstanceMultiBinding<T> extends AbstractMultiBinding<T> {
     applyBindings(context: ModuleContext): void {
         context.bind(this.identifier).toConstantValue(this.bindings);
     }

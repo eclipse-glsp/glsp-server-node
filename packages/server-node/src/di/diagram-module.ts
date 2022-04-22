@@ -13,8 +13,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-/* eslint-disable no-restricted-imports */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
     CenterAction,
     DeleteMarkersAction,
@@ -28,6 +26,7 @@ import {
     SelectAllAction,
     ServerMessageAction,
     ServerStatusAction,
+    SetBoundsAction,
     SetClipboardDataAction,
     SetContextActions,
     SetDirtyStateAction,
@@ -39,6 +38,7 @@ import {
     SetPopupModelAction,
     SetResolvedNavigationTargetAction,
     SetTypeHintsAction,
+    SetViewportAction,
     TriggerEdgeCreationAction,
     TriggerNodeCreationAction,
     UpdateModelAction
@@ -48,35 +48,48 @@ import { ActionDispatcher, DefaultActionDispatcher } from '../actions/action-dis
 import { ActionHandlerConstructor, ActionHandlerFactory } from '../actions/action-handler';
 import { ActionHandlerRegistry, ActionHandlerRegistryInitializer } from '../actions/action-handler-registry';
 import { ClientActionHandler } from '../actions/client-action-handler';
+import { DiagramConfiguration } from '../diagram/diagram-configuration';
 import { RequestTypeHintsActionHandler } from '../diagram/request-type-hints-action-handler';
+import { CommandPaletteActionProvider } from '../features/contextactions/command-palette-action-provider';
 import { ContextActionsProvider } from '../features/contextactions/context-actions-provider';
 import { ContextActionsProviderRegistry } from '../features/contextactions/context-actions-provider-registry';
+import { ContextMenuItemProvider } from '../features/contextactions/context-menu-item-provider';
 import { RequestContextActionsHandler } from '../features/contextactions/request-context-actions-handler';
+import { DefaultToolPaletteItemProvider, ToolPaletteItemProvider } from '../features/contextactions/tool-palette-item-provider';
 import { ContextEditValidator } from '../features/directediting/context-edit-validator';
 import {
     ContextEditValidatorRegistry,
     DefaultContextEditValidatorRegistry
 } from '../features/directediting/context-edit-validator-registry';
+import { LabelEditValidator } from '../features/directediting/label-edit-validator';
 import { RequestEditValidationHandler } from '../features/directediting/request-edit-validation-handler';
+import { LayoutEngine } from '../features/layout/layout-engine';
+import { GModelFactory } from '../features/model/gmodel-factory';
 import { DefaultGModelSerializer, GModelSerializer } from '../features/model/gmodel-serializer';
+import { ModelState } from '../features/model/model-state';
 import { ModelSubmissionHandler } from '../features/model/model-submission-handler';
 import { RequestModelActionHandler } from '../features/model/request-model-action-handler';
+import { SourceModelStorage } from '../features/model/source-model-storage';
 import { NavigationTargetProvider } from '../features/navigation/navigation-target-provider';
 import {
     DefaultNavigationTargetProviderRegistry,
     NavigationTargetProviderRegistry
 } from '../features/navigation/navigation-target-provider-registry';
+import { NavigationTargetResolver } from '../features/navigation/navigation-target-resolver';
 import { RequestNavigationTargetsActionHandler } from '../features/navigation/request-navigation-targets-action-handler';
 import { ResolveNavigationTargetsActionHandler } from '../features/navigation/resolve-navigation-targets-action-handler';
+import { PopupModelFactory } from '../features/popup/popup-model-factory';
 import { RequestPopupModelActionHandler } from '../features/popup/request-popup-model-action-handler';
+import { ModelValidator } from '../features/validation/model-validator';
 import { RequestMarkersHandler } from '../features/validation/request-markers-handler';
 import { CompoundOperationHandler } from '../operations/compound-operation-handler';
 import { OperationActionHandler } from '../operations/operation-action-handler';
 import { OperationHandlerConstructor, OperationHandlerFactory } from '../operations/operation-handler';
 import { OperationHandlerRegistry, OperationHandlerRegistryInitializer } from '../operations/operation-handler-registry';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
+import { applyBindingTarget, applyOptionalBindingTarget, BindingTarget } from './binding-target';
 import { GLSPModule } from './glsp-module';
-import { ClassMultiBinding, InstanceMultiBinding } from './multi-binding';
+import { InstanceMultiBinding, MultiBinding } from './multi-binding';
 import {
     ClientActionKinds,
     ClientId,
@@ -91,96 +104,113 @@ import {
  * The diagram module is the central configuration artifact for configuring a client session specific injector. For each
  * session that is initialized by a {@link GLSPServer} a new client session injector is created. The diagram module
  * provides the base bindings necessary to provide diagram implementation (i.e. diagram language). In addition to the
- * diagram specific bindings, session specific bindings like the {@link GModelState} are configured
+ * diagram specific bindings, session specific bindings like the {@link ModelState} are configured
  *
  * Client session injectors are child injectors of a server injector and therefore inherit the bindings from
  * {@link ServerModule}.
  *
- * The following bindings are provided by this base configuration:
- * - {@link ClientId} to default
- * - {@link GModelSerializer}
- * - {@link ActionDispatcher}
- * - {@link ActionHandlerRegistry}
- * - {@link OperationHandlerRegistry}
- * - {@link ModelSubmissionHandler}
- * - {@link NavigationTargetProviderRegistry}
- * - {@link ContextActionsProviderRegistry}
- * - {@link ContextEditValidatorRegistry}
- * - {@link OperationHandler} as {@link InstanceMultiBinding<OperationHandlerConstructor>}
- * - {@link ActionHandler} as {@link InstanceMultiBinding<ActionHandlerConstructor>}
- * - {@link ClientSessionInitializer} as {@link ClassMultiBinding<ClientSessionInitializer>}
- * - {@link ClientActionKinds} as {@link InstanceMultiBinding<string>}
- * - {@link NavigationTargetProviders} as {@link ClassMultiBinding<NavigationTargetProvider>} (empty)
- * - {@link ContextActionsProviders} as {@link ClassMultiBinding<ContextActionsProvider>} (empty)
- * - {@link ContextEditValidators} as {@link ClassMultiBinding<ContextActionsProvider>} (empty)
- *
- * The following bindings are required in either a subclass or an additional module:
- * - {@link DiagramType} via the subclasses diagramType property
+ * The following bindings are provided:
+ * - {@link DiagramType}
+ * - {@link ClientId}
  * - {@link DiagramConfiguration}
+ * - {@link GModelSerializer}
+ * - {@link ModelState}
  * - {@link SourceModelStorage}
- * - {@link GModelState}
  * - {@link GModelFactory}
- * - {@link CommandStack}
- *
- * The following bindings can be optionally added via a module:
- * - {@link ModelValidator}
- * - {@link LabelEditValidator}
- * - {@link CommandPaletteActionProvider}
- * - {@link ContextMenuItemProvider}
- * - {@link PopupModelFactory}
- * - {@link ToolPaletteItemProvider}
- * - {@link NavigationTargetResolver}
+ * - {@link ModelSubmissionHandler}
+ * - {@link ModelValidator} as optional binding
+ * - {@link LabelEditValidator} as optional binding
+ * - {@link ToolPaletteItemProvider}as optional binding
+ * - {@link CommandPaletteActionProvider}as optional binding
+ * - {@link ContextMenuItemProvider} as optional binding
+ * - {@link ContextActionsProviders} as {@link ClassMultiBinding<ContextActionsProvider>} (empty)
+ * - {@link ContextActionsProviderRegistry}
+ * - {@link ActionDispatcher}
+ * - {@link ClientActionKinds} as {@link InstanceMultiBinding<string>}
+ * - {@link ActionHandler} as {@link InstanceMultiBinding<ActionHandlerConstructor>}
+ * - {@link ActionHandlerFactory}
+ * - {@link ActionHandlerRegistry}
+ * - {@link OperationHandler} as {@link InstanceMultiBinding<OperationHandlerConstructor>}
+ * - {@link OperationHandlerFactory}
+ * - {@link OperationHandlerRegistry}
+ * - {@link Operations}
+ * - {@link NavigationTargetResolver} as optional binding
+ *   {@link NavigationTargetProvider} as {@link ClassMultiBinding<NavigationTargetProvider>} (empty)
+ * - {@link NavigationTargetProviderRegistry}
+ * - {@link ContextEditValidatorRegistry}
+ * - {@link ContextEditValidators} as {@link ClassMultiBinding<ContextActionsProvider>} (empty)
+ * - {@link ClientSessionInitializer} as {@link ClassMultiBinding<ClientSessionInitializer>}
+ * - {@link PopupModelFactory}  as optional binding
+ * - {@link LayoutEngine}  as optional binding
  */
 export abstract class DiagramModule extends GLSPModule {
     static readonly FALLBACK_CLIENT_ID = 'FallbackClientId';
     abstract readonly diagramType: string;
 
     protected configure(bind: interfaces.Bind, unbind: interfaces.Unbind, isBound: interfaces.IsBound, rebind: interfaces.Rebind): void {
-        bind(DiagramType).toConstantValue(this.diagramType);
-        bind(ClientId).toConstantValue(DiagramModule.FALLBACK_CLIENT_ID);
-        bind(GModelSerializer).to(DefaultGModelSerializer).inSingletonScope();
-        bind(ActionDispatcher).to(DefaultActionDispatcher).inSingletonScope();
-        bind(ActionHandlerRegistry).toSelf().inSingletonScope();
-        bind(OperationHandlerRegistry).toSelf().inSingletonScope();
-        bind(ModelSubmissionHandler).toSelf().inSingletonScope();
-        bind(NavigationTargetProviderRegistry).to(DefaultNavigationTargetProviderRegistry).inSingletonScope();
-        bind(ContextActionsProviderRegistry).toSelf().inSingletonScope();
-        bind(ContextEditValidatorRegistry).to(DefaultContextEditValidatorRegistry).inSingletonScope();
+        const context = { bind, isBound };
+        // Configurations
+        applyBindingTarget(context, DiagramType, this.bindDiagramType());
+        applyBindingTarget(context, ClientId, this.bindClientId());
+        applyBindingTarget(context, DiagramConfiguration, this.bindDiagramConfiguration()).inSingletonScope();
 
-        // factory bindings
-        bind<ActionHandlerFactory>(ActionHandlerFactory).toDynamicValue(ctx => constructor => ctx.container.resolve(constructor));
-        bind<OperationHandlerFactory>(OperationHandlerFactory).toDynamicValue(ctx => constructor => ctx.container.resolve(constructor));
+        // Model-related bindings
+        applyBindingTarget(context, GModelSerializer, this.bindGModelSerializer()).inSingletonScope();
+        applyBindingTarget(context, ModelState, this.bindModelState());
+        applyBindingTarget(context, SourceModelStorage, this.bindSourceModelStorage()).inSingletonScope();
+        applyBindingTarget(context, GModelFactory, this.bindGModelFactory());
+        applyBindingTarget(context, ModelSubmissionHandler, this.bindModelSubmissionHandler()).inSingletonScope();
 
-        // bind Kinds
-        bind<string[]>(Operations).toDynamicValue(context =>
-            context.container
-                .get<OperationHandlerConstructor[]>(OperationHandlerConstructor)
-                .map(constructor => new constructor().operationType)
+        // Model Validation
+        applyOptionalBindingTarget(context, ModelValidator, this.bindModelValidator());
+        applyOptionalBindingTarget(context, LabelEditValidator, this.bindLabelEditValidator());
+
+        // Context action providers
+        applyOptionalBindingTarget(context, ToolPaletteItemProvider, this.bindToolPaletteItemProvider());
+        applyOptionalBindingTarget(context, CommandPaletteActionProvider, this.bindCommandPaletteActionProvider());
+        applyOptionalBindingTarget(context, ContextMenuItemProvider, this.bindContextMenuItemProvider());
+        this.configureMultiBinding(new MultiBinding<ContextActionsProvider>(ContextActionsProviders), binding =>
+            this.configureContextActionProviders(binding)
         );
+        applyBindingTarget(context, ContextActionsProviderRegistry, this.bindContextActionsProviderRegistry()).inSingletonScope();
 
-        // multi-bindings
-        this.configureMultiBinding(new ClassMultiBinding<ClientSessionInitializer>(ClientSessionInitializer), binding =>
-            this.configureClientSessionInitializers(binding)
-        );
+        // Action & operation related bindings
+        applyBindingTarget(context, ActionDispatcher, this.bindActionDispatcher()).inSingletonScope();
+        this.configureMultiBinding(new InstanceMultiBinding<string>(ClientActionKinds), binding => this.configureClientActions(binding));
         this.configureMultiBinding(new InstanceMultiBinding<ActionHandlerConstructor>(ActionHandlerConstructor), binding =>
             this.configureActionHandlers(binding)
         );
+        applyBindingTarget(context, ActionHandlerFactory, this.bindActionHandlerFactory());
+        applyBindingTarget(context, ActionHandlerRegistry, this.bindActionHandlerRegistry()).inSingletonScope();
         this.configureMultiBinding(new InstanceMultiBinding<OperationHandlerConstructor>(OperationHandlerConstructor), binding =>
             this.configureOperationHandlers(binding)
         );
-        this.configureMultiBinding(new InstanceMultiBinding<string>(ClientActionKinds), binding => this.configureClientActions(binding));
-        this.configureMultiBinding(new ClassMultiBinding<NavigationTargetProvider>(NavigationTargetProviders), binding =>
+        applyBindingTarget(context, OperationHandlerRegistry, this.bindOperationHandlerRegistry()).inSingletonScope();
+        applyBindingTarget(context, OperationHandlerFactory, this.bindOperationHandlerFactory());
+        applyBindingTarget(context, Operations, this.bindOperations()).inSingletonScope();
+
+        // Navigation
+        applyOptionalBindingTarget(context, NavigationTargetResolver, this.bindNavigationTargetResolver());
+        this.configureMultiBinding(new MultiBinding<NavigationTargetProvider>(NavigationTargetProviders), binding =>
             this.configureNavigationTargetProviders(binding)
         );
-        this.configureMultiBinding(new ClassMultiBinding<ContextActionsProvider>(ContextActionsProviders), binding =>
-            this.configureContextActionProviders(binding)
-        );
-        this.configureMultiBinding(new ClassMultiBinding<ContextEditValidator>(ContextEditValidators), binding =>
+        applyBindingTarget(context, NavigationTargetProviderRegistry, this.bindNavigationTargetProviderRegistry()).inSingletonScope();
+
+        // Context edit
+        applyBindingTarget(context, ContextEditValidatorRegistry, this.bindContextEditValidatorRegistry()).inSingletonScope();
+        this.configureMultiBinding(new MultiBinding<ContextEditValidator>(ContextEditValidators), binding =>
             this.configureContextEditValidators(binding)
         );
+
+        // Misc
+        this.configureMultiBinding(new MultiBinding<ClientSessionInitializer>(ClientSessionInitializer), binding =>
+            this.configureClientSessionInitializers(binding)
+        );
+        applyOptionalBindingTarget(context, PopupModelFactory, this.bindPopupModelFactory());
+        applyOptionalBindingTarget(context, LayoutEngine, this.bindLayoutEngine?.());
     }
 
-    configureClientSessionInitializers(binding: ClassMultiBinding<ClientSessionInitializer>): void {
+    configureClientSessionInitializers(binding: MultiBinding<ClientSessionInitializer>): void {
         binding.add(ActionHandlerRegistryInitializer);
         binding.add(OperationHandlerRegistryInitializer);
     }
@@ -198,19 +228,72 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(ResolveNavigationTargetsActionHandler);
     }
 
+    protected bindDiagramType(): BindingTarget<string> {
+        return { constantValue: this.diagramType };
+    }
+
+    protected bindClientId(): BindingTarget<string> {
+        return { constantValue: DiagramModule.FALLBACK_CLIENT_ID };
+    }
+
+    protected bindGModelSerializer(): BindingTarget<GModelSerializer> {
+        return DefaultGModelSerializer;
+    }
+
+    protected bindActionDispatcher(): BindingTarget<ActionDispatcher> {
+        return DefaultActionDispatcher;
+    }
+
+    protected bindActionHandlerRegistry(): BindingTarget<ActionHandlerRegistry> {
+        return ActionHandlerRegistry;
+    }
+
+    protected bindOperationHandlerRegistry(): BindingTarget<OperationHandlerRegistry> {
+        return OperationHandlerRegistry;
+    }
+
+    protected bindModelSubmissionHandler(): BindingTarget<ModelSubmissionHandler> {
+        return ModelSubmissionHandler;
+    }
+
+    protected bindNavigationTargetProviderRegistry(): BindingTarget<NavigationTargetProviderRegistry> {
+        return DefaultNavigationTargetProviderRegistry;
+    }
+
+    protected bindContextEditValidatorRegistry(): BindingTarget<ContextEditValidatorRegistry> {
+        return DefaultContextEditValidatorRegistry;
+    }
+
+    protected bindActionHandlerFactory(): BindingTarget<ActionHandlerFactory> {
+        return { dynamicValue: ctx => constructor => ctx.container.resolve(constructor) };
+    }
+
+    protected bindOperationHandlerFactory(): BindingTarget<OperationHandlerFactory> {
+        return { dynamicValue: ctx => constructor => ctx.container.resolve(constructor) };
+    }
+
+    protected bindOperations(): BindingTarget<string[]> {
+        return {
+            dynamicValue: context =>
+                context.container
+                    .get<OperationHandlerConstructor[]>(OperationHandlerConstructor)
+                    .map(constructor => new constructor().operationType)
+        };
+    }
+
     protected configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
         binding.add(CompoundOperationHandler);
     }
 
-    protected configureContextActionProviders(binding: ClassMultiBinding<ContextActionsProvider>): void {
+    protected configureContextActionProviders(binding: MultiBinding<ContextActionsProvider>): void {
         // empty as default
     }
 
-    protected configureContextEditValidators(binding: ClassMultiBinding<ContextEditValidator>): void {
+    protected configureContextEditValidators(binding: MultiBinding<ContextEditValidator>): void {
         // empty as default
     }
 
-    protected configureNavigationTargetProviders(binding: ClassMultiBinding<NavigationTargetProvider>): void {
+    protected configureNavigationTargetProviders(binding: MultiBinding<NavigationTargetProvider>): void {
         // empty as default
     }
 
@@ -226,7 +309,7 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(SelectAction.KIND);
         binding.add(SelectAllAction.KIND);
         binding.add(ServerMessageAction.KIND);
-        // binding.add(SetBoundsAction.KIND); TODO: Add missing action to protocol
+        binding.add(SetBoundsAction.KIND);
         binding.add(SetClipboardDataAction.KIND);
         binding.add(SetContextActions.KIND);
         binding.add(SetDirtyStateAction.KIND);
@@ -238,10 +321,54 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(SetPopupModelAction.KIND);
         binding.add(SetResolvedNavigationTargetAction.KIND);
         binding.add(SetTypeHintsAction.KIND);
-        // binding.add(SetViewportAction.KIND);  TODO: Add missing action to protocol
+        binding.add(SetViewportAction.KIND);
         binding.add(ServerStatusAction.KIND);
         binding.add(TriggerNodeCreationAction.KIND);
         binding.add(TriggerEdgeCreationAction.KIND);
         binding.add(UpdateModelAction.KIND);
+    }
+
+    protected bindContextActionsProviderRegistry(): BindingTarget<ContextActionsProviderRegistry> {
+        return ContextActionsProviderRegistry;
+    }
+
+    // Required abstract bindings
+
+    protected abstract bindSourceModelStorage(): BindingTarget<SourceModelStorage>;
+
+    protected abstract bindModelState(): BindingTarget<ModelState>;
+
+    protected abstract bindDiagramConfiguration(): BindingTarget<DiagramConfiguration>;
+
+    protected abstract bindGModelFactory(): BindingTarget<GModelFactory>;
+
+    // Optional bindings
+
+    protected bindModelValidator(): BindingTarget<ModelValidator> | undefined {
+        return undefined;
+    }
+    protected bindLabelEditValidator(): BindingTarget<LabelEditValidator> | undefined {
+        return undefined;
+    }
+
+    protected bindToolPaletteItemProvider(): BindingTarget<ToolPaletteItemProvider> | undefined {
+        return DefaultToolPaletteItemProvider;
+    }
+    protected bindCommandPaletteActionProvider(): BindingTarget<CommandPaletteActionProvider> | undefined {
+        return undefined;
+    }
+    protected bindContextMenuItemProvider(): BindingTarget<ContextMenuItemProvider> | undefined {
+        return undefined;
+    }
+
+    protected bindNavigationTargetResolver(): BindingTarget<NavigationTargetResolver> | undefined {
+        return undefined;
+    }
+
+    protected bindPopupModelFactory(): BindingTarget<PopupModelFactory> | undefined {
+        return undefined;
+    }
+    protected bindLayoutEngine(): BindingTarget<LayoutEngine> | undefined {
+        return undefined;
     }
 }

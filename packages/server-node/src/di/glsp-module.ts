@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { ContainerModule, injectable, interfaces } from 'inversify';
-import { MultiBinding } from './multi-binding';
+import { AbstractMultiBinding } from './multi-binding';
 
 /**
  * A wrapper interface to get access to the binding related functions
@@ -59,7 +59,7 @@ export abstract class GLSPModule extends ContainerModule {
      * @param binding      The multi binding configuration object
      * @param configurator The consumer that should be used to configure the given {@link MultiBinding}
      */
-    protected configureMultiBinding<T>(binding: MultiBinding<T>, configurator: (binding: MultiBinding<T>) => void): void {
+    protected configureMultiBinding<T>(binding: AbstractMultiBinding<T>, configurator: (binding: AbstractMultiBinding<T>) => void): void {
         configurator(binding);
         binding.applyBindings(this.context);
     }

@@ -13,10 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { expect } from 'chai';
 import * as path from 'path';
 import { LogLevel } from '../utils/logger';
 import { createCliParser, defaultLaunchOptions } from './cli-parser';
-import { expect } from 'chai';
 
 describe('test createCliParser', () => {
     const parser = createCliParser();
@@ -30,7 +30,7 @@ describe('test createCliParser', () => {
     });
 
     it('parse - invalid log dir', () => {
-        expect(() => parser.parse([...argv, '--logDir', 'invalid.Path'])).to.throw;
+        expect(() => parser.parse([...argv, '--logDir', 'invalid.Path'])).to.throw();
     });
 
     it('parse - valid log dir', () => {
@@ -40,7 +40,7 @@ describe('test createCliParser', () => {
     });
 
     it('parse - invalid logLevel', () => {
-        expect(() => parser.parse([...argv, '--logLevel', 'someRandomLevel'])).to.throw;
+        expect(() => parser.parse([...argv, '--logLevel', 'someRandomLevel'])).to.throw();
     });
 
     it('parse - valid logLevel', () => {
