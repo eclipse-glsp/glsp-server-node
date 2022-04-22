@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { expect } from 'chai';
 import { Container, ContainerModule, injectable } from 'inversify';
-import { ClassMultiBinding, InstanceMultiBinding } from './multi-binding';
+import { InstanceMultiBinding, MultiBinding } from './multi-binding';
 
 @injectable()
 class TestClass {}
@@ -31,7 +31,7 @@ class TestClass3 extends TestClass {}
 
 describe('test implementations of MultiBinding', () => {
     describe('test basic functionaly (ClassMultiBinding) ', () => {
-        const binding = new ClassMultiBinding('TestClass');
+        const binding = new MultiBinding('TestClass');
         it('add - new binding', () => {
             binding.add(TestClass1);
             expect(binding.contains(TestClass1)).true;
@@ -97,7 +97,7 @@ describe('test implementations of MultiBinding', () => {
             const testContainer = new Container();
             const testModule = new ContainerModule((bind, unbind, isBound, rebind) => {
                 const context = { bind, unbind, isBound, rebind };
-                const binding = new ClassMultiBinding('TestClass');
+                const binding = new MultiBinding('TestClass');
                 binding.addAll([TestClass1, TestClass2, TestClass3]);
                 binding.applyBindings(context);
             });

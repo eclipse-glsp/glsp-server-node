@@ -14,25 +14,23 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import {
-    ClassMultiBinding,
     CommandPaletteActionProvider,
     ContextMenuItemProvider,
-    DefaultToolPaletteItemProvider,
     DiagramConfiguration,
     GLSPServer,
     GModelDiagramModule,
     InstanceMultiBinding,
-    JsonRpcGLSPServer,
     LabelEditValidator,
     ModelValidator,
+    MultiBinding,
     NavigationTargetProvider,
     NavigationTargetResolver,
     OperationHandlerConstructor,
     PopupModelFactory,
-    ServerModule,
-    ToolPaletteItemProvider
+    ServerModule
 } from '@eclipse-glsp/server-node';
-import { injectable, interfaces } from 'inversify';
+import { BindingTarget } from '@eclipse-glsp/server-node/lib/di/binding-target';
+import { injectable } from 'inversify';
 import { CreateAutomatedTaskHandler } from './handler/create-automated-task-handler';
 import { CreateCategoryHandler } from './handler/create-category-handler';
 import { CreateDecisionNodeHandler } from './handler/create-decision-node-handler';
@@ -56,11 +54,8 @@ import { WorkflowPopupFactory } from './workflow-popup-factory';
 
 @injectable()
 export class WorkflowServerModule extends ServerModule {
-    override configure(bind: interfaces.Bind, unbind: interfaces.Unbind, isBound: interfaces.IsBound, rebind: interfaces.Rebind): void {
-        super.configure(bind, unbind, isBound, rebind);
-        bind(WorkflowGLSPServer).toSelf().inSingletonScope();
-        rebind(GLSPServer).toService(WorkflowGLSPServer);
-        rebind(JsonRpcGLSPServer).toService(WorkflowGLSPServer);
+    protected override bindGLSPServer(): BindingTarget<GLSPServer> {
+        return WorkflowGLSPServer;
     }
 }
 
@@ -68,23 +63,6 @@ export class WorkflowServerModule extends ServerModule {
 export class WorkflowDiagramModule extends GModelDiagramModule {
     get diagramType(): string {
         return 'workflow-diagram';
-    }
-
-    protected override configure(
-        bind: interfaces.Bind,
-        unbind: interfaces.Unbind,
-        isBound: interfaces.IsBound,
-        rebind: interfaces.Rebind
-    ): void {
-        super.configure(bind, unbind, isBound, rebind);
-        bind(DiagramConfiguration).to(WorkflowDiagramConfiguration).inSingletonScope();
-        bind(NavigationTargetResolver).to(WorkflowNavigationTargetResolver).inSingletonScope();
-        bind(ContextMenuItemProvider).to(WorkflowContextMenuItemProvider).inSingletonScope();
-        bind(CommandPaletteActionProvider).to(WorkflowCommandPaletteActionProvider).inSingletonScope();
-        bind(LabelEditValidator).to(WorkflowLabelEditValidator).inSingletonScope();
-        bind(PopupModelFactory).to(WorkflowPopupFactory).inSingletonScope();
-        bind(ModelValidator).to(WorkflowModelValidator).inSingletonScope();
-        bind(ToolPaletteItemProvider).to(DefaultToolPaletteItemProvider).inSingletonScope();
     }
 
     protected override configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
@@ -100,7 +78,35 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
         binding.add(CreateCategoryHandler);
     }
 
-    protected override configureNavigationTargetProviders(binding: ClassMultiBinding<NavigationTargetProvider>): void {
+    protected bindDiagramConfiguration(): BindingTarget<DiagramConfiguration> {
+        return WorkflowDiagramConfiguration;
+    }
+
+    protected override bindNavigationTargetResolver(): BindingTarget<NavigationTargetResolver> | undefined {
+        return WorkflowNavigationTargetResolver;
+    }
+
+    protected override bindContextMenuItemProvider(): BindingTarget<ContextMenuItemProvider> | undefined {
+        return WorkflowContextMenuItemProvider;
+    }
+
+    protected override bindCommandPaletteActionProvider(): BindingTarget<CommandPaletteActionProvider> | undefined {
+        return WorkflowCommandPaletteActionProvider;
+    }
+
+    protected override bindLabelEditValidator(): BindingTarget<LabelEditValidator> | undefined {
+        return WorkflowLabelEditValidator;
+    }
+
+    protected override bindPopupModelFactory(): BindingTarget<PopupModelFactory> | undefined {
+        return WorkflowPopupFactory;
+    }
+
+    protected override bindModelValidator(): BindingTarget<ModelValidator> | undefined {
+        return WorkflowModelValidator;
+    }
+
+    protected override configureNavigationTargetProviders(binding: MultiBinding<NavigationTargetProvider>): void {
         super.configureNavigationTargetProviders(binding);
         binding.add(NextNodeNavigationTargetProvider);
         binding.add(PreviousNodeNavigationTargetProvider);

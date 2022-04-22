@@ -20,6 +20,7 @@ import * as sinon from 'sinon';
 import { GModelState } from '../../base-impl/gmodel-state';
 import { GModelIndex } from '../model/gmodel-index';
 import { ApplyLabelEditOperationHandler } from './apply-label-edit-operation-handler';
+import assert = require('assert');
 
 describe('Test ApplyLabelEditOperationHandler', () => {
     const label = new GLabel();
@@ -30,7 +31,9 @@ describe('Test ApplyLabelEditOperationHandler', () => {
     Object.defineProperty(applyLabelEditOperationHandler, 'modelState', { value: modelState });
 
     it('text is changed after ApplyLabelEditOperation', async () => {
-        expect(applyLabelEditOperationHandler.execute(ApplyLabelEditOperation.create({ labelId: 'myId', text: 'test' }))).to.not.throw;
+        assert.doesNotThrow(() =>
+            applyLabelEditOperationHandler.execute(ApplyLabelEditOperation.create({ labelId: 'myId', text: 'test' }))
+        );
         expect(label.text).to.be.equal('test');
     });
 });
