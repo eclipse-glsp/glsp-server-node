@@ -65,10 +65,12 @@ import { LabelEditValidator } from '../features/directediting/label-edit-validat
 import { RequestEditValidationHandler } from '../features/directediting/request-edit-validation-handler';
 import { LayoutEngine } from '../features/layout/layout-engine';
 import { GModelFactory } from '../features/model/gmodel-factory';
+import { GModelIndex } from '../features/model/gmodel-index';
 import { DefaultGModelSerializer, GModelSerializer } from '../features/model/gmodel-serializer';
 import { ModelState } from '../features/model/model-state';
 import { ModelSubmissionHandler } from '../features/model/model-submission-handler';
 import { RequestModelActionHandler } from '../features/model/request-model-action-handler';
+import { SaveModelActionHandler } from '../features/model/save-model-action-handler';
 import { SourceModelStorage } from '../features/model/source-model-storage';
 import { NavigationTargetProvider } from '../features/navigation/navigation-target-provider';
 import {
@@ -115,6 +117,7 @@ import {
  * - {@link DiagramConfiguration}
  * - {@link GModelSerializer}
  * - {@link ModelState}
+ * - {@link GModelIndex}
  * - {@link SourceModelStorage}
  * - {@link GModelFactory}
  * - {@link ModelSubmissionHandler}
@@ -156,7 +159,8 @@ export abstract class DiagramModule extends GLSPModule {
 
         // Model-related bindings
         applyBindingTarget(context, GModelSerializer, this.bindGModelSerializer()).inSingletonScope();
-        applyBindingTarget(context, ModelState, this.bindModelState());
+        applyBindingTarget(context, ModelState, this.bindModelState()).inSingletonScope();
+        applyBindingTarget(context, GModelIndex, this.bindGModelIndex()).inSingletonScope();
         applyBindingTarget(context, SourceModelStorage, this.bindSourceModelStorage()).inSingletonScope();
         applyBindingTarget(context, GModelFactory, this.bindGModelFactory());
         applyBindingTarget(context, ModelSubmissionHandler, this.bindModelSubmissionHandler()).inSingletonScope();
@@ -226,6 +230,7 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(RequestEditValidationHandler);
         binding.add(RequestNavigationTargetsActionHandler);
         binding.add(ResolveNavigationTargetsActionHandler);
+        binding.add(SaveModelActionHandler);
     }
 
     protected bindDiagramType(): BindingTarget<string> {
@@ -238,6 +243,10 @@ export abstract class DiagramModule extends GLSPModule {
 
     protected bindGModelSerializer(): BindingTarget<GModelSerializer> {
         return DefaultGModelSerializer;
+    }
+
+    protected bindGModelIndex(): BindingTarget<GModelIndex> {
+        return GModelIndex;
     }
 
     protected bindActionDispatcher(): BindingTarget<ActionDispatcher> {

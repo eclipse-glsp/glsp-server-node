@@ -14,18 +14,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { inject, injectable } from 'inversify';
-import { ClientId } from '../di/service-identifiers';
-import { DefaultModelState } from '../features/model/model-state';
-
-@injectable()
-export class GModelState extends DefaultModelState {
-    @inject(ClientId)
-    readonly clientId: string;
-
-    static readonly SOURCE_URI = 'sourceUri';
-
-    get sourceUri(): string | undefined {
-        return this.get(GModelState.SOURCE_URI);
-    }
-}
+export * from './apply-label-edit-operation-handler';
+export * from './change-bounds-operation-handler';
+export * from './computed-bounds-action-handler';
+export * from './delete-operation-handler';
+export * from './gmodel-create-edge-operation-handler';
+export * from './gmodel-create-node-operation-handler';
+export * from './gmodel-diagram-module';
+export * from './gmodel-storage';
+export * from './paste-operation-handler';

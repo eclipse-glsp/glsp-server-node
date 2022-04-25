@@ -16,7 +16,7 @@
 import { GModelElement } from '@eclipse-glsp/graph';
 import { Args, EditorContext, LabeledAction, Point } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { GModelState } from '../../base-impl/gmodel-state';
+import { ModelState } from '../model/model-state';
 import { ContextActionsProvider } from './context-actions-provider';
 
 /**
@@ -24,8 +24,8 @@ import { ContextActionsProvider } from './context-actions-provider';
  */
 @injectable()
 export abstract class CommandPaletteActionProvider implements ContextActionsProvider {
-    @inject(GModelState)
-    protected modelState: GModelState;
+    @inject(ModelState)
+    protected modelState: ModelState;
 
     readonly TEXT = 'text';
     readonly INDEX = 'index';

@@ -16,7 +16,7 @@
 import { CutOperation, DeleteElementOperation } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
-import { OperationHandler } from '../operations/operation-handler';
+import { OperationHandler } from './operation-handler';
 
 @injectable()
 export class CutOperationHandler implements OperationHandler {

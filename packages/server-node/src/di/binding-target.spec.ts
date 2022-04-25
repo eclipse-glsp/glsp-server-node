@@ -103,7 +103,7 @@ describe('BindingTarget', () => {
                 context.isBound.returns(true);
                 const syntax = applyBindingTarget(context, Target, { service: SubTarget });
                 expect(() => {
-                    syntax.inSingletonScope();
+                    syntax.inRequestScope();
                 }).to.throw(
                     `${Target.toString()} has been bound to 'service'.` +
                         "Using 'in','when' or 'on' bindings after" +

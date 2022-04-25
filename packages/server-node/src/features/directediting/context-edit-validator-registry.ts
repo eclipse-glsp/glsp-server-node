@@ -14,9 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { inject, injectable, multiInject, optional } from 'inversify';
-import { GModelState } from '../../base-impl/gmodel-state';
 import { ContextEditValidators } from '../../di/service-identifiers';
 import { Registry } from '../../utils/registry';
+import { ModelState } from '../model/model-state';
 import { ContextEditValidator, ValidateLabelEditAdapter } from './context-edit-validator';
 import { LabelEditValidator } from './label-edit-validator';
 
@@ -30,7 +30,7 @@ export interface ContextEditValidatorRegistry extends Registry<string, ContextEd
 @injectable()
 export class DefaultContextEditValidatorRegistry extends Registry<string, ContextEditValidator> implements ContextEditValidatorRegistry {
     constructor(
-        @inject(GModelState) modelState: GModelState,
+        @inject(ModelState) modelState: ModelState,
         @multiInject(ContextEditValidators) @optional() contextEditValidators: ContextEditValidator[] = [],
         @inject(LabelEditValidator) @optional() labelEditValidator?: LabelEditValidator
     ) {

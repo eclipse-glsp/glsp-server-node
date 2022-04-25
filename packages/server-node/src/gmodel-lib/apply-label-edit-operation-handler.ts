@@ -16,16 +16,16 @@
 import { GLabel } from '@eclipse-glsp/graph';
 import { ApplyLabelEditOperation } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { GLSPServerError } from '../../utils/glsp-server-error';
-import { GModelState } from '../../base-impl/gmodel-state';
-import { OperationHandler } from '../../operations/operation-handler';
+import { ModelState } from '../features/model/model-state';
+import { OperationHandler } from '../operations/operation-handler';
+import { GLSPServerError } from '../utils/glsp-server-error';
 
 @injectable()
 export class ApplyLabelEditOperationHandler implements OperationHandler {
     readonly operationType = ApplyLabelEditOperation.KIND;
 
-    @inject(GModelState)
-    protected readonly modelState: GModelState;
+    @inject(ModelState)
+    protected readonly modelState: ModelState;
 
     execute(operation: ApplyLabelEditOperation): void {
         const element = this.modelState.index.findByClass(operation.labelId, GLabel);

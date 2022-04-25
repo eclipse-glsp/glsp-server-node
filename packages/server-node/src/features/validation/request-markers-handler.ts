@@ -17,8 +17,8 @@ import { GGraph } from '@eclipse-glsp/graph';
 import { Action, Marker, RequestMarkersAction, SetMarkersAction } from '@eclipse-glsp/protocol';
 import { inject, injectable, optional } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
-import { GModelState } from '../../base-impl/gmodel-state';
 import { GLSPServerError } from '../../utils/glsp-server-error';
+import { ModelState } from '../model/model-state';
 import { ModelValidator } from './model-validator';
 
 @injectable()
@@ -26,7 +26,7 @@ export class RequestMarkersHandler implements ActionHandler {
     actionKinds = [RequestMarkersAction.KIND];
 
     @inject(ModelValidator) @optional() validator: ModelValidator;
-    @inject(GModelState) modelState: GModelState;
+    @inject(ModelState) modelState: ModelState;
 
     async execute(action: RequestMarkersAction, ...args: unknown[]): Promise<Action[]> {
         let elementIDs = action.elementsIDs;

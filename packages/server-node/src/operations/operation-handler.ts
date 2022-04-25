@@ -21,10 +21,10 @@ export const OperationHandler = Symbol('OperationHandler');
 /**
  * An operation handler can execute {@link Operation}s of a certain type (subclass).
  * The operation handler processes the operation in the {@link OperationHandler.execute()} method. The result
- * of the execution is an update of the `GModelState` state.
+ * of the execution is an update of the `ModelState` state.
  * This update is reversible (undo) and can be reapplied (redo). For basic diagram languages these updates are typically
- * applied directly on the `GModelState` using EMF `Command`s and the
- * `GModelState.execute()` method. For more complex diagram languages the
+ * applied directly on the `ModelState` using EMF `Command`s and the
+ * `ModelState.execute()` method. For more complex diagram languages the
  * GModel state might be updated indirectly and the operation handler manipulates a custom model representation.
  *
  * The `OperationActionHandler` is responsible for retrieving all available (valid) operation handlers for an

@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { NavigationTarget } from '@eclipse-glsp/protocol';
-import { GModelState } from '@eclipse-glsp/server-node';
+import { ModelState } from '@eclipse-glsp/server-node';
 import { NavigationTargetResolution } from '@eclipse-glsp/server-node/lib/features/navigation/navigation-target-resolution';
 import { NavigationTargetResolver } from '@eclipse-glsp/server-node/lib/features/navigation/navigation-target-resolver';
 import { inject, injectable } from 'inversify';
@@ -22,8 +22,8 @@ import { TaskNode } from '../graph-extension';
 
 @injectable()
 export class WorkflowNavigationTargetResolver extends NavigationTargetResolver {
-    @inject(GModelState)
-    protected readonly modelState: GModelState;
+    @inject(ModelState)
+    protected readonly modelState: ModelState;
 
     async resolve(navigationTarget: NavigationTarget): Promise<NavigationTargetResolution> {
         if (navigationTarget.args && navigationTarget.args['name']) {

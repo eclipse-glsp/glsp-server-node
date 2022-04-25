@@ -14,18 +14,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { Args, EditorContext, NavigationTarget } from '@eclipse-glsp/protocol';
-import { GModelState } from '@eclipse-glsp/server-node';
+import { ModelState } from '@eclipse-glsp/server-node';
+import { JsonOpenerOptions } from '@eclipse-glsp/server-node/lib/features/navigation/json-opener-options';
 import { NavigationTargetProvider } from '@eclipse-glsp/server-node/lib/features/navigation/navigation-target-provider';
 import { inject, injectable } from 'inversify';
 import { TaskNode } from '../graph-extension';
-import { JsonOpenerOptions } from '@eclipse-glsp/server-node/lib/features/navigation/json-opener-options';
 
 @injectable()
 export class NodeDocumentationNavigationTargetProvider implements NavigationTargetProvider {
     targetTypeId = 'documentation';
 
-    @inject(GModelState)
-    protected readonly modelState: GModelState;
+    @inject(ModelState)
+    protected readonly modelState: ModelState;
 
     getTargets(editorContext: EditorContext): NavigationTarget[] {
         if (editorContext.selectedElementIds.length === 1) {

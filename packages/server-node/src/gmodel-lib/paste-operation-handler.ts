@@ -17,8 +17,8 @@ import { GBoundsAware, GModelElement, isGBoundsAware } from '@eclipse-glsp/graph
 import { PasteOperation, Point, SModelElementSchema } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import * as uuid from 'uuid';
-import { GModelState } from '../base-impl/gmodel-state';
 import { GModelSerializer } from '../features/model/gmodel-serializer';
+import { ModelState } from '../features/model/model-state';
 import { OperationHandler } from '../operations/operation-handler';
 
 @injectable()
@@ -27,8 +27,8 @@ export class PasteOperationHandler implements OperationHandler {
 
     protected readonly DEFAULT_OFFSET = 20;
 
-    @inject(GModelState)
-    protected modelState: GModelState;
+    @inject(ModelState)
+    protected modelState: ModelState;
 
     @inject(GModelSerializer)
     protected modelSerializer: GModelSerializer;

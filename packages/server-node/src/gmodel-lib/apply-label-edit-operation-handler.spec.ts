@@ -17,14 +17,15 @@ import { GLabel } from '@eclipse-glsp/graph';
 import { ApplyLabelEditOperation } from '@eclipse-glsp/protocol';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import { GModelState } from '../../base-impl/gmodel-state';
-import { GModelIndex } from '../model/gmodel-index';
+import { GModelIndex } from '../features/model/gmodel-index';
+import { DefaultModelState } from '../features/model/model-state';
 import { ApplyLabelEditOperationHandler } from './apply-label-edit-operation-handler';
+
 import assert = require('assert');
 
 describe('Test ApplyLabelEditOperationHandler', () => {
     const label = new GLabel();
-    const modelState = new GModelState();
+    const modelState = new DefaultModelState();
     Object.defineProperty(modelState, 'index', { value: new GModelIndex() });
     sinon.stub(modelState.index, 'findByClass').returns(label);
     const applyLabelEditOperationHandler = new ApplyLabelEditOperationHandler();

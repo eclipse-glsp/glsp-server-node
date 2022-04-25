@@ -13,27 +13,25 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GBoundsAware, GEdge, GGraph, GModelElement, GModelRoot, GNode, GPort, isGBoundsAware } from '@eclipse-glsp/graph';
+import { GBoundsAware, GGraph, GModelElement, GModelRoot, isGBoundsAware } from '@eclipse-glsp/graph';
 import {
-    Args,
     CreateEdgeOperation,
     CreateNodeOperation,
     CreateOperation,
     Operation,
     Point,
-    SelectAction,
     TriggerEdgeCreationAction,
     TriggerNodeCreationAction
 } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { ActionDispatcher } from '../actions/action-dispatcher';
-import { GModelState } from '../base-impl/gmodel-state';
+import { ModelState } from '../features/model/model-state';
 import { OperationHandler } from './operation-handler';
 
 /**
  * A special {@link OperationHandler} that is responsible for the handling of {@link CreateOperation}s. Depending on its
  * operation type the triggered actions are {@link TriggerNodeCreationAction} or {@link TriggerEdgeCreationAction}s.
  */
+@injectable()
 export abstract class CreateOperationHandler implements OperationHandler {
     abstract operationType: string;
     abstract readonly label: string;
@@ -60,33 +58,25 @@ export abstract class CreateOperationHandler implements OperationHandler {
     }
 }
 
+/**
+ * Abstract base implementation for {@link CreateOperationHandler} that
+ * create an element that is represented with a {@link GNode} in the graphical model.
+ */
 @injectable()
 export abstract class CreateNodeOperationHandler extends CreateOperationHandler {
-    @inject(GModelState)
-    protected modelState: GModelState;
-
-    @inject(ActionDispatcher)
-    protected actionDispatcher: ActionDispatcher;
+    @inject(ModelState)
+    protected modelState: ModelState;
 
     get operationType(): string {
         return CreateNodeOperation.KIND;
     }
 
-    abstract override elementTypeIds: string[];
-
-    execute(operation: CreateNodeOperation): void {
-        const container = this.getContainer(operation) ?? this.modelState.root;
-
-        const absoluteLocation = this.getLocation(operation);
-        const relativeLocation = this.getRelativeLocation(absoluteLocation, container);
-        const element = this.createNode(relativeLocation, operation.args);
-        if (element) {
-            container.children.push(element);
-            element.parent = container;
-            this.actionDispatcher.dispatchAfterNextUpdate(SelectAction.create({ selectedElementsIDs: [element.id] }));
-        }
-    }
-
+    /**
+     * Retrieve the graphical model element that should contain the newly created {@link GNode}.
+     * If `undefined` is returned the {@link GNode} should be added directly to the diagram root.
+     * @param operation The currently handled operation.
+     * @returns The container {@link GModeElement} or `undefined`.
+     */
     getContainer(operation: CreateNodeOperation): GModelElement | undefined {
         const index = this.modelState.index;
         return operation.containerId ? index.get(operation.containerId) : undefined;
@@ -96,52 +86,29 @@ export abstract class CreateNodeOperationHandler extends CreateOperationHandler 
         return operation.location;
     }
 
-    getRelativeLocation(absoluteLocation: Point | undefined, container: GModelElement | undefined): Point | undefined {
-        if (absoluteLocation && container) {
-            const allowNegativeCoordinates = container instanceof GGraph;
-            if (isGBoundsAware(container)) {
-                const relativePosition = absoluteToRelative(absoluteLocation, container);
-                const relativeLocation = allowNegativeCoordinates
-                    ? relativePosition
-                    : { x: Math.max(0, relativePosition.x), y: Math.max(0, relativePosition.y) };
-                return relativeLocation;
-            }
+    /**
+     * Retrieves the diagram absolute location and the target container from the given {@link CreateNodeOperation}
+     * and converts the absolute location to coordinates relative to the given container.
+     *  Relative coordinates can only be retrieved if the given container element is part of
+     * a hierarchy of {@link GBoundsAware} elements. This means each (recursive) parent element need to
+     * implement {@link GBoundsAware}. If that is not the case this method returns `undefined`.
+     * @param absoluteLocation The diagram absolute position.
+     * @param container The container element.
+     * @returns The relative position or `undefined`.
+     */
+    getRelativeLocation(operation: CreateNodeOperation): Point | undefined {
+        const container = this.getContainer(operation) ?? this.modelState.root;
+        const absoluteLocation = this.getLocation(operation) ?? Point.ORIGIN;
+        const allowNegativeCoordinates = container instanceof GGraph;
+        if (isGBoundsAware(container)) {
+            const relativePosition = absoluteToRelative(absoluteLocation, container);
+            const relativeLocation = allowNegativeCoordinates
+                ? relativePosition
+                : { x: Math.max(0, relativePosition.x), y: Math.max(0, relativePosition.y) };
+            return relativeLocation;
         }
         return undefined;
     }
-
-    abstract createNode(relativeLocation: Point | undefined, args: Args | undefined): GNode | undefined;
-}
-
-@injectable()
-export abstract class CreateEdgeOperationHandler extends CreateOperationHandler {
-    @inject(GModelState)
-    protected modelState: GModelState;
-
-    get operationType(): string {
-        return CreateEdgeOperation.KIND;
-    }
-
-    execute(operation: CreateEdgeOperation): void {
-        const index = this.modelState.index;
-
-        const source = index.find(operation.sourceElementId, element => element instanceof GNode || element instanceof GPort);
-        const target = index.find(operation.targetElementId, element => element instanceof GNode || element instanceof GPort);
-
-        if (!source || !target) {
-            throw new Error(
-                `Invalid source or target for source ID ${operation.sourceElementId} and target ID ${operation.targetElementId}`
-            );
-        }
-
-        const connection = this.createEdge(source, target, this.modelState);
-        if (connection) {
-            const currentModel = this.modelState.root;
-            (currentModel as GModelElement).children.push(connection);
-        }
-    }
-
-    abstract createEdge(source: GModelElement, target: GModelElement, modelState: GModelState): GEdge | undefined;
 }
 
 /**

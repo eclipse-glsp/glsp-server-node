@@ -13,19 +13,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { GEdge, GNode, GPort } from '@eclipse-glsp/graph';
 import { ReconnectEdgeOperation } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { GLSPServerError } from '../utils/glsp-server-error';
+import { ModelState } from '../features/model/model-state';
 import { OperationHandler } from '../operations/operation-handler';
-import { GModelState } from '../base-impl/gmodel-state';
-import { GEdge, GNode, GPort } from '@eclipse-glsp/graph';
+import { GLSPServerError } from '../utils/glsp-server-error';
 
 @injectable()
 export class ReconnectEdgeOperationHandler implements OperationHandler {
     operationType = ReconnectEdgeOperation.KIND;
 
-    @inject(GModelState)
-    protected readonly modelState: GModelState;
+    @inject(ModelState)
+    protected readonly modelState: ModelState;
 
     execute(operation: ReconnectEdgeOperation): void {
         if (!operation.edgeElementId || !operation.sourceElementId || !operation.targetElementId) {

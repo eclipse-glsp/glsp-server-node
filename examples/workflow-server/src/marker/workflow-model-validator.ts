@@ -13,14 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GModelElement, Marker, ModelValidator, GModelState, MarkerKind, GCompartment, GLabel } from '@eclipse-glsp/server-node';
+import { GCompartment, GLabel, GModelElement, Marker, MarkerKind, ModelState, ModelValidator } from '@eclipse-glsp/server-node';
 import { inject, injectable } from 'inversify';
 import { ActivityNode, TaskNode } from '../graph-extension';
 
 @injectable()
 export class WorkflowModelValidator implements ModelValidator {
-    @inject(GModelState)
-    protected readonly modelState: GModelState;
+    @inject(ModelState)
+    protected readonly modelState: ModelState;
 
     validate(elements: GModelElement[]): Marker[] {
         const markers: Marker[] = [];

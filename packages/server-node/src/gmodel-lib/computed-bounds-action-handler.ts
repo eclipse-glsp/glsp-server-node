@@ -17,36 +17,31 @@ import { GModelRoot, isGAlignable, isGBoundsAware } from '@eclipse-glsp/graph';
 import { Action, ComputedBoundsAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
-import { GModelIndex } from '../features/model/gmodel-index';
+import { ModelState } from '../features/model/model-state';
 import { ModelSubmissionHandler } from '../features/model/model-submission-handler';
-import { GModelState } from './gmodel-state';
 
 @injectable()
 export class ComputedBoundsActionHandler implements ActionHandler {
     @inject(ModelSubmissionHandler)
     protected submissionHandler: ModelSubmissionHandler;
 
-    @inject(GModelState)
-    protected modelState: GModelState;
-
-    @inject(GModelIndex)
-    protected index: GModelIndex;
+    @inject(ModelState)
+    protected modelState: ModelState;
 
     actionKinds = [ComputedBoundsAction.KIND];
-    execute(action: Action): Action[] {
-        if (ComputedBoundsAction.is(action)) {
-            const model = this.modelState.root;
-            if (action.revision === model.revision) {
-                this.applyBounds(model, action);
-                return this.submissionHandler.submitModelDirectly();
-            }
+    execute(action: ComputedBoundsAction): Action[] {
+        const model = this.modelState.root;
+        if (action.revision === model.revision) {
+            this.applyBounds(model, action);
+            return this.submissionHandler.submitModelDirectly();
         }
+
         return [];
     }
 
     protected applyBounds(root: GModelRoot, action: ComputedBoundsAction): void {
         action.bounds.forEach(b => {
-            const element = this.index.get(b.elementId);
+            const element = this.modelState.index.get(b.elementId);
             if (isGBoundsAware(element)) {
                 element.position = b.newPosition ?? element.position;
                 element.size = b.newSize;
@@ -54,7 +49,7 @@ export class ComputedBoundsActionHandler implements ActionHandler {
         });
 
         action.alignments?.forEach(a => {
-            const element = this.index.get(a.elementId);
+            const element = this.modelState.index.get(a.elementId);
             if (isGAlignable(element)) {
                 element.alignment = a.newAlignment;
             }
