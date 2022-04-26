@@ -30,4 +30,5 @@ export * from './gmodel-util';
 export * from './gnode';
 export * from './gport';
 export * from './gpre-rendered-element';
+export * from './gpre-shape-prerendered-element';
 export * from './gshape-element';

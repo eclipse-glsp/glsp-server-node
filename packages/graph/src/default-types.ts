@@ -24,6 +24,7 @@ import { GModelElementConstructor, GModelRoot } from './gmodel-element';
 import { GNode } from './gnode';
 import { GPort } from './gport';
 import { GPreRenderedElement } from './gpre-rendered-element';
+import { GShapePreRenderedElement } from './gpre-shape-prerendered-element';
 
 export function getDefaultMapping(): Map<string, GModelElementConstructor> {
     const mapping = new Map<string, GModelElementConstructor>();
@@ -33,16 +34,11 @@ export function getDefaultMapping(): Map<string, GModelElementConstructor> {
     mapping.set(types.PORT, GPort);
     mapping.set(types.LABEL, GLabel);
     mapping.set(types.COMPARTMENT, GCompartment);
-    mapping.set(types.COMPARTMENT_HEADER, GCompartment);
-    // TODO: mapping.set(types.BUTTON, GButton);
-    mapping.set(types.BUTTON_EXPAND, GButton);
+    mapping.set(types.BUTTON, GButton);
     mapping.set(types.ISSUE_MARKER, GIssueMarker);
-
-    mapping.set(types.NODE_CIRCLE, GNode);
-    mapping.set(types.NODE_RECTANGLE, GNode);
-    mapping.set(types.NODE_DIAMOND, GNode);
 
     mapping.set(types.HTML, GModelRoot);
     mapping.set(types.PRE_RENDERED, GPreRenderedElement);
+    mapping.set(types.FOREIGN_OBJECT, GShapePreRenderedElement);
     return mapping;
 }
