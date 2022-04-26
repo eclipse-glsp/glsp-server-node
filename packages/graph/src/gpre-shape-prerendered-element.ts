@@ -14,8 +14,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { DefaultTypes } from '@eclipse-glsp/protocol';
-import { GModelElement, GModelElementBuilder } from './gmodel-element';
+import { Dimension, Point } from '@eclipse-glsp/protocol';
+import { GAlignable } from './galignable';
+import { GBoundsAware, GBoundsAwareBuilder } from './gbound-aware';
+import { GModelElementBuilder } from './gmodel-element';
+import { GPreRenderedElement } from './gpre-rendered-element';
 
 /**
  * Pre-rendered elements contain HTML or SVG code to be transferred to the DOM. This can be useful to
@@ -24,17 +27,35 @@ import { GModelElement, GModelElementBuilder } from './gmodel-element';
  * A popup model is rendered when hovering over a element and for many common use cases e.g rendering a tooltip
  * this model can be computed entirely on the server side.
  */
-export class GPreRenderedElement extends GModelElement {
-    static builder(): GPreRenderedElementBuilder {
-        return new GPreRenderedElementBuilder(GPreRenderedElement).type(DefaultTypes.PRE_RENDERED);
+export class GShapePreRenderedElement extends GPreRenderedElement implements GBoundsAware, GAlignable {
+    static override builder(): GShapePreRenderedElementBuilder {
+        return new GShapePreRenderedElementBuilder(GShapePreRenderedElement);
     }
 
-    code: string;
+    [GBoundsAware] = true;
+    [GAlignable] = true;
+    position: Point;
+    size: Dimension;
+    alignment: Point;
 }
 
-export class GPreRenderedElementBuilder<G extends GPreRenderedElement = GPreRenderedElement> extends GModelElementBuilder<G> {
+export class GShapePreRenderedElementBuilder<
+    G extends GShapePreRenderedElement = GShapePreRenderedElement
+> extends GModelElementBuilder<G> {
     code(code: string): this {
         this.proxy.code = code;
         return this;
+    }
+
+    position(x: number, y: number): this;
+    position(position: Point): this;
+    position(pointOrX: Point | number, y?: number): this {
+        return GBoundsAwareBuilder.position(this, pointOrX, y);
+    }
+
+    size(width: number, height: number): this;
+    size(size: Dimension): this;
+    size(sizeOrWidth: Dimension | number, height?: number): this {
+        return GBoundsAwareBuilder.size(this, sizeOrWidth, height);
     }
 }
