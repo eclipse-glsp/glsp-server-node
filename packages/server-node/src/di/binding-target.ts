@@ -43,7 +43,7 @@ export function applyBindingTarget<T>(
             throw new Error(`The target service ${target.service.toString()} is not bound!. Cannot apply target binding`);
         }
         context.bind(serviceIdentifier).toService(target.service);
-        return NoOPSyntax.serviceSyntax(serviceIdentifier);
+        return NoOPSyntax.serviceSyntax(serviceIdentifier, target);
     } else if (ConstantValueTarget.is(target)) {
         const whenOnSyntax = context.bind(serviceIdentifier).toConstantValue(target.constantValue);
         return NoOPSyntax.constantValueSyntax(serviceIdentifier, whenOnSyntax);
@@ -126,7 +126,10 @@ namespace NoOPSyntax {
         };
     }
 
-    export function serviceSyntax(serviceIdentifier: interfaces.ServiceIdentifier<any>): interfaces.BindingInWhenOnSyntax<any> {
+    export function serviceSyntax(
+        serviceIdentifier: interfaces.ServiceIdentifier<any>,
+        target: BindingTarget<any>
+    ): interfaces.BindingInWhenOnSyntax<any> {
         const noOpReturn = (): interfaces.BindingInWhenOnSyntax<any> => {
             const errorMsg =
                 `${serviceIdentifier.toString()} has been bound to 'service'.` +
@@ -136,7 +139,7 @@ namespace NoOPSyntax {
             error.name = 'NoOpInvocation';
             throw error;
         };
-        return {
+        const syntax = {
             onActivation: noOpReturn,
             when: noOpReturn,
             whenAnyAncestorIs: noOpReturn,
@@ -154,9 +157,18 @@ namespace NoOPSyntax {
             whenTargetNamed: noOpReturn,
             whenTargetTagged: noOpReturn,
             inRequestScope: noOpReturn,
-            inSingletonScope: noOpReturn,
+            inSingletonScope: () => {
+                if (ServiceTarget.is(target)) {
+                    // toService bindings are essentially singleTons.
+                    // We don't throw an error in this case.
+                    return syntax;
+                }
+                return noOpReturn();
+            },
             inTransientScope: noOpReturn
         };
+
+        return syntax;
     }
 }
 

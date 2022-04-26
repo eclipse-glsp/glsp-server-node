@@ -15,17 +15,17 @@
  ********************************************************************************/
 import { Action, MaybePromise, SaveModelAction, SetDirtyStateAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { GModelState } from '../base-impl/gmodel-state';
-import { SourceModelStorage } from '../features/model/source-model-storage';
-import { GLSPServerError } from '../utils/glsp-server-error';
-import { ActionHandler } from './action-handler';
+import { ActionHandler } from '../../actions/action-handler';
+import { GLSPServerError } from '../../utils/glsp-server-error';
+import { ModelState } from './model-state';
+import { SourceModelStorage } from './source-model-storage';
 
 @injectable()
 export class SaveModelActionHandler implements ActionHandler {
     actionKinds = [SaveModelAction.KIND];
 
-    @inject(GModelState)
-    protected modelState: GModelState;
+    @inject(ModelState)
+    protected modelState: ModelState;
 
     @inject(SourceModelStorage)
     protected sourceModelStorage: SourceModelStorage;

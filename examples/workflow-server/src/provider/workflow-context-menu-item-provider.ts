@@ -13,15 +13,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Args, ContextMenuItemProvider, CreateNodeOperation, GModelState, MenuItem, Point } from '@eclipse-glsp/server-node';
+import { Args, ContextMenuItemProvider, CreateNodeOperation, MenuItem, ModelState, Point } from '@eclipse-glsp/server-node';
 import { inject, injectable } from 'inversify';
 import { GridSnapper } from '../handler/grid-snapper';
 import { ModelTypes } from '../util/model-types';
 
 @injectable()
 export class WorkflowContextMenuItemProvider extends ContextMenuItemProvider {
-    @inject(GModelState)
-    protected modelState: GModelState;
+    @inject(ModelState)
+    protected modelState: ModelState;
 
     getItems(selectedElementIds: string[], position: Point, args?: Args): MenuItem[] {
         if (this.modelState.isReadonly || selectedElementIds.length !== 0) {

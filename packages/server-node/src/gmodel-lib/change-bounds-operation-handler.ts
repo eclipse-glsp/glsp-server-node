@@ -16,15 +16,15 @@
 import { GModelRoot, GNode } from '@eclipse-glsp/graph';
 import { ChangeBoundsOperation, Dimension, Point } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
+import { ModelState } from '../features/model/model-state';
 import { OperationHandler } from '../operations/operation-handler';
-import { GModelState } from './gmodel-state';
 
 @injectable()
 export class ChangeBoundsOperationHandler implements OperationHandler {
     operationType = ChangeBoundsOperation.KIND;
 
-    @inject(GModelState)
-    protected modelState: GModelState;
+    @inject(ModelState)
+    protected modelState: ModelState;
 
     execute(operation: ChangeBoundsOperation): void {
         for (const element of operation.newBounds) {
@@ -44,11 +44,14 @@ export class ChangeBoundsOperationHandler implements OperationHandler {
         if (newPosition) {
             positionToSet = parent instanceof GModelRoot ? newPosition : { x: Math.max(0, newPosition.x), y: Math.max(0, newPosition.y) };
         }
-        if (!nodeToUpdate.layoutOptions) {
-            nodeToUpdate.layoutOptions = {};
+        if (nodeToUpdate.layout) {
+            if (!nodeToUpdate.layoutOptions) {
+                nodeToUpdate.layoutOptions = {};
+            }
+            nodeToUpdate.layoutOptions['prefWidth'] = newSize.width;
+            nodeToUpdate.layoutOptions['prefHeight'] = newSize.height;
         }
-        nodeToUpdate.layoutOptions['prefWidth'] = newSize.width;
-        nodeToUpdate.layoutOptions['prefHeight'] = newSize.height;
+
         nodeToUpdate.size = newSize;
         nodeToUpdate.position = positionToSet;
     }

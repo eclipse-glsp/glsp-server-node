@@ -16,6 +16,7 @@
 import { GModelRoot } from '@eclipse-glsp/graph';
 import { EditMode } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
+import { ClientId } from '../../di/service-identifiers';
 import { GModelIndex } from './gmodel-index';
 import { GModelSerializer } from './gmodel-serializer';
 
@@ -29,9 +30,13 @@ export interface ModelState {
     root: GModelRoot;
     editMode: string;
     isDirty: boolean;
+    sourceUri?: string;
+    clientId: string;
     readonly isReadonly: boolean;
     readonly index: GModelIndex;
 }
+
+export const SOURCE_URI_ARG = 'sourceUri';
 
 @injectable()
 export class DefaultModelState implements ModelState {
@@ -40,6 +45,9 @@ export class DefaultModelState implements ModelState {
 
     @inject(GModelSerializer)
     protected serializer: GModelSerializer;
+
+    @inject(ClientId)
+    readonly clientId: string;
 
     protected properties = new Map<string, any>();
 
@@ -63,6 +71,10 @@ export class DefaultModelState implements ModelState {
             return result as P;
         }
         return guard(result) ? result : undefined;
+    }
+
+    get sourceUri(): string | undefined {
+        return this.get(SOURCE_URI_ARG);
     }
 
     clear(key: string): void {

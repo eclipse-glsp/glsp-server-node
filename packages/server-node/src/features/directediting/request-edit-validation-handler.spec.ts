@@ -17,9 +17,9 @@ import { GNode } from '@eclipse-glsp/graph';
 import { RequestEditValidationAction, SetEditValidationResultAction, ValidationStatus } from '@eclipse-glsp/protocol';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import { GModelState } from '../../base-impl/gmodel-state';
 import { TestContextEditValidator, TestLabelEditValidator } from '../../test/mock-util';
 import { GModelIndex } from '../model/gmodel-index';
+import { DefaultModelState } from '../model/model-state';
 import { ContextEditValidator } from './context-edit-validator';
 import { DefaultContextEditValidatorRegistry } from './context-edit-validator-registry';
 import { LabelEditValidator } from './label-edit-validator';
@@ -27,7 +27,7 @@ import { RequestEditValidationHandler } from './request-edit-validation-handler'
 
 describe('Test RequestEditValidationHandler', () => {
     const contextEditValidators: ContextEditValidator[] = [new TestContextEditValidator()];
-    const modelState = new GModelState();
+    const modelState = new DefaultModelState();
     Object.defineProperty(modelState, 'index', { value: new GModelIndex() });
     sinon.stub(modelState.index, 'get').callsFake(() => new GNode());
     const contextEditValidatorsRegistry = new DefaultContextEditValidatorRegistry(

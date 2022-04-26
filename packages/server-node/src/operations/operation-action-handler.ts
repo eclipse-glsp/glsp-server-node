@@ -16,8 +16,8 @@
 import { Action, CreateOperation, MaybePromise, Operation, ServerMessageAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
-import { GModelState } from '../base-impl/gmodel-state';
 import { Operations } from '../di/service-identifiers';
+import { ModelState } from '../features/model/model-state';
 import { ModelSubmissionHandler } from '../features/model/model-submission-handler';
 import { OperationHandler } from './operation-handler';
 import { OperationHandlerRegistry } from './operation-handler-registry';
@@ -26,7 +26,7 @@ import { OperationHandlerRegistry } from './operation-handler-registry';
 export class OperationActionHandler implements ActionHandler {
     @inject(OperationHandlerRegistry) protected operationHandlerRegistry: OperationHandlerRegistry;
     @inject(ModelSubmissionHandler) protected modelSubmissionHandler: ModelSubmissionHandler;
-    @inject(GModelState) protected modelState: GModelState;
+    @inject(ModelState) protected modelState: ModelState;
 
     constructor(@inject(Operations) readonly actionKinds: string[]) {}
 
@@ -53,7 +53,7 @@ export class OperationActionHandler implements ActionHandler {
         this.modelState.index.indexRoot(this.modelState.root);
         this.modelState.isDirty = true;
         // TODO: this.modelState.execute(command)
-        return this.modelSubmissionHandler.submitModel(); // TODO: Add SetDirtyStateAction.Reason.Operation
+        return this.modelSubmissionHandler.submitModel('operation');
     }
 
     handles(action: Action): boolean {

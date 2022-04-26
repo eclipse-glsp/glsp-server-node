@@ -23,15 +23,15 @@ import {
 } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
-import { GModelState } from '../../base-impl/gmodel-state';
 import { GModelSerializer } from '../model/gmodel-serializer';
+import { ModelState } from '../model/model-state';
 
 @injectable()
 export class RequestClipboardDataActionHandler implements ActionHandler {
     actionKinds = [RequestClipboardDataAction.KIND];
 
-    @inject(GModelState)
-    protected modelState: GModelState;
+    @inject(ModelState)
+    protected modelState: ModelState;
 
     @inject(GModelSerializer)
     protected modelSerializer: GModelSerializer;

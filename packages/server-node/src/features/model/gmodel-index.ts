@@ -14,6 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GEdge, GModelElement, GModelElementConstructor, GModelRoot, GNode } from '@eclipse-glsp/graph';
+import { TypeGuard } from '@eclipse-glsp/protocol';
 import { injectable } from 'inversify';
 import { getOrThrow, GLSPServerError } from '../../utils/glsp-server-error';
 
@@ -164,5 +165,31 @@ export class GModelIndex {
      */
     getAllEdges(): GEdge[] {
         return this.getAllByClass(GEdge);
+    }
+
+    /**
+     * Returns the first element matching the given {@link TypeGuard} starting element with the
+     * given id and walking up the parent hierarchy.
+     *
+     * @param elementId The element to start the search from
+     * @param guard The typeguard which the element should match
+     * @return The first matching element or `undefined`.
+     */
+    findParentElement<T extends GModelElement>(elementId: string, guard: TypeGuard<T>): T | undefined {
+        const element = this.get(elementId);
+        return element ? this._findElement(element.parent, guard) : undefined;
+    }
+
+    protected _findElement<T>(element: GModelElement, guard: TypeGuard<T>): T | undefined {
+        if (!element) {
+            return undefined;
+        }
+        if (guard(element)) {
+            return element;
+        }
+        if (element instanceof GModelRoot) {
+            return undefined;
+        }
+        return this._findElement(element.parent, guard);
     }
 }

@@ -17,18 +17,18 @@ import { GEdge, GModelElement, GNode } from '@eclipse-glsp/graph';
 import { DeleteElementOperation } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { GModelIndex } from '../features/model/gmodel-index';
+import { ModelState } from '../features/model/model-state';
 import { OperationHandler } from '../operations/operation-handler';
 import { Logger } from '../utils/logger';
-import { GModelState } from './gmodel-state';
 
 @injectable()
-export class DeleteOperationHandler implements OperationHandler {
+export class GModelDeleteOperationHandler implements OperationHandler {
     @inject(Logger)
     protected logger: Logger;
 
     protected allDependantsIds: Set<string>;
 
-    @inject(GModelState) protected readonly modelState: GModelState;
+    @inject(ModelState) protected readonly modelState: ModelState;
 
     get operationType(): string {
         return DeleteElementOperation.KIND;
@@ -66,7 +66,7 @@ export class DeleteOperationHandler implements OperationHandler {
         }
 
         const dependents = new Set<GModelElement>();
-        this.collectDependents(dependents, nodeToDelete, this.modelState);
+        this.collectDependents(dependents, nodeToDelete);
 
         dependents.forEach(dependant => {
             const index = this.modelState.root.children.findIndex(element => element === dependant);
@@ -79,22 +79,22 @@ export class DeleteOperationHandler implements OperationHandler {
         return true;
     }
 
-    protected collectDependents(dependents: Set<GModelElement>, nodeToDelete: GModelElement, modelState: GModelState): void {
+    protected collectDependents(dependents: Set<GModelElement>, nodeToDelete: GModelElement): void {
         if (dependents.has(nodeToDelete)) {
             return;
         }
 
         if (nodeToDelete.children.length > 0) {
-            nodeToDelete.children.forEach(child => this.collectDependents(dependents, child, modelState));
+            nodeToDelete.children.forEach(child => this.collectDependents(dependents, child));
         }
 
         if (nodeToDelete instanceof GNode) {
             const index = this.modelState.index;
             index.getIncomingEdges(nodeToDelete).forEach(incoming => {
-                this.collectDependents(dependents, incoming, modelState);
+                this.collectDependents(dependents, incoming);
             });
             index.getOutgoingEdges(nodeToDelete).forEach(outgoing => {
-                this.collectDependents(dependents, outgoing, modelState);
+                this.collectDependents(dependents, outgoing);
             });
         }
 

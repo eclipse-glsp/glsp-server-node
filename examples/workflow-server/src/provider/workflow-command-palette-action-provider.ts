@@ -21,9 +21,9 @@ import {
     DefaultTypes,
     DeleteElementOperation,
     GModelElement,
-    GModelState,
     GNode,
     LabeledAction,
+    ModelState,
     Point
 } from '@eclipse-glsp/server-node';
 import { inject, injectable } from 'inversify';
@@ -32,8 +32,8 @@ import { ModelTypes } from '../util/model-types';
 
 @injectable()
 export class WorkflowCommandPaletteActionProvider extends CommandPaletteActionProvider {
-    @inject(GModelState)
-    protected override modelState: GModelState;
+    @inject(ModelState)
+    protected override modelState: ModelState;
 
     getPaletteActions(selectedElementIds: string[], selectedElements: GModelElement[], position: Point, args?: Args): LabeledAction[] {
         const actions: LabeledAction[] = [];

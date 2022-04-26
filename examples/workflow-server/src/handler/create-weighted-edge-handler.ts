@@ -13,15 +13,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { CreateEdgeOperationHandler, GEdge, GModelElement, GModelState } from '@eclipse-glsp/server-node';
+import { GEdge, GModelCreateEdgeOperationHandler, GModelElement } from '@eclipse-glsp/server-node';
 import { WeightedEdge } from '../graph-extension';
 import { ModelTypes } from '../util/model-types';
 
-export class CreateWeightedEdgeHandler extends CreateEdgeOperationHandler {
+export class CreateWeightedEdgeHandler extends GModelCreateEdgeOperationHandler {
     elementTypeIds = [ModelTypes.WEIGHTED_EDGE];
     label = 'Weighted edge';
 
-    createEdge(source: GModelElement, target: GModelElement, modelState: GModelState): GEdge | undefined {
+    createEdge(source: GModelElement, target: GModelElement): GEdge | undefined {
         return WeightedEdge.builder().sourceId(source.id).targetId(target.id).probability('medium').addCssClass('medium').build();
     }
 }

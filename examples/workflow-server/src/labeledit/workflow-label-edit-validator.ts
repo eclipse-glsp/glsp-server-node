@@ -13,14 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GModelElement, GModelState, LabelEditValidator, ValidationStatus } from '@eclipse-glsp/server-node';
+import { GModelElement, LabelEditValidator, ModelState, ValidationStatus } from '@eclipse-glsp/server-node';
 import { inject, injectable } from 'inversify';
 import { TaskNode } from '../graph-extension';
 
 @injectable()
 export class WorkflowLabelEditValidator implements LabelEditValidator {
-    @inject(GModelState)
-    protected modelState: GModelState;
+    @inject(ModelState)
+    protected modelState: ModelState;
 
     validate(label: string, element: GModelElement): ValidationStatus {
         if (label.length < 1) {

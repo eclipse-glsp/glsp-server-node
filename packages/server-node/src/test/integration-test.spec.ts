@@ -15,7 +15,6 @@
  ********************************************************************************/
 import { getDefaultMapping, GNode } from '@eclipse-glsp/graph';
 import {
-    Args,
     CompoundOperation,
     CreateNodeOperation,
     InitializeResult,
@@ -27,15 +26,15 @@ import { expect } from 'chai';
 import { Container, ContainerModule, injectable } from 'inversify';
 import * as path from 'path';
 import * as sinon from 'sinon';
-import { GModelDiagramModule } from '../base-impl/gmodel-diagram-module';
 import { BindingTarget } from '../di/binding-target';
 import { InstanceMultiBinding } from '../di/multi-binding';
 import { ServerModule } from '../di/server-module';
 import { InjectionContainer } from '../di/service-identifiers';
 import { DiagramConfiguration } from '../diagram/diagram-configuration';
+import { GModelCreateNodeOperationHandler } from '../gmodel-lib';
+import { GModelDiagramModule } from '../gmodel-lib/gmodel-diagram-module';
 import { SocketServerLauncher } from '../launch/socket-server-launcher';
 import { CompoundOperationHandler } from '../operations/compound-operation-handler';
-import { CreateNodeOperationHandler } from '../operations/create-operation-handler';
 import { OperationHandlerConstructor } from '../operations/operation-handler';
 import { OperationHandlerRegistry } from '../operations/operation-handler-registry';
 import { GLSPClientProxy, JsonRpcGLSPClientProxy } from '../protocol/glsp-client-proxy';
@@ -65,11 +64,11 @@ class TestDiagramModule extends GModelDiagramModule {
 }
 
 @injectable()
-class CreateANodeOperationHandler extends CreateNodeOperationHandler {
+class CreateANodeOperationHandler extends GModelCreateNodeOperationHandler {
     label = 'ANode';
     elementTypeIds = ['ANode'];
 
-    createNode(relativeLocation: Point | undefined, args: Args | undefined): GNode {
+    createNode(operation: CreateNodeOperation, relativeLocation?: Point): GNode | undefined {
         return new GNode();
     }
 }

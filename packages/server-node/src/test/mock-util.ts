@@ -20,6 +20,7 @@ import {
     Action,
     ActionMessage,
     Args,
+    CreateNodeOperation,
     EdgeTypeHint,
     InitializeClientSessionParameters,
     MaybeArray,
@@ -32,11 +33,11 @@ import { Container } from 'inversify';
 import { MessageConnection } from 'vscode-jsonrpc';
 import { ActionDispatcher } from '../actions/action-dispatcher';
 import { ActionHandler, ActionHandlerFactory } from '../actions/action-handler';
-import { GModelState } from '../base-impl';
 import { DiagramConfiguration, ServerLayoutKind } from '../diagram/diagram-configuration';
 import { ContextEditValidator } from '../features/directediting/context-edit-validator';
 import { LabelEditValidator } from '../features/directediting/label-edit-validator';
-import { CreateEdgeOperationHandler, CreateNodeOperationHandler } from '../operations/create-operation-handler';
+import { GModelCreateNodeOperationHandler } from '../gmodel-lib';
+import { GModelCreateEdgeOperationHandler } from '../gmodel-lib/gmodel-create-edge-operation-handler';
 import { JsonRpcGLSPClientProxy } from '../protocol/glsp-client-proxy';
 import { GLSPServer } from '../protocol/glsp-server';
 import { GLSPServerListener } from '../protocol/glsp-server-listener';
@@ -77,7 +78,7 @@ export class StubActionHandler implements ActionHandler {
     }
 }
 
-export class StubCreateNodeOperationHandler extends CreateNodeOperationHandler {
+export class StubCreateNodeOperationHandler extends GModelCreateNodeOperationHandler {
     elementTypeIds: string[];
 
     constructor(readonly label: string) {
@@ -85,12 +86,12 @@ export class StubCreateNodeOperationHandler extends CreateNodeOperationHandler {
         this.elementTypeIds = [label];
     }
 
-    createNode(relativeLocation: Point | undefined, args: Args | undefined): GNode {
+    createNode(operation: CreateNodeOperation, relativeLocation?: Point): GNode | undefined {
         return new GNode();
     }
 }
 
-export class StubCreateEdgeOperationHandler extends CreateEdgeOperationHandler {
+export class StubCreateEdgeOperationHandler extends GModelCreateEdgeOperationHandler {
     elementTypeIds: string[];
 
     constructor(readonly label: string) {
@@ -98,7 +99,7 @@ export class StubCreateEdgeOperationHandler extends CreateEdgeOperationHandler {
         this.elementTypeIds = [label];
     }
 
-    createEdge(source: GModelElement, target: GModelElement, modelState: GModelState): GEdge | undefined {
+    createEdge(source: GModelElement, target: GModelElement): GEdge | undefined {
         return undefined;
     }
 }

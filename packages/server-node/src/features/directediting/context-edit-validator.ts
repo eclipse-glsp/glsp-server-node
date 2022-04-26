@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { GModelElement } from '@eclipse-glsp/graph/lib/gmodel-element';
 import { RequestEditValidationAction, ValidationStatus } from '@eclipse-glsp/protocol';
-import { GModelState } from '../../base-impl/gmodel-state';
+import { ModelState } from '../model/model-state';
 import { LabelEditValidator } from './label-edit-validator';
 
 export const ContextEditValidator = Symbol('ContextEditValidator');
@@ -37,7 +37,7 @@ export interface ContextEditValidator {
 
 export class ValidateLabelEditAdapter implements ContextEditValidator {
     labelEditValidator: LabelEditValidator;
-    constructor(readonly modelState: GModelState, labelEditValidator: LabelEditValidator) {
+    constructor(readonly modelState: ModelState, labelEditValidator: LabelEditValidator) {
         this.labelEditValidator = labelEditValidator;
     }
 

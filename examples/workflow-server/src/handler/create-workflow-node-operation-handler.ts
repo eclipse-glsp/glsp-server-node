@@ -15,10 +15,10 @@
  ********************************************************************************/
 import {
     CreateNodeOperation,
-    CreateNodeOperationHandler,
     GCompartment,
+    GModelCreateNodeOperationHandler,
     GModelElement,
-    GModelState,
+    ModelState,
     Point
 } from '@eclipse-glsp/server-node';
 import { inject, injectable } from 'inversify';
@@ -27,9 +27,9 @@ import { ModelTypes } from '../util/model-types';
 import { GridSnapper } from './grid-snapper';
 
 @injectable()
-export abstract class CreateWorkflowNodeOperationHandler extends CreateNodeOperationHandler {
-    @inject(GModelState)
-    protected override modelState: GModelState;
+export abstract class CreateWorkflowNodeOperationHandler extends GModelCreateNodeOperationHandler {
+    @inject(ModelState)
+    protected override modelState: ModelState;
 
     override getLocation(operation: CreateNodeOperation): Point | undefined {
         return GridSnapper.snap(operation.location);
