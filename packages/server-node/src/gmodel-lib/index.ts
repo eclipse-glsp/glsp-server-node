@@ -23,3 +23,4 @@ export * from './gmodel-create-node-operation-handler';
 export * from './gmodel-diagram-module';
 export * from './gmodel-storage';
 export * from './paste-operation-handler';
+export * from './reconnect-edge-operation-handler';

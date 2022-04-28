@@ -26,13 +26,13 @@ import { SaveModelActionHandler } from '../features/model/save-model-action-hand
 import { SourceModelStorage } from '../features/model/source-model-storage';
 import { CutOperationHandler } from '../operations/cut-operation-handler';
 import { OperationHandlerConstructor } from '../operations/operation-handler';
-import { ReconnectEdgeOperationHandler } from '../operations/reconnect-edge-operation-handler';
 import { ApplyLabelEditOperationHandler } from './apply-label-edit-operation-handler';
 import { ChangeBoundsOperationHandler } from './change-bounds-operation-handler';
 import { ComputedBoundsActionHandler } from './computed-bounds-action-handler';
 import { GModelDeleteOperationHandler } from './delete-operation-handler';
 import { GModelStorage } from './gmodel-storage';
 import { PasteOperationHandler } from './paste-operation-handler';
+import { ReconnectEdgeOperationHandler } from './reconnect-edge-operation-handler';
 
 /**
  * Extension of the {@link DiagramModule} to provide GModel integration.
