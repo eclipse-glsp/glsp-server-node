@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { CreateNodeOperation, GNode, ModelState, Point } from '@eclipse-glsp/server-node';
+import { CreateNodeOperation, GNode, Point } from '@eclipse-glsp/server-node';
 import { injectable } from 'inversify';
 import { ActivityNode, ActivityNodeBuilder } from '../graph-extension';
 import { ModelTypes } from '../util/model-types';
@@ -22,10 +22,10 @@ import { CreateWorkflowNodeOperationHandler } from './create-workflow-node-opera
 @injectable()
 export abstract class CreateActivityNodeHandler extends CreateWorkflowNodeOperationHandler {
     createNode(operation: CreateNodeOperation, relativeLocation?: Point): GNode | undefined {
-        return this.builder(relativeLocation, this.modelState).build();
+        return this.builder(relativeLocation).build();
     }
 
-    protected builder(point: Point | undefined, modelState: ModelState): ActivityNodeBuilder {
+    protected builder(point: Point | undefined): ActivityNodeBuilder {
         return ActivityNode.builder()
             .position(point ?? Point.ORIGIN)
             .type(this.elementTypeIds[0])

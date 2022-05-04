@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { ArgsUtil, CreateNodeOperation, GNode, ModelState, Point } from '@eclipse-glsp/server-node';
+import { ArgsUtil, CreateNodeOperation, GNode, Point } from '@eclipse-glsp/server-node';
 import { Category, CategoryNodeBuilder } from '../graph-extension';
 import { ModelTypes } from '../util/model-types';
 import { CreateWorkflowNodeOperationHandler } from './create-workflow-node-operation-handler';
@@ -23,10 +23,10 @@ export class CreateCategoryHandler extends CreateWorkflowNodeOperationHandler {
     label = 'Category';
 
     createNode(operation: CreateNodeOperation, relativeLocation?: Point): GNode | undefined {
-        return this.builder(relativeLocation, this.modelState).build();
+        return this.builder(relativeLocation).build();
     }
 
-    protected builder(point: Point | undefined, modelState: ModelState): CategoryNodeBuilder {
+    protected builder(point: Point | undefined): CategoryNodeBuilder {
         return Category.builder()
             .type(this.elementTypeIds[0])
             .position(point ?? Point.ORIGIN)

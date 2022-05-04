@@ -40,7 +40,12 @@ export function applyBindingTarget<T>(
             : context.bind(serviceIdentifier).to(target);
     } else if (ServiceTarget.is(target)) {
         if (!context.isBound(target.service)) {
-            throw new Error(`The target service ${target.service.toString()} is not bound!. Cannot apply target binding`);
+            const autoBind = target.autoBind === undefined || target.autoBind === true;
+            if (autoBind && isConstructor(target.service)) {
+                context.bind(target.service).toSelf().inSingletonScope();
+            } else {
+                throw new Error(`The target service ${target.service.toString()} is not bound!. Cannot apply target binding`);
+            }
         }
         context.bind(serviceIdentifier).toService(target.service);
         return NoOPSyntax.serviceSyntax(serviceIdentifier, target);
@@ -86,6 +91,12 @@ export namespace ConstantValueTarget {
  */
 export interface ServiceTarget<T> {
     service: interfaces.ServiceIdentifier<T>;
+    /**
+     * Boolean flag to configure how to handle unbound service identifiers.
+     * If `undefined` or `true` the {@link applyBindingTarget} function will attempt unbound constructor service identifiers
+     * to `self().inSingletonScope()`.
+     */
+    autoBind?: boolean;
 }
 
 export namespace ServiceTarget {
@@ -103,7 +114,7 @@ export interface DynamicValueTarget<T> {
 
 /**
  * No-op binding syntax definitions for `constantValue` and `toService` bindings.
- * Using this no-op syntaxes allows the {@link applyBindingTarget} function to return a {@interfaces.BindingInWhenOnSyntax}
+ * Using this no-op syntaxes allows the {@link applyBindingTarget} function to return a {@link interfaces.BindingInWhenOnSyntax}
  * independently of the actual {@link BindingTarget}.
  */
 namespace NoOPSyntax {

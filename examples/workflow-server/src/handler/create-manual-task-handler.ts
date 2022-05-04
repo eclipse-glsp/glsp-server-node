@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { ModelState, Point } from '@eclipse-glsp/server-node';
+import { Point } from '@eclipse-glsp/server-node';
 import { injectable } from 'inversify';
 import { TaskNodeBuilder } from '../graph-extension';
 import { ModelTypes } from '../util/model-types';
@@ -24,7 +24,7 @@ export class CreateManualTaskHandler extends CreateTaskHandler {
     elementTypeIds = [ModelTypes.MANUAL_TASK];
     label = 'Manual Task';
 
-    protected override builder(point: Point | undefined, modelState: ModelState): TaskNodeBuilder {
-        return super.builder(point, modelState).addCssClass('manual');
+    protected override builder(point: Point | undefined): TaskNodeBuilder {
+        return super.builder(point).addCssClass('manual');
     }
 }
