@@ -97,7 +97,12 @@ describe('BindingTarget', () => {
             });
             it('Should throw an error because the given target service is not bound', () => {
                 context.isBound.returns(false);
-                expect(() => applyBindingTarget(context, Target, { service: SubTarget })).to.throw();
+                expect(() => applyBindingTarget(context, Target, { service: SubTarget, autoBind: false })).to.throw();
+            });
+            it('Should bind the unbound target service to itself before applying the toService binding', () => {
+                context.isBound.returns(false);
+                applyBindingTarget(context, Target, { service: SubTarget });
+                expect(context.bind.calledWith(Target)).to.be.true;
             });
             it('The return syntax should be no op and invocation of a syntax function should throw an error', () => {
                 context.isBound.returns(true);
