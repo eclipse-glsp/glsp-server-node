@@ -27,7 +27,8 @@ export interface ModelState {
     setAll(properties: Record<string, unknown>): void;
     get<P>(key: string, guard?: (object: unknown) => object is P): P | undefined;
     clear(key: string): void;
-    root: GModelRoot;
+    readonly root: GModelRoot;
+    updateRoot(newRoot: GModelRoot): void;
     editMode: string;
     isDirty: boolean;
     sourceUri?: string;
@@ -89,8 +90,12 @@ export class DefaultModelState implements ModelState {
         return this._root;
     }
 
-    public set root(root: GModelRoot) {
-        this.index.indexRoot(root);
+    protected set root(root: GModelRoot) {
         this._root = root;
+    }
+
+    updateRoot(newRoot: GModelRoot): void {
+        this.root = newRoot;
+        this.index.indexRoot(newRoot);
     }
 }
