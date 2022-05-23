@@ -42,7 +42,7 @@ export class GModelStorage extends AbstractJsonModelStorage {
         const sourceUri = this.getSourceUri(action);
         const rootSchema = this.loadFromFile(sourceUri, GModelElementSchema.is);
         const root = this.modelSerializer.createRoot(rootSchema);
-        this.modelState.root = root;
+        this.modelState.updateRoot(root);
     }
 
     saveSourceModel(action: SaveModelAction): MaybePromise<void> {
