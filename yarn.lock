@@ -91,9 +91,9 @@
   integrity sha512-GrIHVf41ZYfoHIs97JXukUAmTS6IHQ4n1MnIJcNILJ38lLoFb254QYWdpLybbtu8xmXMdqPOHlrJE1J6TrB5Ow==
 
 "@eclipse-glsp/protocol@next":
-  version "0.10.0-next.c1d28ed.179"
-  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-0.10.0-next.c1d28ed.179.tgz#8b7b4938349c100c0bdde120989e80e9997b37ed"
-  integrity sha512-yvTpB/widPc2eXOXPGsQnkhpuq7tOx7DLRQC0TjPbQ3FJ0he4aao7n3ELL+ZCt2u3p3IpjuIPjOZaTZiaSZq7Q==
+  version "0.10.0-next.843026.180"
+  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-0.10.0-next.843026.180.tgz#5725757e0eee0e8bb1234b14256b71cd3efbd2c0"
+  integrity sha512-Ezm6z4nQ8K8y6eN6llteMr1ny3BXWQa+ajRlfcXuOXjTF1Ttn75FVnbrnDmvCxLT4ICG0/woKODbvAQxElqyLw==
   dependencies:
     sprotty-protocol next
     uuid "7.0.3"
