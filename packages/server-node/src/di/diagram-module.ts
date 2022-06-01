@@ -18,7 +18,6 @@ import {
     DeleteMarkersAction,
     ExportSvgAction,
     FitToScreenAction,
-    ModelSourceChangedAction,
     NavigateToExternalTargetAction,
     NavigateToTargetAction,
     RequestBoundsAction,
@@ -39,6 +38,7 @@ import {
     SetResolvedNavigationTargetAction,
     SetTypeHintsAction,
     SetViewportAction,
+    SourceModelChangedAction,
     TriggerEdgeCreationAction,
     TriggerNodeCreationAction,
     UpdateModelAction
@@ -311,7 +311,7 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(ExportSvgAction.KIND);
         binding.add(DeleteMarkersAction.KIND);
         binding.add(FitToScreenAction.KIND);
-        binding.add(ModelSourceChangedAction.KIND);
+        binding.add(SourceModelChangedAction.KIND);
         binding.add(NavigateToTargetAction.KIND);
         binding.add(NavigateToExternalTargetAction.KIND);
         binding.add(RequestBoundsAction.KIND);
