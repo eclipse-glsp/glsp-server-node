@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-glsp/layout-elk",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "description": "Integration of ELK graph layout algorithms in GLSP Node Server",
   "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
   "keywords": [
@@ -38,10 +38,10 @@
     "css"
   ],
   "dependencies": {
-    "sprotty-elk": "next",
+    "@eclipse-glsp/server-node": "^1.0.0",
+    "elkjs": "^0.7.1",
     "inversify": "^5.1.1",
-    "@eclipse-glsp/server-node": "0.9.0",
-    "elkjs": "^0.7.1"
+    "sprotty-elk": "0.12.0"
   },
   "scripts": {
     "clean": "rimraf tsconfig.tsbuildinfo lib",
