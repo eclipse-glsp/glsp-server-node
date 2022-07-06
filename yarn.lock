@@ -44,7 +44,7 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@eclipse-glsp/config@1.0.0":
+"@eclipse-glsp/config@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@eclipse-glsp/config/-/config-1.0.0.tgz#27ea4d00dcd7669bd95eb45456194d159b916546"
   integrity sha512-/4nDtWki136vLxtXuEPQAkT6zLYtn8SbZ8VuAel6+vc6f+LsTeB1bQW00v4AsmMZmX1gXOnPFuMWMf/34xhNPQ==
@@ -90,10 +90,10 @@
   resolved "https://registry.yarnpkg.com/@eclipse-glsp/prettier-config/-/prettier-config-1.0.0.tgz#8ff72c8709a4233af98e38535feb3415b699a4b9"
   integrity sha512-Fwzd2vRD5aspzY9VqUhRU11no1apVz6Pw4hvz4gLxFSoJIwE+tofux5jBOLQVFv3DmB7HJgksrTznCwEzta8kA==
 
-"@eclipse-glsp/protocol@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-1.0.0.tgz#42dddc83250eecc7e537dea61ef8bcd5c843810d"
-  integrity sha512-ie6ZNMPrAyCG65HL93RKDcKTb5IL0QHw0WWfkGzc+0sqWswnCkPPfFLp51rCsQE8ixYVkaJEf0slirxvjxzdSA==
+"@eclipse-glsp/protocol@next":
+  version "1.1.0-next.2b83212.183"
+  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-1.1.0-next.2b83212.183.tgz#9baa13700bac5ff1147e92df630d3717b91e6eed"
+  integrity sha512-0SckuyFmn/8gF4LIYa+t5mALgO+pMAvRkCFGD6GH95IllWV/XqPVyIG3hU6+X0dIQ3tCd+6HGJVCjqHoDB2CdA==
   dependencies:
     sprotty-protocol "0.12.0"
     uuid "7.0.3"

@@ -345,6 +345,19 @@ export abstract class DiagramModule extends GLSPModule {
 
     protected abstract bindSourceModelStorage(): BindingTarget<SourceModelStorage>;
 
+    /**
+     * Returns the {@link BindingTarget} for the {@link ModelState} interface.
+     * Typically a {@link ServiceTarget} is returned as this ensures that both
+     * `@inject(ModelState)` and `@inject(MyCustomModelState`) can be used and resolve
+     * to the same instance.
+     *
+     * Example:
+     * ```ts
+     *  protected override bindModelState():BindingTarget<ModelState> {
+     *     return { service: MyCustomModelState};
+     *  }
+     *```
+     */
     protected abstract bindModelState(): BindingTarget<ModelState>;
 
     protected abstract bindDiagramConfiguration(): BindingTarget<DiagramConfiguration>;
