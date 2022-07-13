@@ -19,8 +19,10 @@ import {
     DiagramConfiguration,
     GLSPServer,
     GModelDiagramModule,
+    GModelIndex,
     InstanceMultiBinding,
     LabelEditValidator,
+    ModelState,
     ModelValidator,
     MultiBinding,
     NavigationTargetProvider,
@@ -43,6 +45,8 @@ import { CreateWeightedEdgeHandler } from './handler/create-weighted-edge-handle
 import { WorkflowLabelEditValidator } from './labeledit/workflow-label-edit-validator';
 import { WorkflowModelValidator } from './marker/workflow-model-validator';
 import { WorkflowNavigationTargetResolver } from './model/workflow-navigation-target-resolver';
+import { ModuleModelIndex } from './module-index';
+import { ModuleModelState } from './module-modelstate';
 import { NextNodeNavigationTargetProvider } from './provider/next-node-navigation-target-provider';
 import { NodeDocumentationNavigationTargetProvider } from './provider/node-documentation-navigation-target-provider';
 import { PreviousNodeNavigationTargetProvider } from './provider/previous-node-navigation-target-provider';
@@ -111,5 +115,13 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
         binding.add(NextNodeNavigationTargetProvider);
         binding.add(PreviousNodeNavigationTargetProvider);
         binding.add(NodeDocumentationNavigationTargetProvider);
+    }
+
+    protected override bindModelState(): BindingTarget<ModelState> {
+        return { service: ModuleModelState };
+    }
+
+    protected override bindGModelIndex(): BindingTarget<GModelIndex> {
+        return { service: ModuleModelIndex };
     }
 }

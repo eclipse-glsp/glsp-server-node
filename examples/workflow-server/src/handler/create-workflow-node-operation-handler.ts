@@ -13,23 +13,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import {
-    CreateNodeOperation,
-    GCompartment,
-    GModelCreateNodeOperationHandler,
-    GModelElement,
-    ModelState,
-    Point
-} from '@eclipse-glsp/server-node';
+import { CreateNodeOperation, GCompartment, GModelCreateNodeOperationHandler, GModelElement, Point } from '@eclipse-glsp/server-node';
 import { inject, injectable } from 'inversify';
 import { Category } from '../graph-extension';
+import { ModuleModelState } from '../module-modelstate';
 import { ModelTypes } from '../util/model-types';
 import { GridSnapper } from './grid-snapper';
 
 @injectable()
 export abstract class CreateWorkflowNodeOperationHandler extends GModelCreateNodeOperationHandler {
-    @inject(ModelState)
-    protected override modelState: ModelState;
+    @inject(ModuleModelState)
+    protected override modelState: ModuleModelState;
 
     override getLocation(operation: CreateNodeOperation): Point | undefined {
         return GridSnapper.snap(operation.location);
