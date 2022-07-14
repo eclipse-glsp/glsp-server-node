@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { DefaultTypes, Point } from '@eclipse-glsp/protocol';
 import { GAlignable, GAlignableBuilder } from './galignable';
-import { EdgePlacement, GEdgeLayoutable, GEdgeLayoutableBuilder } from './gedge-layoutable';
+import { GEdgeLayoutable, GEdgeLayoutableBuilder, GEdgePlacement } from './gedge-layoutable';
 import { GModelElementConstructor } from './gmodel-element';
 import { GShapeElement, GShapeElementBuilder } from './gshape-element';
 
@@ -27,7 +27,7 @@ export class GLabel extends GShapeElement implements GAlignable, GEdgeLayoutable
     override type = DefaultTypes.LABEL;
     text: string;
     alignment: Point = Point.ORIGIN;
-    edgePlacement?: EdgePlacement;
+    edgePlacement?: GEdgePlacement;
     [GAlignable] = true;
     [GEdgeLayoutable] = true;
 }
@@ -44,7 +44,7 @@ export class GLabelBuilder<G extends GLabel = GLabel> extends GShapeElementBuild
         return this;
     }
 
-    edgePlacement(placement: EdgePlacement): this {
+    edgePlacement(placement: GEdgePlacement): this {
         return GEdgeLayoutableBuilder.edgePlacement(this, placement);
     }
 }

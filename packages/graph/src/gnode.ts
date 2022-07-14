@@ -14,21 +14,28 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { DefaultTypes } from '@eclipse-glsp/protocol';
-import { GLayoutContainer, GLayoutContainerBuilder } from './glayout-container';
+import { GEdgeLayoutable, GEdgeLayoutableBuilder, GEdgePlacement } from './gedge-layoutable';
+import { GLayouting, GLayoutingBuilder } from './glayouting';
 import { GShapeElement, GShapeElementBuilder } from './gshape-element';
 
-export class GNode extends GShapeElement implements GLayoutContainer {
+export class GNode extends GShapeElement implements GEdgeLayoutable, GLayouting {
     static builder(): GNodeBuilder {
         return new GNodeBuilder(GNode).type(DefaultTypes.NODE);
     }
 
     override type = DefaultTypes.NODE;
+    edgePlacement?: GEdgePlacement;
     layout?: string;
-    [GLayoutContainer] = true;
+    [GEdgeLayoutable] = true;
+    [GLayouting] = true;
 }
 
 export class GNodeBuilder<G extends GNode = GNode> extends GShapeElementBuilder<G> {
+    edgePlacement(placement: GEdgePlacement): this {
+        return GEdgeLayoutableBuilder.edgePlacement(this, placement);
+    }
+
     layout(layout?: string): this {
-        return GLayoutContainerBuilder.layout(this, layout);
+        return GLayoutingBuilder.layout(this, layout);
     }
 }

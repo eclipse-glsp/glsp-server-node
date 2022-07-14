@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { Args, Dimension, JsonPrimitive, Point } from '@eclipse-glsp/protocol';
-import { GBoundsAware, GBoundsAwareBuilder } from './gbound-aware';
+import { GBoundsAware, GBoundsAwareBuilder } from './gbounds-aware';
 import { GLayoutable, GLayoutableBuilder } from './glayoutable';
 import { GModelElement, GModelElementBuilder } from './gmodel-element';
 

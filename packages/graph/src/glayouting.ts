@@ -15,21 +15,21 @@
  ********************************************************************************/
 import { GModelElement, GModelElementBuilder } from './gmodel-element';
 
-export const GLayoutContainer = Symbol('GLayoutContainer');
+export const GLayouting = Symbol('GLayouting');
 
-export interface GLayoutContainer {
+export interface GLayouting {
     layout?: string;
-    [GLayoutContainer]: boolean;
+    [GLayouting]: boolean;
 }
 
-export function isGLayoutContainer<G extends GModelElement>(element: G): element is G & GLayoutContainer {
-    return ((element as any)[GLayoutContainer] = true);
+export function isGLayouting<G extends GModelElement>(element: G): element is G & GLayouting {
+    return ((element as any)[GLayouting] = true);
 }
 
-export type GLayoutContainerBuilder = GModelElementBuilder<GModelElement & GLayoutContainer>;
+export type GLayoutingBuilder = GModelElementBuilder<GModelElement & GLayouting>;
 
-export namespace GLayoutContainerBuilder {
-    export function layout<B extends GLayoutContainerBuilder>(builder: B, newLayout?: string): B {
+export namespace GLayoutingBuilder {
+    export function layout<B extends GLayoutingBuilder>(builder: B, newLayout?: string): B {
         builder['proxy'].layout = newLayout;
         return builder;
     }

@@ -13,35 +13,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Args, DefaultTypes, JsonPrimitive } from '@eclipse-glsp/protocol';
-import { GLayoutContainer, GLayoutContainerBuilder } from './glayout-container';
-import { GLayoutable, GLayoutableBuilder } from './glayoutable';
+import { DefaultTypes } from '@eclipse-glsp/protocol';
+import { GLayouting, GLayoutingBuilder } from './glayouting';
 import { GShapeElement, GShapeElementBuilder } from './gshape-element';
 
-export class GCompartment extends GShapeElement implements GLayoutContainer, GLayoutable {
+export class GCompartment extends GShapeElement implements GLayouting {
     static builder(): GCompartmentBuilder {
         return new GCompartmentBuilder(GCompartment).type(DefaultTypes.COMPARTMENT);
     }
 
     override type = DefaultTypes.COMPARTMENT;
     layout?: string;
-    override layoutOptions?: Args;
-    [GLayoutContainer] = true;
-    [GLayoutable] = true;
+    [GLayouting] = true;
 }
 
 export class GCompartmentBuilder<G extends GCompartment = GCompartment> extends GShapeElementBuilder<G> {
     layout(layout?: string): this {
-        return GLayoutContainerBuilder.layout(this, layout);
-    }
-
-    override addLayoutOption(key: string, value: JsonPrimitive): this {
-        return GLayoutableBuilder.addLayoutOption(this, key, value);
-    }
-
-    override addLayoutOptions(layoutOptions: Args): this;
-    override addLayoutOptions(layoutOptions: Map<string, JsonPrimitive>): this;
-    override addLayoutOptions(layoutOptions: Args | Map<string, JsonPrimitive>): this {
-        return GLayoutableBuilder.addLayoutOptions(this, layoutOptions);
+        return GLayoutingBuilder.layout(this, layout);
     }
 }

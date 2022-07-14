@@ -19,11 +19,12 @@
  * Parts of the implementation is derived from Sprotty's SModel API
  * (https://github.com/eclipse/sprotty/blob/master/packages/sprotty/src/base/model/smodel.ts)
  */
-import { DefaultTypes as types, Dimension, Point } from '@eclipse-glsp/protocol';
-import { GBoundsAware, GBoundsAwareBuilder } from './gbound-aware';
+import { Args, DefaultTypes as types, Dimension, JsonPrimitive, Point } from '@eclipse-glsp/protocol';
+import { GBoundsAware, GBoundsAwareBuilder } from './gbounds-aware';
+import { GLayoutable, GLayoutableBuilder } from './glayoutable';
 import { GModelRoot, GModelRootBuilder } from './gmodel-element';
 
-export class GGraph extends GModelRoot implements GBoundsAware {
+export class GGraph extends GModelRoot implements GBoundsAware, GLayoutable {
     static override builder(): GGraphBuilder {
         return new GGraphBuilder(GGraph);
     }
@@ -31,7 +32,9 @@ export class GGraph extends GModelRoot implements GBoundsAware {
     override type = types.GRAPH;
     position: Point = Point.ORIGIN;
     size?: Dimension;
+    layoutOptions?: Args;
     [GBoundsAware] = true;
+    [GLayoutable] = true;
 }
 
 export class GGraphBuilder<G extends GGraph = GGraph> extends GModelRootBuilder<G> {
@@ -45,5 +48,15 @@ export class GGraphBuilder<G extends GGraph = GGraph> extends GModelRootBuilder<
     size(size: Dimension): this;
     size(sizeOrWidth: Dimension | number, height?: number): this {
         return GBoundsAwareBuilder.size(this, sizeOrWidth, height);
+    }
+
+    addLayoutOption(key: string, value: JsonPrimitive): this {
+        return GLayoutableBuilder.addLayoutOption(this, key, value);
+    }
+
+    addLayoutOptions(layoutOptions: Args): this;
+    addLayoutOptions(layoutOptions: Map<string, JsonPrimitive>): this;
+    addLayoutOptions(layoutOptions: Args | Map<string, JsonPrimitive>): this {
+        return GLayoutableBuilder.addLayoutOptions(this, layoutOptions);
     }
 }

@@ -6,8 +6,7 @@
     "yarn": ">=1.7.0 <2.x.x"
   },
   "scripts": {
-    "prepare": "yarn build",
-    "all": "yarn install && yarn lint && yarn build",
+    "prepare": "lerna run prepare",
     "build": "lerna run build",
     "watch": "lerna run --parallel watch",
     "lint": "lerna run lint --",
