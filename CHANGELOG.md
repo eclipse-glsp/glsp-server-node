@@ -2,9 +2,13 @@
 
 ## v1.1.0 - upcoming
 
-### Changes
+### Breaking Changes
 
 -   [graph] Align GGraph model with newest changes from glsp-server [#22](https://github.com/eclipse-glsp/glsp-server-node/pull/22) - Contributed on behalf of STMicroelectronics
+    -   Renamed interfaces:
+        -   `EdgePlacement` -> `GEdgePlacement` (affected classes: `GEdgeLayoutable`, `GLabel`)
+        -   `GLayoutContainer` -> `GLayouting` (affected classes: `GCompartment`, `GGraph`, `GNode`)
+        -   `GShapePreRenderedElement` -> `GShapedPreRenderedElement`
 
 ## [v1.0.0 - 30/06/2022](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v1.0.0)
 
