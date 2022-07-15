@@ -63,7 +63,8 @@ export abstract class GModelElement implements GModelElementSchema {
      * A set of css classes that should be applied to the DOM element that corresponds to this element.
      */
     cssClasses: string[] = [];
-    /** A `GModelElement can have an arbitrary amount of children. This parent-child relation ship is also reflected in
+    /**
+     * A `GModelElement can have an arbitrary amount of children. This parent-child relation ship is also reflected in
      * the corresponding DOM element i.e. DOM elements that reflect children of this element are also children
      * of the DOM element that reflects this element.
      */
@@ -194,7 +195,7 @@ export class GModelRoot extends GModelElement implements SModelRootSchema {
     }
 
     canvasBounds?: Bounds;
-    revision = 0;
+    revision?: number;
 }
 
 export class GModelRootBuilder<G extends GModelRoot = GModelRoot> extends GModelElementBuilder<G> {

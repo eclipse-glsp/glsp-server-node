@@ -17,7 +17,7 @@ import { GModelElement, GModelElementBuilder } from './gmodel-element';
 
 export type EdgeSide = 'left' | 'right' | 'top' | 'bottom' | 'on';
 
-export class EdgePlacement extends Object {
+export interface GEdgePlacement {
     rotate: boolean;
     side: EdgeSide;
     position: number;
@@ -27,7 +27,7 @@ export class EdgePlacement extends Object {
 export const GEdgeLayoutable = Symbol('GEdgeLayoutable');
 
 export interface GEdgeLayoutable {
-    edgePlacement?: EdgePlacement;
+    edgePlacement?: GEdgePlacement;
     [GEdgeLayoutable]: boolean;
 }
 
@@ -38,7 +38,7 @@ export function isGEdgeLayoutable<G extends GModelElement>(element: G): element 
 export type GEdgeLayoutableBuilder<G extends GModelElement = GModelElement> = GModelElementBuilder<G & GEdgeLayoutable>;
 
 export namespace GEdgeLayoutableBuilder {
-    export function edgePlacement<B extends GEdgeLayoutableBuilder>(builder: B, placement?: EdgePlacement): B {
+    export function edgePlacement<B extends GEdgeLayoutableBuilder>(builder: B, placement?: GEdgePlacement): B {
         builder['proxy'].edgePlacement = placement;
         return builder;
     }

@@ -7,7 +7,7 @@
       "label": "Build glsp-server packages",
       "type": "shell",
       "group": "build",
-      "command": "yarn build",
+      "command": "yarn",
       "presentation": {
         "reveal": "always",
         "panel": "new"

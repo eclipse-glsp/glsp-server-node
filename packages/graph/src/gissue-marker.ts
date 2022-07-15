@@ -24,6 +24,10 @@ export class GIssue {
 }
 
 export class GIssueMarker extends GShapeElement {
+    static builder(): GIssueMarkerBuilder {
+        return new GIssueMarkerBuilder(GIssueMarker).type(DefaultTypes.ISSUE_MARKER);
+    }
+
     override type = DefaultTypes.ISSUE_MARKER;
     issues: GIssue[] = [];
 }

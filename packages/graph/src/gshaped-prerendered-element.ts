@@ -16,7 +16,7 @@
 
 import { Dimension, Point } from '@eclipse-glsp/protocol';
 import { GAlignable } from './galignable';
-import { GBoundsAware, GBoundsAwareBuilder } from './gbound-aware';
+import { GBoundsAware, GBoundsAwareBuilder } from './gbounds-aware';
 import { GModelElementBuilder } from './gmodel-element';
 import { GPreRenderedElement } from './gpre-rendered-element';
 
@@ -27,20 +27,20 @@ import { GPreRenderedElement } from './gpre-rendered-element';
  * A popup model is rendered when hovering over a element and for many common use cases e.g rendering a tooltip
  * this model can be computed entirely on the server side.
  */
-export class GShapePreRenderedElement extends GPreRenderedElement implements GBoundsAware, GAlignable {
+export class GShapedPreRenderedElement extends GPreRenderedElement implements GBoundsAware, GAlignable {
     static override builder(): GShapePreRenderedElementBuilder {
-        return new GShapePreRenderedElementBuilder(GShapePreRenderedElement);
+        return new GShapePreRenderedElementBuilder(GShapedPreRenderedElement);
     }
 
-    [GBoundsAware] = true;
-    [GAlignable] = true;
     position: Point;
     size: Dimension;
     alignment: Point;
+    [GBoundsAware] = true;
+    [GAlignable] = true;
 }
 
 export class GShapePreRenderedElementBuilder<
-    G extends GShapePreRenderedElement = GShapePreRenderedElement
+    G extends GShapedPreRenderedElement = GShapedPreRenderedElement
 > extends GModelElementBuilder<G> {
     code(code: string): this {
         this.proxy.code = code;
