@@ -240,6 +240,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         };
         if (port.children) {
             elkPort.labels = this.findChildren(port, GLabel).map(child => this.transformToElk(child)) as ElkLabel[];
+            this.elkEdges.push(...(this.findChildren(port, GEdge).map(child => this.transformToElk(child)) as ElkEdge[]));
         }
         this.transformShape(elkPort, port);
         this.idToElkElement.set(port.id, elkPort);
