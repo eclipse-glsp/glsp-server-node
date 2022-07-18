@@ -5,6 +5,8 @@
     "outDir": "lib",
     "reactNamespace": "JSX",
     "baseUrl": ".",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
     "types": ["node", "mocha", "reflect-metadata"]
   },
   "include": ["src"],

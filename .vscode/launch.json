@@ -57,7 +57,7 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Workflow Example Server",
-      "program": "${workspaceFolder}/examples/workflow-server/lib/index.js",
+      "program": "${workspaceFolder}/examples/workflow-server/lib/node/index.js",
       "env": {
         "NODE_ENV": "development"
       },

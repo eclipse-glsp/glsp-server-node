@@ -13,8 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { DefaultModelState, GGraph, GModelElementConstructor, ModelState } from '@eclipse-glsp/server-node';
-import { StubDiagramConfiguration } from '@eclipse-glsp/server-node/lib/test/mock-util';
+import { DefaultModelState, GGraph, GModelElementConstructor, ModelState } from '@eclipse-glsp/server/common';
+import { StubDiagramConfiguration } from '@eclipse-glsp/server/lib/common/test/mock-util';
 import { expect } from 'chai';
 import { Container, ContainerModule, injectable } from 'inversify';
 import * as sinon from 'sinon';

@@ -3,5 +3,5 @@
   "compilerOptions": {
     "baseUrl": "."
   },
-  "include": ["packages/*/src", "examples/workflow-server"]
+  "include": ["packages/*/src", "examples/*/src"]
 }

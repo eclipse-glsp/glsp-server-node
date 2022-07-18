@@ -27,6 +27,6 @@
   },
   "workspaces": [
     "packages/*",
-    "examples/workflow-server"
+    "examples/*"
   ]
 }

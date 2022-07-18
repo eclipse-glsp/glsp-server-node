@@ -38,20 +38,24 @@
   ],
   "dependencies": {
     "@eclipse-glsp/layout-elk": "1.1.0-next",
-    "@eclipse-glsp/server-node": "1.1.0-next"
+    "@eclipse-glsp/server": "1.1.0-next"
   },
   "scripts": {
-    "prepare": "yarn clean && yarn build && yarn lint",
+    "prepare": "yarn build && yarn lint",
     "clean": "rimraf tsconfig.tsbuildinfo lib",
-    "build": "tsc",
+    "build": "yarn run clean && tsc && yarn bundle",
+    "bundle": "webpack",
+    "bundle:browser": "webpack --env target=webworker ",
     "lint": "eslint -c ../../.eslintrc.js --ext .ts,.tsx ./src",
     "lint:fix": "eslint --fix -c ../../.eslintrc.js --ext .ts,.tsx ./src",
     "watch": "tsc -w",
-    "start:server": "yarn ts-node src/index.ts"
+    "start:server": "node --enable-source-maps lib/node/index.js"
   },
   "publishConfig": {
     "access": "public"
   },
-  "main": "lib/index",
-  "types": "lib/index"
+  "main": "./lib/node/index.js",
+  "browser": {
+    "./lib/node/index.js": "./lib/browser/index.js"
+  }
 }
