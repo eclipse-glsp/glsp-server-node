@@ -31,7 +31,7 @@ describe('test DefaultGLSPServer', () => {
     const clientSessionId = 'myClientSession';
     const diagramType = 'myDiagram';
     const applicationId = 'Test';
-    const protocolVersion = '0.9.0';
+    const protocolVersion = '1.0.0';
     const serverActionKinds = new Map<string, string[]>();
     serverActionKinds.set(diagramType, ['A1', 'A2']);
     const sessionManager = new mock.StubClientSessionManager();

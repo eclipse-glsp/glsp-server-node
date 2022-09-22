@@ -145,7 +145,7 @@ export interface JsonRpcGLSPServer extends GLSPServer {
 
 @injectable()
 export class DefaultGLSPServer implements JsonRpcGLSPServer {
-    public static readonly PROTOCOL_VERSION = '0.9.0';
+    public static readonly PROTOCOL_VERSION = '1.0.0';
 
     @inject(Logger)
     protected logger: Logger;
