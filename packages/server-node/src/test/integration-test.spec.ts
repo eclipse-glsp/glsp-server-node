@@ -42,7 +42,7 @@ import { DefaultGLSPServer, GLSPServer } from '../protocol/glsp-server';
 import { Logger } from '../utils/logger';
 import * as mock from './mock-util';
 const applicationId = 'testApp';
-const protocolVersion = '0.9.0';
+const protocolVersion = '1.0.0';
 const diagramType = 'testDiagram';
 const clientId = 'session1';
 const sourceUri = path.resolve(__dirname, 'minimal.json');

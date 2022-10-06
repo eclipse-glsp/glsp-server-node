@@ -39,7 +39,7 @@ export const defaultLaunchOptions: Required<LaunchOptions> = {
 
 export function createCliParser<O extends LaunchOptions = LaunchOptions>(options: LaunchOptions = defaultLaunchOptions): CliParser<O> {
     const command = new cmd.Command()
-        .version('0.9.0')
+        .version('1.0.0')
         .description('GLSP server')
         .showHelpAfterError(true)
         .name('Launch a GLSP server')
