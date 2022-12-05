@@ -90,10 +90,10 @@
   resolved "https://registry.yarnpkg.com/@eclipse-glsp/prettier-config/-/prettier-config-1.0.0.tgz#8ff72c8709a4233af98e38535feb3415b699a4b9"
   integrity sha512-Fwzd2vRD5aspzY9VqUhRU11no1apVz6Pw4hvz4gLxFSoJIwE+tofux5jBOLQVFv3DmB7HJgksrTznCwEzta8kA==
 
-"@eclipse-glsp/protocol@next":
-  version "1.1.0-next.2b83212.183"
-  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-1.1.0-next.2b83212.183.tgz#9baa13700bac5ff1147e92df630d3717b91e6eed"
-  integrity sha512-0SckuyFmn/8gF4LIYa+t5mALgO+pMAvRkCFGD6GH95IllWV/XqPVyIG3hU6+X0dIQ3tCd+6HGJVCjqHoDB2CdA==
+"@eclipse-glsp/protocol@1.1.0-RC03":
+  version "1.1.0-RC03"
+  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-1.1.0-RC03.tgz#710cebd16db6e8212650dbf854a5fd068725c7ba"
+  integrity sha512-ZE0DkkbODBJGV7SwwNOlr7q6FupfRLi1EiY77Hkjkvi0HBNFUP4PyRzveYr+iuEljsVkoMRON6ZygxQup/nXSg==
   dependencies:
     sprotty-protocol "0.12.0"
     uuid "7.0.3"
