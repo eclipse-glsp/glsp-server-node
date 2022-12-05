@@ -82,7 +82,7 @@ describe('test DefaultGModelSerializer', () => {
     it('createElement - with node schema', () => {
         const node = serializer.createElement(testNodeSchema);
         expect(node).to.be.an.instanceOf(TestNode);
-        expect(node).to.be.deep.equal(testNodeSchema);
+        expect(node).to.be.deep.include(testNodeSchema);
         expect((node as TestNode).foo).to.not.be.undefined;
     });
 
@@ -90,7 +90,7 @@ describe('test DefaultGModelSerializer', () => {
         testNodeSchema.type = 'node:rectangular';
         const node = serializer.createElement(testNodeSchema);
         expect(node).to.be.an.instanceOf(TestNode);
-        expect(node).to.be.deep.equal(testNodeSchema);
+        expect(node).to.be.deep.include(testNodeSchema);
         expect((node as TestNode).foo).to.not.be.undefined;
     });
 
@@ -98,7 +98,7 @@ describe('test DefaultGModelSerializer', () => {
         const parent = new GNode();
         const child = serializer.createElement(testNodeSchema, parent);
         expect(child).to.be.an.instanceOf(TestNode);
-        expect(child).to.be.deep.equal(testNodeSchemaWithParent);
+        expect(child).to.be.deep.include(testNodeSchemaWithParent);
         expect(child.parent).to.be.equal(parent);
     });
 
@@ -136,6 +136,6 @@ describe('test DefaultGModelSerializer', () => {
         testNode.layoutOptions = { ['my']: 'Options' };
         const schema = serializer.createSchema(testNode);
         delete (testNode as Partial<TestNode>).foo;
-        expect(schema).to.be.deep.equal(testNode);
+        expect(schema).to.be.deep.include(testNode);
     });
 });

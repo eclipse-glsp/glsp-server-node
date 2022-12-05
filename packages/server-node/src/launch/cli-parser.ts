@@ -55,7 +55,7 @@ export function createCliParser<O extends LaunchOptions = LaunchOptions>(options
     return { command, parse: argv => parse<O>(command, options as Partial<O>, argv) };
 }
 
-export function parse<T>(command: cmd.Command, defaultOptions: Partial<T>, argv?: string[]): T {
+export function parse<T extends cmd.OptionValues>(command: cmd.Command, defaultOptions: Partial<T>, argv?: string[]): T {
     command.parse(argv);
     return { ...defaultOptions, ...command.opts<T>() };
 }
