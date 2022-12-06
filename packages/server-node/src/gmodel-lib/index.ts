@@ -16,6 +16,7 @@
 
 export * from './apply-label-edit-operation-handler';
 export * from './change-bounds-operation-handler';
+export * from './change-routing-points-operation-handler';
 export * from './computed-bounds-action-handler';
 export * from './delete-operation-handler';
 export * from './gmodel-create-edge-operation-handler';

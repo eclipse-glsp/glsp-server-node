@@ -28,6 +28,7 @@ import { CutOperationHandler } from '../operations/cut-operation-handler';
 import { OperationHandlerConstructor } from '../operations/operation-handler';
 import { ApplyLabelEditOperationHandler } from './apply-label-edit-operation-handler';
 import { ChangeBoundsOperationHandler } from './change-bounds-operation-handler';
+import { ChangeRoutingPointsOperationHandler } from './change-routing-points-operation-handler';
 import { ComputedBoundsActionHandler } from './computed-bounds-action-handler';
 import { GModelDeleteOperationHandler } from './delete-operation-handler';
 import { GModelStorage } from './gmodel-storage';
@@ -82,5 +83,6 @@ export abstract class GModelDiagramModule extends DiagramModule {
         binding.add(PasteOperationHandler);
         binding.add(ReconnectEdgeOperationHandler);
         binding.add(LayoutOperationHandler);
+        binding.add(ChangeRoutingPointsOperationHandler);
     }
 }

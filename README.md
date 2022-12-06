@@ -38,7 +38,7 @@ Below is a list of features that are currently supported.
 | Node Change Bounds<br>- Move<br>- Resize                          |   <br>✓<br>✓    |   <br>✓<br>✓    |
 | Node Change Container                                             |        ✓        |        ✓        |
 | Edge Reconnect                                                    |        ✓        |        ✓        |
-| Edge Routing Points                                               |                 |        ✓        |
+| Edge Routing Points                                               |        ✓        |        ✓        |
 | Element Text Editing                                              |        ✓        |        ✓        |
 | Clipboard (Cut, Copy, Paste)                                      |                 |        ✓        |
 | Undo / Redo                                                       |                 |        ✓        |
