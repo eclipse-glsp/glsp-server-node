@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GBoundsAware, GGraph, GModelElement, GModelRoot, isGBoundsAware } from '@eclipse-glsp/graph';
+import { GModelElement } from '@eclipse-glsp/graph';
 import {
     CreateEdgeOperation,
     CreateNodeOperation,
@@ -25,6 +25,7 @@ import {
 } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ModelState } from '../features/model/model-state';
+import { getRelativeLocation } from '../utils/layout-util';
 import { OperationHandler } from './operation-handler';
 
 /**
@@ -99,48 +100,6 @@ export abstract class CreateNodeOperationHandler extends CreateOperationHandler 
     getRelativeLocation(operation: CreateNodeOperation): Point | undefined {
         const container = this.getContainer(operation) ?? this.modelState.root;
         const absoluteLocation = this.getLocation(operation) ?? Point.ORIGIN;
-        const allowNegativeCoordinates = container instanceof GGraph;
-        if (isGBoundsAware(container)) {
-            const relativePosition = absoluteToRelative(absoluteLocation, container);
-            const relativeLocation = allowNegativeCoordinates
-                ? relativePosition
-                : { x: Math.max(0, relativePosition.x), y: Math.max(0, relativePosition.y) };
-            return relativeLocation;
-        }
-        return undefined;
+        return getRelativeLocation(absoluteLocation, container);
     }
-}
-
-/**
- * Convert a point in absolute coordinates to a point relative to the specified GBoundsAware.
- * Note: this method only works if the specified {@link GBoundsAware} is part of a
- * hierarchy of {@link GBoundsAware}. If any of its parents (recursively) does not implement
- * {@link GBoundsAware}, this method will throw an exception.
- *
- * @param absolutePoint
- * @param modelElement
- * @returns
- *         A new point, relative to the coordinates space of the specified {@link GBoundsAware}
- * @throws Error if the modelElement is not part of a {@link GBoundsAware} hierarchy
- */
-export function absoluteToRelative(absolutePoint: Point, modelElement: GModelElement & GBoundsAware): Point {
-    let parentElement;
-    if (!(modelElement instanceof GModelRoot)) {
-        parentElement = modelElement.parent;
-    }
-
-    let relativeToParent: Point;
-    if (!parentElement) {
-        relativeToParent = { x: absolutePoint.x, y: absolutePoint.y };
-    } else {
-        if (!isGBoundsAware(parentElement)) {
-            throw new Error(`The element is not part of a GBoundsAware hierarchy: ${modelElement}`);
-        }
-        relativeToParent = absoluteToRelative(absolutePoint, parentElement);
-    }
-
-    const x = modelElement.position?.x ?? 0;
-    const y = modelElement.position?.y ?? 0;
-
-    return { x: relativeToParent.x - x, y: relativeToParent.y - y };
 }

@@ -13,12 +13,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GModelRoot, isGAlignable, isGBoundsAware } from '@eclipse-glsp/graph';
+import { GModelRoot } from '@eclipse-glsp/graph';
 import { Action, ComputedBoundsAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
 import { ModelState } from '../features/model/model-state';
 import { ModelSubmissionHandler } from '../features/model/model-submission-handler';
+import { applyAlignment, applyBounds, applyRoute } from '../utils/layout-util';
 
 @injectable()
 export class ComputedBoundsActionHandler implements ActionHandler {
@@ -40,20 +41,10 @@ export class ComputedBoundsActionHandler implements ActionHandler {
     }
 
     protected applyBounds(root: GModelRoot, action: ComputedBoundsAction): void {
-        action.bounds.forEach(b => {
-            const element = this.modelState.index.get(b.elementId);
-            if (isGBoundsAware(element)) {
-                element.position = b.newPosition ?? element.position;
-                element.size = b.newSize;
-            }
-        });
-
-        action.alignments?.forEach(a => {
-            const element = this.modelState.index.get(a.elementId);
-            if (isGAlignable(element)) {
-                element.alignment = a.newAlignment;
-            }
-        });
+        const index = this.modelState.index;
+        action.bounds.forEach(bounds => applyBounds(bounds, index));
+        (action.alignments ?? []).forEach(alignment => applyAlignment(alignment, index));
+        (action.routes ?? []).forEach(route => applyRoute(route, index));
     }
 
     priority?: number | undefined;
