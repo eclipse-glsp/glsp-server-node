@@ -82,6 +82,8 @@ import { RequestNavigationTargetsActionHandler } from '../features/navigation/re
 import { ResolveNavigationTargetsActionHandler } from '../features/navigation/resolve-navigation-targets-action-handler';
 import { PopupModelFactory } from '../features/popup/popup-model-factory';
 import { RequestPopupModelActionHandler } from '../features/popup/request-popup-model-action-handler';
+import { CommandStack, DefaultCommandStack } from '../features/undo-redo/command-stack';
+import { UndoRedoActionHandler } from '../features/undo-redo/undo-redo-action-handler';
 import { ModelValidator } from '../features/validation/model-validator';
 import { RequestMarkersHandler } from '../features/validation/request-markers-handler';
 import { CompoundOperationHandler } from '../operations/compound-operation-handler';
@@ -192,6 +194,7 @@ export abstract class DiagramModule extends GLSPModule {
         applyBindingTarget(context, OperationHandlerRegistry, this.bindOperationHandlerRegistry()).inSingletonScope();
         applyBindingTarget(context, OperationHandlerFactory, this.bindOperationHandlerFactory());
         applyBindingTarget(context, Operations, this.bindOperations()).inSingletonScope();
+        applyBindingTarget(context, CommandStack, this.bindCommandStack()).inSingletonScope();
 
         // Navigation
         applyOptionalBindingTarget(context, NavigationTargetResolver, this.bindNavigationTargetResolver());
@@ -231,6 +234,7 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(RequestNavigationTargetsActionHandler);
         binding.add(ResolveNavigationTargetsActionHandler);
         binding.add(SaveModelActionHandler);
+        binding.add(UndoRedoActionHandler);
     }
 
     protected bindDiagramType(): BindingTarget<string> {
@@ -288,6 +292,10 @@ export abstract class DiagramModule extends GLSPModule {
                     .get<OperationHandlerConstructor[]>(OperationHandlerConstructor)
                     .map(constructor => new constructor().operationType)
         };
+    }
+
+    protected bindCommandStack(): BindingTarget<CommandStack> {
+        return DefaultCommandStack;
     }
 
     protected configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {

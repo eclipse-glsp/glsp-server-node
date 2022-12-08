@@ -19,14 +19,24 @@ import { ActionHandler } from '../actions/action-handler';
 import { Operations } from '../di/service-identifiers';
 import { ModelState } from '../features/model/model-state';
 import { ModelSubmissionHandler } from '../features/model/model-submission-handler';
+import { Command } from '../features/undo-redo/command';
+import { CommandStack } from '../features/undo-redo/command-stack';
 import { OperationHandler } from './operation-handler';
 import { OperationHandlerRegistry } from './operation-handler-registry';
 
 @injectable()
 export class OperationActionHandler implements ActionHandler {
-    @inject(OperationHandlerRegistry) protected operationHandlerRegistry: OperationHandlerRegistry;
-    @inject(ModelSubmissionHandler) protected modelSubmissionHandler: ModelSubmissionHandler;
-    @inject(ModelState) protected modelState: ModelState;
+    @inject(OperationHandlerRegistry)
+    protected operationHandlerRegistry: OperationHandlerRegistry;
+
+    @inject(ModelSubmissionHandler)
+    protected modelSubmissionHandler: ModelSubmissionHandler;
+
+    @inject(ModelState)
+    protected modelState: ModelState;
+
+    @inject(CommandStack)
+    protected commandStack: CommandStack;
 
     constructor(@inject(Operations) readonly actionKinds: string[]) {}
 
@@ -48,12 +58,24 @@ export class OperationActionHandler implements ActionHandler {
     }
 
     async executeHandler(operation: Operation, handler: OperationHandler): Promise<Action[]> {
-        // TODO: Create GModelRecordingCommand;
-        await handler.execute(operation);
-        this.modelState.index.indexRoot(this.modelState.root);
-        this.modelState.isDirty = true;
-        // TODO: this.modelState.execute(command)
+        const command = this.createCommand?.(operation, handler) ?? this.createFallbackCommand(operation, handler);
+        this.commandStack.execute(command);
         return this.modelSubmissionHandler.submitModel('operation');
+    }
+
+    /**
+     * Derives a {@link Command} for the given operation and handler. If not implemented fallback commands
+     * will be used which do not support undo/redo.
+     */
+    protected createCommand?(operation: Operation, handler: OperationHandler): Command;
+
+    protected createFallbackCommand(operation: Operation, handler: OperationHandler): Command {
+        return {
+            execute: () => handler.execute(operation),
+            redo: noOpVoid,
+            undo: noOpVoid,
+            canUndo: () => false
+        };
     }
 
     handles(action: Action): boolean {
@@ -67,3 +89,7 @@ export class OperationActionHandler implements ActionHandler {
         return CreateOperation.is(operation) ? registry.get(`${operation.kind}_${operation.elementTypeId}`) : registry.get(operation.kind);
     }
 }
+
+const noOpVoid: () => void = () => {
+    /** no-op */
+};

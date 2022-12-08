@@ -22,7 +22,7 @@ Below is a list of features that are currently supported.
 | Feature                                                           |   Node Server   |   Java Server   |
 | ----------------------------------------------------------------- | :-------------: | :-------------: |
 | Model Saving                                                      |        ✓        |        ✓        |
-| Model Dirty State                                                 |                 |        ✓        |
+| Model Dirty State                                                 |        ✓        |        ✓        |
 | Model SVG Export                                                  |        ✓        |        ✓        |
 | Model Layout                                                      |        ✓        |        ✓        |
 | Model Edit Modes<br>- Edit<br>- Read-only                         | <br>✓<br>&nbsp; |   <br>✓<br>✓    |
@@ -41,7 +41,7 @@ Below is a list of features that are currently supported.
 | Edge Routing Points                                               |        ✓        |        ✓        |
 | Element Text Editing                                              |        ✓        |        ✓        |
 | Clipboard (Cut, Copy, Paste)                                      |                 |        ✓        |
-| Undo / Redo                                                       |                 |        ✓        |
+| Undo / Redo                                                       |        ✓        |        ✓        |
 | Contexts<br>- Context Menu<br>- Command Palette<br>- Tool Palette | <br><br>✓<br>✓  | <br>✓<br>✓<br>✓ |
 
 ## Build

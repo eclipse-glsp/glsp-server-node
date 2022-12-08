@@ -30,7 +30,6 @@ export interface ModelState {
     readonly root: GModelRoot;
     updateRoot(newRoot: GModelRoot): void;
     editMode: string;
-    isDirty: boolean;
     sourceUri?: string;
     clientId: string;
     readonly isReadonly: boolean;
@@ -55,8 +54,6 @@ export class DefaultModelState implements ModelState {
     protected _root: GModelRoot;
 
     editMode = EditMode.EDITABLE;
-
-    isDirty = false;
 
     set<P>(key: string, property: P): void {
         this.properties.set(key, property);

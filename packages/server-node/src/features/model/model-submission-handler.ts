@@ -25,6 +25,7 @@ import {
 import { inject, injectable, optional } from 'inversify';
 import { DiagramConfiguration, ServerLayoutKind } from '../../diagram/diagram-configuration';
 import { LayoutEngine } from '../layout/layout-engine';
+import { CommandStack } from '../undo-redo/command-stack';
 import { GModelFactory } from './gmodel-factory';
 import { GModelSerializer } from './gmodel-serializer';
 import { ModelState } from './model-state';
@@ -42,6 +43,9 @@ export class ModelSubmissionHandler {
 
     @inject(ModelState)
     protected modelState: ModelState;
+
+    @inject(CommandStack)
+    protected commandStack: CommandStack;
 
     @inject(LayoutEngine)
     @optional()
@@ -62,7 +66,7 @@ export class ModelSubmissionHandler {
         const root = this.serializeGModel();
 
         if (this.diagramConfiguration.needsClientLayout) {
-            return [RequestBoundsAction.create(root), SetDirtyStateAction.create(this.modelState.isDirty, { reason })];
+            return [RequestBoundsAction.create(root), SetDirtyStateAction.create(this.commandStack.isDirty, { reason })];
         }
         return [SetModelAction.create(root)];
     }
@@ -94,7 +98,7 @@ export class ModelSubmissionHandler {
                 : UpdateModelAction.create(root, { animate: this.diagramConfiguration.animatedUpdate })
         );
         if (!this.diagramConfiguration.needsClientLayout) {
-            result.push(SetDirtyStateAction.create(this.modelState.isDirty, { reason }));
+            result.push(SetDirtyStateAction.create(this.commandStack.isDirty, { reason }));
         }
         return result;
     }

@@ -15,12 +15,18 @@
  ********************************************************************************/
 
 /**
- * An interface that every command is expected to support.
- * A command can be executed, it can be undone, and can then be redone.
+ * Commands can execute arbitrary code actions in a revertible fashion.
+ * To achieve this each command is executed on a {@link CommandStack}. In addition, a command
+ * provides `undo` and `redo` functionality that allow the command stack to undo/redo the effect of a previously executed command.
+ *
+ * Each command is self contained and stores all the information it needs to execute, undo or redo itself.
+ *
+ * In theory commands can be used to execute any code actions.
+ * However, it is mostly used to record and manage changes made to the source model via GLSP operations.
  */
 export interface Command {
     /**
-     * Performs the command activity required for the effect.
+     * Performs the command activity required for the effect (e.g. source model change).
      */
     execute(): void;
 
@@ -33,7 +39,13 @@ export interface Command {
     /**
      * Performs the command activity required to `redo` the effect after undoing the effect.
      * The effect, if any, of calling `redo` before `undo` is called is undefined.
-     * Note that if you implement `redo` to call `execute` then any derived class will be restricted by that decision also.
      */
     redo(): void;
+
+    /**
+     * Returns whether the command can be undone.
+     * This function is optional. If not implemented, it is assumed that the command can be undone.
+     * @returns whether the command can be undone
+     */
+    canUndo?(): boolean;
 }

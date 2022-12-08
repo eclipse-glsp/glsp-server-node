@@ -17,6 +17,7 @@ import { Action, MaybePromise, SaveModelAction, SetDirtyStateAction } from '@ecl
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
 import { GLSPServerError } from '../../utils/glsp-server-error';
+import { CommandStack } from '../undo-redo/command-stack';
 import { ModelState } from './model-state';
 import { SourceModelStorage } from './source-model-storage';
 
@@ -30,13 +31,16 @@ export class SaveModelActionHandler implements ActionHandler {
     @inject(SourceModelStorage)
     protected sourceModelStorage: SourceModelStorage;
 
+    @inject(CommandStack)
+    protected commandStack: CommandStack;
+
     execute(action: SaveModelAction): MaybePromise<Action[]> {
         try {
             this.sourceModelStorage.saveSourceModel(action);
-            this.modelState.isDirty = false; // TODO: call save is done when available
+            this.commandStack.saveIsDone();
         } catch (err) {
             throw new GLSPServerError(`An error occurred during save process: ${err}`);
         }
-        return [SetDirtyStateAction.create(this.modelState.isDirty, { reason: 'save' })];
+        return [SetDirtyStateAction.create(this.commandStack.isDirty, { reason: 'save' })];
     }
 }

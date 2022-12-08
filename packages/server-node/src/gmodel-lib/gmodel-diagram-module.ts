@@ -25,12 +25,14 @@ import { DefaultModelState, ModelState } from '../features/model/model-state';
 import { SaveModelActionHandler } from '../features/model/save-model-action-handler';
 import { SourceModelStorage } from '../features/model/source-model-storage';
 import { CutOperationHandler } from '../operations/cut-operation-handler';
+import { OperationActionHandler } from '../operations/operation-action-handler';
 import { OperationHandlerConstructor } from '../operations/operation-handler';
 import { ApplyLabelEditOperationHandler } from './apply-label-edit-operation-handler';
 import { ChangeBoundsOperationHandler } from './change-bounds-operation-handler';
 import { ChangeRoutingPointsOperationHandler } from './change-routing-points-operation-handler';
 import { ComputedBoundsActionHandler } from './computed-bounds-action-handler';
 import { GModelDeleteOperationHandler } from './delete-operation-handler';
+import { GModelOperationActionHandler } from './gmodel-operation-action-handler';
 import { GModelStorage } from './gmodel-storage';
 import { PasteOperationHandler } from './paste-operation-handler';
 import { ReconnectEdgeOperationHandler } from './reconnect-edge-operation-handler';
@@ -72,6 +74,7 @@ export abstract class GModelDiagramModule extends DiagramModule {
         binding.add(ComputedBoundsActionHandler);
         binding.add(SaveModelActionHandler);
         binding.add(RequestClipboardDataActionHandler);
+        binding.rebind(OperationActionHandler, GModelOperationActionHandler);
     }
 
     protected override configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
