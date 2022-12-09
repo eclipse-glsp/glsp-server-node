@@ -177,7 +177,7 @@ export class GModelIndex {
      */
     findParentElement<T extends GModelElement>(elementId: string, guard: TypeGuard<T>): T | undefined {
         const element = this.get(elementId);
-        return element ? this._findElement(element.parent, guard) : undefined;
+        return element ? this._findElement(element, guard) : undefined;
     }
 
     protected _findElement<T>(element: GModelElement, guard: TypeGuard<T>): T | undefined {
