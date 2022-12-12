@@ -45,8 +45,8 @@ export abstract class AbstractRecordingCommand<JsonObject extends Object> implem
     }
 
     /**
-     * Used to capture the original state of the json object before executing the command routine.
-     * The default implementation can not clone circular structures as it relies on `JSON.stringify`.
+     * Captures the original state of the JSON object before executing the command routine.
+     * This implementation cannot clone circular structures as it relies on `JSON.stringify`.
      * @param object The object that should be cloned
      * @returns A deep clone of the given object
      */

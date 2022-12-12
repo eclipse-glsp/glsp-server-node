@@ -24,6 +24,7 @@ import { Command } from '../features/undo-redo/command';
 import { AbstractRecordingCommand } from '../features/undo-redo/recording-command';
 import { OperationActionHandler } from '../operations/operation-action-handler';
 import { OperationHandler } from '../operations/operation-handler';
+
 @injectable()
 export class GModelOperationActionHandler extends OperationActionHandler {
     @inject(GModelSerializer)

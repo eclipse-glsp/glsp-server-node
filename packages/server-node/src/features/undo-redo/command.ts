@@ -15,13 +15,13 @@
  ********************************************************************************/
 
 /**
- * Commands can execute arbitrary code actions in a revertible fashion.
- * To achieve this each command is executed on a {@link CommandStack}. In addition, a command
- * provides `undo` and `redo` functionality that allow the command stack to undo/redo the effect of a previously executed command.
+ * A command implements a specific modification of the source model, which can be applied by invoking `execute()`.
+ * Commands may also provide implementations to `undo()` and `redo()` the effect they had.
+ * To maintain an order in which commands can be undone and redone, they are managed in the context of a {@link CommandStack}.
  *
  * Each command is self contained and stores all the information it needs to execute, undo or redo itself.
  *
- * In theory commands can be used to execute any code actions.
+ * In theory commands can be used to execute arbitrary activities and not only modify the source model.
  * However, it is mostly used to record and manage changes made to the source model via GLSP operations.
  */
 export interface Command {

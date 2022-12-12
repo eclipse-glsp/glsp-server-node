@@ -19,8 +19,10 @@ import { Command } from './command';
 export const CommandStack = Symbol('CommandStack');
 
 /**
- * A command stack keeps track of the {@link Command}s that get executed on it and enables
- * support for undo/redo of these commands.
+ * A command stack keeps track of {@link Command commands} that have been executed.
+ * Executed commands can be undone in the reverse order of their original execution.
+ * Unless a new command has been executed after an undo operation, commands can be
+ * redone in the original order of their execution.
  */
 export interface CommandStack {
     /**
