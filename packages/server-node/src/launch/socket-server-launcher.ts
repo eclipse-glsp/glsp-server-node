@@ -34,12 +34,13 @@ export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnec
         netServer.listen(opts.port, opts.host);
         netServer.on('listening', () => {
             const addressInfo = netServer.address();
-            // eslint-disable-next-line no-null/no-null
-            if (addressInfo === null) {
-                this.logger.error('Could not resolve GLSP Server address info');
+            if (!addressInfo) {
+                this.logger.error('Could not resolve GLSP Server address info. Shutting down.');
+                this.shutdown();
                 return;
             } else if (typeof addressInfo === 'string') {
-                this.logger.error('Unexpected type for AddressInfo');
+                this.logger.error(`GLSP Server is unexpectedly listening to pipe or domain socket "${addressInfo}". Shutting down.`);
+                this.shutdown();
                 return;
             }
             const currentPort = addressInfo.port;
