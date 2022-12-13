@@ -1,4 +1,4 @@
-# Node GLSP Server
+# Node GLSP Server[![build-status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fci.eclipse.org%2Fglsp%2Fjob%2Feclipse-glsp%2Fjob%2Fglsp-server-node%2Fjob%2Fmain%2F)](https://ci.eclipse.org/glsp/job/eclipse-glsp/job/glsp-server-node/job/main)
 
 Node based server component for the Eclipse Graphical Language Platform (GLSP).
 The implementation of this server is aligned with the default Java based [GLSP Server](https://github.com/eclipse-glsp/glsp-server).

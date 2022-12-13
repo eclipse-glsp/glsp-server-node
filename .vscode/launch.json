@@ -9,7 +9,9 @@
       "args": ["--config", "${workspaceRoot}/.mocharc.json", "${relativeFile}"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "port": 9229
+      "env": {
+        "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.eslint.json"
+      }
     },
     {
       "name": "Run server-node tests",
@@ -23,7 +25,9 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "port": 9229
+      "env": {
+        "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.eslint.json"
+      }
     },
     {
       "name": "Run graph tests",
@@ -37,7 +41,9 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "port": 9229
+      "env": {
+        "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.eslint.json"
+      }
     },
     {
       "name": "Run layout-elk tests",
@@ -51,7 +57,9 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "port": 9229
+      "env": {
+        "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.eslint.json"
+      }
     },
     {
       "type": "node",

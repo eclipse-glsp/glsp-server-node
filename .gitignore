@@ -11,3 +11,4 @@ coverage/
 yarn-error.log
 
 tsconfig.tsbuildinfo
+eslint.xml

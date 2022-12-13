@@ -41,13 +41,13 @@
     "@eclipse-glsp/server-node": "1.1.0-next"
   },
   "scripts": {
-    "prepare": "yarn clean && yarn build && yarn lint",
-    "clean": "rimraf tsconfig.tsbuildinfo lib",
-    "build": "tsc",
+    "build": "tsc -b",
+    "clean": "rimraf lib tsconfig.tsbuildinfo ",
     "lint": "eslint --ext .ts,.tsx ./src",
-    "lint:fix": "eslint --fix --ext .ts,.tsx ./src",
-    "watch": "tsc -w",
-    "start:server": "yarn ts-node src/index.ts"
+    "lint:ci": "yarn lint -o eslint.xml -f checkstyle",
+    "prepare": "yarn clean && yarn build",
+    "start:server": "yarn ts-node src/index.ts",
+    "watch": "tsc -w"
   },
   "publishConfig": {
     "access": "public"
