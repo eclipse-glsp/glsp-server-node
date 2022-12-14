@@ -74,7 +74,6 @@ pipeline {
             }
         }
 
-
         stage('Tests (Mocha)'){
              steps { 
                 container('node') {
@@ -85,6 +84,16 @@ pipeline {
             }
         }
 
+        stage('Test Coverage (main only)') {
+            when { branch 'main' }
+             steps { 
+                container('node') {
+                    timeout(30) {
+                        sh "yarn test:coverage:ci"
+                    }
+                }
+            }
+        }
 
         stage('Deploy (main only)') {
             when {
@@ -112,7 +121,7 @@ pipeline {
         }
     }
 
-     post {
+    post {
         success {
             // Record & publish ESLint issues
             recordIssues enabledForFailure: true, publishAllIssues: true, aggregatingResults: true, 
@@ -121,6 +130,17 @@ pipeline {
 
             withChecks('Tests') {
                 junit 'node_modules/**/report.xml'
+            }
+
+            script {
+                if (env.BRANCH_NAME == 'main') {
+                publishHTML target : [allowMissing: false,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'coverage',
+                reportFiles: 'index.html',
+                reportName: 'Code Coverage']
+                }
             }
         }
         failure {
