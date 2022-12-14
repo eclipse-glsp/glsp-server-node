@@ -19,7 +19,7 @@ import * as jsonrpc from 'vscode-jsonrpc';
 import { GLSPServer, JsonRpcGLSPServer } from '../protocol/glsp-server';
 import { Logger } from '../utils/logger';
 import { GLSPServerLauncher } from './glsp-server-launcher';
-const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed';
+const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed. Accepting requests on port:';
 
 @injectable()
 export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnectOpts> {
@@ -30,11 +30,25 @@ export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnec
 
     run(opts: net.TcpSocketConnectOpts): Promise<void> {
         const netServer = net.createServer(socket => this.createClientConnection(socket));
+
         netServer.listen(opts.port, opts.host);
-        this.logger.info(`The GLSP server is ready to accept new client requests on port: ${opts.port}`);
-        // Print a message to the output stream that indicates that the start is completed.
-        // This indicates to the client that the sever process is ready (in an embedded scenario).
-        console.log(this.startupCompleteMessage);
+        netServer.on('listening', () => {
+            const addressInfo = netServer.address();
+            if (!addressInfo) {
+                this.logger.error('Could not resolve GLSP Server address info. Shutting down.');
+                this.shutdown();
+                return;
+            } else if (typeof addressInfo === 'string') {
+                this.logger.error(`GLSP Server is unexpectedly listening to pipe or domain socket "${addressInfo}". Shutting down.`);
+                this.shutdown();
+                return;
+            }
+            const currentPort = addressInfo.port;
+            this.logger.info(`The GLSP server is ready to accept new client requests on port: ${currentPort}`);
+            // Print a message to the output stream that indicates that the start is completed.
+            // This indicates to the client that the server process is ready (in an embedded scenario).
+            console.log(this.startupCompleteMessage.concat(currentPort.toString()));
+        });
         netServer.on('error', () => this.shutdown());
         return new Promise((resolve, reject) => {
             netServer.on('close', () => resolve(undefined));

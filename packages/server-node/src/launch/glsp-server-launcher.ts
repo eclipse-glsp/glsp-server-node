@@ -40,8 +40,8 @@ export abstract class GLSPServerLauncher<T = undefined> {
 
     start(startParams: T): MaybePromise<void> {
         if (!this.running) {
+            this.running = true;
             const result = this.run(startParams);
-            this.running = false;
             return result;
         }
         this.logger.warn('Could not start launcher. Launcher is already running!');
