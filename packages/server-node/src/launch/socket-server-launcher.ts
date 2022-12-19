@@ -16,6 +16,8 @@
 import { Container, inject, injectable } from 'inversify';
 import * as net from 'net';
 import * as jsonrpc from 'vscode-jsonrpc';
+import { SocketMessageReader, SocketMessageWriter } from 'vscode-jsonrpc/node';
+
 import { GLSPServer, JsonRpcGLSPServer } from '../protocol/glsp-server';
 import { Logger } from '../utils/logger';
 import { GLSPServerLauncher } from './glsp-server-launcher';
@@ -78,7 +80,7 @@ export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnec
     }
 
     protected createConnection(socket: net.Socket): jsonrpc.MessageConnection {
-        return jsonrpc.createMessageConnection(new jsonrpc.SocketMessageReader(socket), new jsonrpc.SocketMessageWriter(socket), console);
+        return jsonrpc.createMessageConnection(new SocketMessageReader(socket), new SocketMessageWriter(socket), console);
     }
 
     stop(): void {

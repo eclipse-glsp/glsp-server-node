@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "engines": {
     "yarn": ">=1.7.0 <2.x.x",
-    "node": ">=14.18.0"
+    "node": ">=16.11.0"
   },
   "scripts": {
     "all": "yarn install && yarn lint && yarn test",
@@ -26,10 +26,10 @@
     "watch": "lerna run --parallel watch"
   },
   "devDependencies": {
-    "@eclipse-glsp/config": "1.1.0-next.adb81ca.116",
-    "@eclipse-glsp/config-test": "1.1.0-next.adb81ca.116",
-    "@eclipse-glsp/cli": "1.1.0-next.adb81ca.116",
-    "@types/node": "14.x"
+    "@eclipse-glsp/cli": "1.1.0-next.e31f2e5.119",
+    "@eclipse-glsp/config": "1.1.0-next.e31f2e5.119",
+    "@eclipse-glsp/config-test": "1.1.0-next.e31f2e5.119",
+    "@types/node": "16.x"
   },
   "workspaces": [
     "packages/*",

@@ -2,6 +2,8 @@
 
 ## v1.1.0 - upcoming
 
+-   [node] Update minimum requirements for Node to >=16.11.0 [#210](https://github.com/eclipse-glsp/glsp-client/pull/210)
+
 ### Breaking Changes
 
 -   [graph] Align GGraph model with newest changes from glsp-server [#22](https://github.com/eclipse-glsp/glsp-server-node/pull/22) - Contributed on behalf of STMicroelectronics
