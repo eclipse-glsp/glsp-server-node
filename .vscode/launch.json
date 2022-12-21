@@ -6,7 +6,7 @@
       "type": "node",
       "request": "launch",
       "program": "${workspaceRoot}/node_modules/.bin/mocha",
-      "args": ["--config", "${workspaceRoot}/.mocharc.json", "${relativeFile}"],
+      "args": ["--config", "${workspaceRoot}/.mocharc", "${relativeFile}"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "env": {
@@ -20,7 +20,7 @@
       "program": "${workspaceRoot}/node_modules/.bin/mocha",
       "args": [
         "--config",
-        "${workspaceRoot}/.mocharc.json",
+        "${workspaceRoot}/.mocharc",
         "${workspaceRoot}/packages/server-node/src/**/*.spec.ts"
       ],
       "console": "integratedTerminal",
@@ -36,7 +36,7 @@
       "program": "${workspaceRoot}/node_modules/.bin/mocha",
       "args": [
         "--config",
-        "${workspaceRoot}/.mocharc.json",
+        "${workspaceRoot}/.mocharc",
         "${workspaceRoot}/packages/graph/src/**/*.spec.ts"
       ],
       "console": "integratedTerminal",
@@ -52,7 +52,7 @@
       "program": "${workspaceRoot}/node_modules/.bin/mocha",
       "args": [
         "--config",
-        "${workspaceRoot}/.mocharc.json",
+        "${workspaceRoot}/.mocharc",
         "${workspaceRoot}/packages/layout-elk/src/**/*.spec.ts"
       ],
       "console": "integratedTerminal",
