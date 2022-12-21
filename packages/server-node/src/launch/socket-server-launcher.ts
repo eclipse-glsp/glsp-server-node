@@ -29,13 +29,14 @@ export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnec
 
     protected currentConnections: jsonrpc.MessageConnection[] = [];
     protected startupCompleteMessage = START_UP_COMPLETE_MSG;
+    protected netServer: net.Server;
 
-    run(opts: net.TcpSocketConnectOpts): Promise<void> {
-        const netServer = net.createServer(socket => this.createClientConnection(socket));
+    protected run(opts: net.TcpSocketConnectOpts): Promise<void> {
+        this.netServer = net.createServer(socket => this.createClientConnection(socket));
 
-        netServer.listen(opts.port, opts.host);
-        netServer.on('listening', () => {
-            const addressInfo = netServer.address();
+        this.netServer.listen(opts.port, opts.host);
+        this.netServer.on('listening', () => {
+            const addressInfo = this.netServer.address();
             if (!addressInfo) {
                 this.logger.error('Could not resolve GLSP Server address info. Shutting down.');
                 this.shutdown();
@@ -51,10 +52,10 @@ export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnec
             // This indicates to the client that the server process is ready (in an embedded scenario).
             console.log(this.startupCompleteMessage.concat(currentPort.toString()));
         });
-        netServer.on('error', () => this.shutdown());
+        this.netServer.on('error', () => this.shutdown());
         return new Promise((resolve, reject) => {
-            netServer.on('close', () => resolve(undefined));
-            netServer.on('error', error => reject(error));
+            this.netServer.on('close', () => resolve(undefined));
+            this.netServer.on('error', error => reject(error));
         });
     }
 
@@ -83,8 +84,9 @@ export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnec
         return jsonrpc.createMessageConnection(new SocketMessageReader(socket), new SocketMessageWriter(socket), console);
     }
 
-    stop(): void {
+    protected stop(): void {
         this.logger.info('Shutdown SocketServerLauncher');
         this.currentConnections.forEach(connection => connection.dispose());
+        this.netServer.close();
     }
 }
