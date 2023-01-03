@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -32,7 +32,7 @@ export interface GEdgeLayoutable {
 }
 
 export function isGEdgeLayoutable<G extends GModelElement>(element: G): element is G & GEdgeLayoutable {
-    return ((element as any)[GEdgeLayoutable] = true);
+    return GEdgeLayoutable in element && element[GEdgeLayoutable] === true;
 }
 
 export type GEdgeLayoutableBuilder<G extends GModelElement = GModelElement> = GModelElementBuilder<G & GEdgeLayoutable>;

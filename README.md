@@ -32,7 +32,7 @@ Below is a list of features that are currently supported.
 | Element Selection                                                 |        ✓        |        ✓        |
 | Element Hover                                                     |        ✓        |        ✓        |
 | Element Validation                                                |        ✓        |        ✓        |
-| Element Navigation                                                |                 |        ✓        |
+| Element Navigation                                                |        ✓        |        ✓        |
 | Element Type Hints                                                |        ✓        |        ✓        |
 | Element Creation and Deletion                                     |        ✓        |        ✓        |
 | Node Change Bounds<br>- Move<br>- Resize                          |   <br>✓<br>✓    |   <br>✓<br>✓    |
@@ -40,7 +40,7 @@ Below is a list of features that are currently supported.
 | Edge Reconnect                                                    |        ✓        |        ✓        |
 | Edge Routing Points                                               |        ✓        |        ✓        |
 | Element Text Editing                                              |        ✓        |        ✓        |
-| Clipboard (Cut, Copy, Paste)                                      |                 |        ✓        |
+| Clipboard (Cut, Copy, Paste)                                      |        ✓        |        ✓        |
 | Undo / Redo                                                       |                 |        ✓        |
 | Contexts<br>- Context Menu<br>- Command Palette<br>- Tool Palette | <br><br>✓<br>✓  | <br>✓<br>✓<br>✓ |
 

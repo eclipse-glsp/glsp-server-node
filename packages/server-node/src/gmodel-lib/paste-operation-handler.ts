@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,8 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GBoundsAware, GModelElement, isGBoundsAware } from '@eclipse-glsp/graph';
-import { PasteOperation, Point, SModelElementSchema } from '@eclipse-glsp/protocol';
+import { GBoundsAware, GEdge, GModelElement, isGBoundsAware } from '@eclipse-glsp/graph';
+import { PasteOperation, Point, SModelElementSchema, TypeGuard } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import * as uuid from 'uuid';
 import { GModelSerializer } from '../features/model/gmodel-serializer';
@@ -41,7 +41,7 @@ export class PasteOperationHandler implements OperationHandler {
         this.filterElements(elements, idMap);
         this.rewireEdges(elements, idMap);
 
-        this.modelState.root.children = this.modelState.root.children.concat(elements);
+        this.modelState.root.children.push(...elements);
     }
 
     protected computeOffset(elements: GModelElement[], lastMousePosition?: Point): Point {
@@ -94,7 +94,7 @@ export class PasteOperationHandler implements OperationHandler {
     }
 
     protected rewireEdges(elements: GModelElement[], idMap: Map<string, string>): void {
-        const edges = this.modelState.index.getAllEdges();
+        const edges = elements.filter(element => element instanceof GEdge) as GEdge[];
         edges.forEach(edge => {
             const sourceId = idMap.get(edge.sourceId);
             if (sourceId) {
@@ -116,4 +116,8 @@ export function shift(elements: GModelElement[], offset: Point): void {
             const position = gBoundsAware.position ?? Point.ORIGIN;
             gBoundsAware.position = { x: position.x + offset.x, y: position.y + offset.y };
         });
+}
+
+export function filterByType<T extends GModelElement>(elements: GModelElement[], guard: TypeGuard<T>): T[] {
+    return elements.filter(element => guard(element)) as T[];
 }

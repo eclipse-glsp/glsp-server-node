@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -24,7 +24,7 @@ export interface GAlignable {
 }
 
 export function isGAlignable<G extends GModelElement>(element: G): element is G & GAlignable {
-    return ((element as any)[GAlignable] = true);
+    return GAlignable in element && element[GAlignable] === true;
 }
 
 export type GAlignableBuilder<G extends GModelElement = GModelElement> = GModelElementBuilder<G & GAlignable>;

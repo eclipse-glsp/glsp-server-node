@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -24,7 +24,7 @@ export interface GLayoutable {
 }
 
 export function isGLayoutable<G extends GModelElement>(element: G): element is G & GLayoutable {
-    return ((element as any)[GLayoutable] = true);
+    return GLayoutable in element && element[GLayoutable] === true;
 }
 
 export type GLayoutableBuilder = GModelElementBuilder<GModelElement & GLayoutable>;
