@@ -2,7 +2,6 @@
   "name": "@eclipse-glsp/layout-elk",
   "version": "1.1.0-next",
   "description": "Integration of ELK graph layout algorithms in GLSP Node Server",
-  "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
   "keywords": [
     "eclipse",
     "graphics",
@@ -12,15 +11,16 @@
     "glsp",
     "diagram editor"
   ],
-  "author": {
-    "name": "Eclipse GLSP"
-  },
   "homepage": "https://www.eclipse.org/glsp/",
+  "bugs": "https://github.com/eclipse-glsp/glsp/issues",
   "repository": {
     "type": "git",
     "url": "https://github.com/eclipse-glsp/glsp-server-node.git"
   },
-  "bugs": "https://github.com/eclipse-glsp/glsp/issues",
+  "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
+  "author": {
+    "name": "Eclipse GLSP"
+  },
   "contributors": [
     {
       "name": "STMicroelectronics",
@@ -32,15 +32,12 @@
       "url": "https://projects.eclipse.org/projects/ecd.glsp"
     }
   ],
+  "main": "lib/index",
+  "types": "lib/index",
   "files": [
     "lib",
     "src"
   ],
-  "dependencies": {
-    "@eclipse-glsp/server-node": "1.1.0-next",
-    "elkjs": "^0.7.1",
-    "sprotty-elk": "0.12.0"
-  },
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf lib tsconfig.tsbuildinfo coverage .nyc_output",
@@ -52,9 +49,12 @@
     "test:coverage": "nyc yarn test:ci",
     "watch": "tsc -w"
   },
+  "dependencies": {
+    "@eclipse-glsp/server-node": "1.1.0-next",
+    "elkjs": "^0.7.1",
+    "sprotty-elk": "0.12.0"
+  },
   "publishConfig": {
     "access": "public"
-  },
-  "main": "lib/index",
-  "types": "lib/index"
+  }
 }

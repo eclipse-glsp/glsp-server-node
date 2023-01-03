@@ -2,7 +2,6 @@
   "name": "@eclipse-glsp/server-node",
   "version": "1.1.0-next",
   "description": "A node.js server framework for GLSP",
-  "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
   "keywords": [
     "eclipse",
     "graphics",
@@ -12,15 +11,16 @@
     "glsp",
     "diagram editor"
   ],
-  "author": {
-    "name": "Eclipse GLSP"
-  },
   "homepage": "https://www.eclipse.org/glsp/",
+  "bugs": "https://github.com/eclipse-glsp/glsp/issues",
   "repository": {
     "type": "git",
     "url": "https://github.com/eclipse-glsp/glsp-server-node.git"
   },
-  "bugs": "https://github.com/eclipse-glsp/glsp/issues",
+  "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
+  "author": {
+    "name": "Eclipse GLSP"
+  },
   "contributors": [
     {
       "name": "STMicroelectronics",
@@ -32,21 +32,12 @@
       "url": "https://projects.eclipse.org/projects/ecd.glsp"
     }
   ],
+  "main": "lib/index",
+  "types": "lib/index",
   "files": [
     "lib",
     "src"
   ],
-  "dependencies": {
-    "@eclipse-glsp/graph": "1.1.0-next",
-    "@eclipse-glsp/protocol": "next",
-    "@types/uuid": "8.3.1",
-    "commander": "^8.3.0",
-    "inversify": "^5.1.1",
-    "winston": "^3.3.3"
-  },
-  "devDependencies": {
-    "@types/fs-extra": "^9.0.13"
-  },
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf lib tsconfig.tsbuildinfo coverage .nyc_output",
@@ -58,9 +49,18 @@
     "test:coverage": "nyc yarn test:ci",
     "watch": "tsc -w"
   },
+  "dependencies": {
+    "@eclipse-glsp/graph": "1.1.0-next",
+    "@eclipse-glsp/protocol": "next",
+    "@types/uuid": "8.3.1",
+    "commander": "^8.3.0",
+    "inversify": "^5.1.1",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13"
+  },
   "publishConfig": {
     "access": "public"
-  },
-  "main": "lib/index",
-  "types": "lib/index"
+  }
 }
