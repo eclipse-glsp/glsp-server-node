@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GBoundsAware, GEdge, GModelElement, isGBoundsAware } from '@eclipse-glsp/graph';
-import { PasteOperation, Point, SModelElementSchema, TypeGuard } from '@eclipse-glsp/protocol';
+import { PasteOperation, Point, SModelElementSchema } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import * as uuid from 'uuid';
 import { GModelSerializer } from '../features/model/gmodel-serializer';
@@ -116,8 +116,4 @@ export function shift(elements: GModelElement[], offset: Point): void {
             const position = gBoundsAware.position ?? Point.ORIGIN;
             gBoundsAware.position = { x: position.x + offset.x, y: position.y + offset.y };
         });
-}
-
-export function filterByType<T extends GModelElement>(elements: GModelElement[], guard: TypeGuard<T>): T[] {
-    return elements.filter(element => guard(element)) as T[];
 }
