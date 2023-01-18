@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -17,7 +17,6 @@ import { InitializeClientSessionParameters, remove } from '@eclipse-glsp/protoco
 import { inject, injectable } from 'inversify';
 import { GLSPServer } from '../protocol/glsp-server';
 import { GLSPServerListener } from '../protocol/glsp-server-listener';
-import { Disposable } from '../utils/disposable';
 import { GLSPServerError } from '../utils/glsp-server-error';
 import { ClientSession } from './client-session';
 import { ClientSessionFactory } from './client-session-factory';
@@ -99,7 +98,7 @@ export interface ClientSessionManager {
 const ALL_CLIENT_IDS_KEY = '*';
 
 @injectable()
-export class DefaultClientSessionManager extends Disposable implements ClientSessionManager, GLSPServerListener {
+export class DefaultClientSessionManager implements ClientSessionManager, GLSPServerListener {
     @inject(ClientSessionFactory) sessionFactory: ClientSessionFactory;
 
     protected clientSessions: Map<string, ClientSession> = new Map<string, ClientSession>();
@@ -177,10 +176,6 @@ export class DefaultClientSessionManager extends Disposable implements ClientSes
     }
 
     serverShutDown(server: GLSPServer): void {
-        this.dispose();
-    }
-
-    protected override doDispose(): void {
         Array.from(this.clientSessions.keys()).forEach(id => this.disposeClientSession(id));
         this.listeners.clear();
     }

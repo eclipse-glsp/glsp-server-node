@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { CompoundOperation, Operation } from '@eclipse-glsp/protocol';
+import { CompoundOperation, MaybePromise, Operation } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { OperationActionHandler } from './operation-action-handler';
 import { OperationHandler } from './operation-handler';
@@ -29,7 +29,7 @@ export class CompoundOperationHandler implements OperationHandler {
         operation.operationList.forEach(nestedOperation => this.executeNestedOperation(nestedOperation));
     }
 
-    executeNestedOperation(operation: Operation): void {
+    executeNestedOperation(operation: Operation): MaybePromise<void> {
         const operationHandler = OperationActionHandler.getOperationHandler(operation, this.operationHandlerRegistry);
         if (operationHandler) {
             operationHandler.execute(operation);

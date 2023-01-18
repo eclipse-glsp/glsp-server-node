@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -18,6 +18,7 @@ import {
     CreateEdgeOperation,
     CreateNodeOperation,
     CreateOperation,
+    MaybePromise,
     Operation,
     Point,
     TriggerEdgeCreationAction,
@@ -38,7 +39,7 @@ export abstract class CreateOperationHandler implements OperationHandler {
     abstract readonly label: string;
     abstract elementTypeIds: string[];
 
-    abstract execute(operation: Operation): void;
+    abstract execute(operation: Operation): MaybePromise<void>;
 
     /**
      * Returns a list of {@link TriggerElementCreationAction}s for registered element types.

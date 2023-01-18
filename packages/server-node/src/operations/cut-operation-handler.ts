@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { CutOperation, DeleteElementOperation } from '@eclipse-glsp/protocol';
+import { CutOperation, DeleteElementOperation, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
 import { OperationHandler } from './operation-handler';
@@ -25,7 +25,7 @@ export class CutOperationHandler implements OperationHandler {
     @inject(ActionDispatcher)
     protected actionDispatcher: ActionDispatcher;
 
-    execute(operation: CutOperation): void {
+    execute(operation: CutOperation): MaybePromise<void> {
         const cutableElementIds = this.getElementToCut(operation);
         if (cutableElementIds.length > 0) {
             this.actionDispatcher.dispatch(DeleteElementOperation.create(cutableElementIds));

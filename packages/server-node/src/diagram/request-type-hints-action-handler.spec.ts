@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -47,8 +47,8 @@ describe('test RequestTypeHintsActionHandler', () => {
     );
     const handler = container.resolve(RequestTypeHintsActionHandler);
 
-    it('execute with correct action', () => {
-        const result = handler.execute(RequestTypeHintsAction.create());
+    it('execute with correct action', async () => {
+        const result = await handler.execute(RequestTypeHintsAction.create());
 
         expect(result).to.have.length(1);
         expect(SetTypeHintsAction.is(result[0])).true;

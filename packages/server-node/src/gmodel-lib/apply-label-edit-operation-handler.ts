@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GLabel } from '@eclipse-glsp/graph';
-import { ApplyLabelEditOperation } from '@eclipse-glsp/protocol';
+import { ApplyLabelEditOperation, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ModelState } from '../features/model/model-state';
 import { OperationHandler } from '../operations/operation-handler';
@@ -27,7 +27,7 @@ export class ApplyLabelEditOperationHandler implements OperationHandler {
     @inject(ModelState)
     protected readonly modelState: ModelState;
 
-    execute(operation: ApplyLabelEditOperation): void {
+    execute(operation: ApplyLabelEditOperation): MaybePromise<void> {
         const element = this.modelState.index.findByClass(operation.labelId, GLabel);
         if (element) {
             element.text = operation.text;

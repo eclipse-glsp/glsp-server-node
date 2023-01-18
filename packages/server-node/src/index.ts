@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -87,7 +87,6 @@ export * from './session/client-session-listener';
 export * from './session/client-session-manager';
 export * from './utils/args-util';
 export * from './utils/client-options-util';
-export * from './utils/disposable';
 export * from './utils/glsp-server-error';
 export * from './utils/logger';
 export * from './utils/maybe-promise';

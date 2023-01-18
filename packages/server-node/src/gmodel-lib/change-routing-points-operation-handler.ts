@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 EclipseSource and others.
+ * Copyright (c) 2022-2023 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ChangeRoutingPointsOperation } from '@eclipse-glsp/protocol';
+import { ChangeRoutingPointsOperation, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ModelState } from '../features/model/model-state';
 import { OperationHandler } from '../operations/operation-handler';
@@ -28,7 +28,7 @@ export class ChangeRoutingPointsOperationHandler implements OperationHandler {
     @inject(ModelState)
     protected modelState: ModelState;
 
-    execute(operation: ChangeRoutingPointsOperation): void {
+    execute(operation: ChangeRoutingPointsOperation): MaybePromise<void> {
         if (!operation.newRoutingPoints) {
             throw new GLSPServerError('Incomplete change routingPoints  action');
         }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, RequestTypeHintsAction, SetTypeHintsAction } from '@eclipse-glsp/protocol';
+import { Action, MaybePromise, RequestTypeHintsAction, SetTypeHintsAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
 import { DiagramConfiguration } from './diagram-configuration';
@@ -23,7 +23,7 @@ export class RequestTypeHintsActionHandler implements ActionHandler {
     @inject(DiagramConfiguration) protected diagramConfiguration: DiagramConfiguration;
     static KINDS = [RequestTypeHintsAction.KIND];
 
-    execute(action: RequestTypeHintsAction): Action[] {
+    execute(action: RequestTypeHintsAction): MaybePromise<Action[]> {
         return [
             SetTypeHintsAction.create({
                 shapeHints: this.diagramConfiguration.shapeTypeHints,
