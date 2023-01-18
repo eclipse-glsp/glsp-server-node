@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,10 +13,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, MaybePromise, SaveModelAction, SetDirtyStateAction } from '@eclipse-glsp/protocol';
+import { Action, SaveModelAction, SetDirtyStateAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
-import { GLSPServerError } from '../../utils/glsp-server-error';
 import { ModelState } from './model-state';
 import { SourceModelStorage } from './source-model-storage';
 
@@ -30,13 +29,10 @@ export class SaveModelActionHandler implements ActionHandler {
     @inject(SourceModelStorage)
     protected sourceModelStorage: SourceModelStorage;
 
-    execute(action: SaveModelAction): MaybePromise<Action[]> {
-        try {
-            this.sourceModelStorage.saveSourceModel(action);
-            this.modelState.isDirty = false; // TODO: call save is done when available
-        } catch (err) {
-            throw new GLSPServerError(`An error occurred during save process: ${err}`);
-        }
+    async execute(action: SaveModelAction): Promise<Action[]> {
+        await this.sourceModelStorage.saveSourceModel(action);
+        this.modelState.isDirty = false; // TODO: call save is done when available
+
         return [SetDirtyStateAction.create(this.modelState.isDirty, { reason: 'save' })];
     }
 }
