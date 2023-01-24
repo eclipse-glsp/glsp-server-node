@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -28,7 +28,7 @@ export class RequestMarkersHandler implements ActionHandler {
     @inject(ModelValidator) @optional() validator: ModelValidator;
     @inject(ModelState) modelState: ModelState;
 
-    async execute(action: RequestMarkersAction, ...args: unknown[]): Promise<Action[]> {
+    async execute(action: RequestMarkersAction): Promise<Action[]> {
         let elementIDs = action.elementsIDs;
         if (!this.validator) {
             throw new GLSPServerError('Cannot compute markers! No implementation for ModelValidator has been bound');

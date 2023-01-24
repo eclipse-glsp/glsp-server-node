@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -21,11 +21,12 @@ import {
     InitializeClientSessionParameters,
     InitializeParameters,
     InitializeResult,
+    JsonrpcGLSPClient,
+    MaybePromise,
     remove,
     ServerActions,
     ServerMessageAction
 } from '@eclipse-glsp/protocol';
-import { JsonrpcGLSPClient, MaybePromise } from '@eclipse-glsp/protocol/lib/jsonrpc/glsp-jsonrpc-client';
 import { inject, injectable, multiInject, optional } from 'inversify';
 import * as jsonrpc from 'vscode-jsonrpc';
 import { MessageConnection } from 'vscode-jsonrpc';
@@ -271,13 +272,16 @@ export class DefaultGLSPServer implements JsonRpcGLSPServer {
     }
 
     protected handleProcessError(message: ActionMessage, reason: any): void | PromiseLike<void> {
-        const errorMsg = `Could not process action: '${message.action.kind}`;
-        this.logger.error(errorMsg, reason);
-        const details = reason?.cause?.toString() ?? '';
+        let errorMsg = `Could not process action: '${message.action.kind}`;
+        this.logger.error(errorMsg);
+        this.logger.error(reason);
+        let details: string | undefined = reason?.toString?.();
         if (reason instanceof GLSPServerError) {
-            const errorAction = ServerMessageAction.create(errorMsg, { severity: 'ERROR', details });
-            this.glspClient.process({ clientId: message.clientId, action: errorAction });
+            details = reason.cause?.toString?.();
+            errorMsg = reason.message;
         }
+        const errorAction = ServerMessageAction.create(errorMsg, { severity: 'ERROR', details });
+        this.glspClient.process({ clientId: message.clientId, action: errorAction });
     }
 
     getClientSession(sessionId: string): ClientSession | undefined {

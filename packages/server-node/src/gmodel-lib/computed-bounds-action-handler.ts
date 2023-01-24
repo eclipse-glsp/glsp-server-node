@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GModelRoot } from '@eclipse-glsp/graph';
-import { Action, ComputedBoundsAction } from '@eclipse-glsp/protocol';
+import { Action, ComputedBoundsAction, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
 import { ModelState } from '../features/model/model-state';
@@ -30,7 +30,7 @@ export class ComputedBoundsActionHandler implements ActionHandler {
     protected modelState: ModelState;
 
     actionKinds = [ComputedBoundsAction.KIND];
-    execute(action: ComputedBoundsAction): Action[] {
+    execute(action: ComputedBoundsAction): MaybePromise<Action[]> {
         const model = this.modelState.root;
         if (action.revision === model.revision) {
             this.applyBounds(model, action);

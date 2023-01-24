@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GBoundsAware, GEdge, GModelElement, isGBoundsAware } from '@eclipse-glsp/graph';
-import { PasteOperation, Point, SModelElementSchema } from '@eclipse-glsp/protocol';
+import { MaybePromise, PasteOperation, Point, SModelElementSchema } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import * as uuid from 'uuid';
 import { GModelSerializer } from '../features/model/gmodel-serializer';
@@ -33,7 +33,7 @@ export class PasteOperationHandler implements OperationHandler {
     @inject(GModelSerializer)
     protected modelSerializer: GModelSerializer;
 
-    execute(operation: PasteOperation): void {
+    execute(operation: PasteOperation): MaybePromise<void> {
         const schemas: SModelElementSchema[] = JSON.parse(operation.clipboardData['application/json']);
         const elements = schemas.map(schema => this.modelSerializer.createElement(schema, this.modelState.root));
         shift(elements, this.computeOffset(elements, operation.editorContext.lastMousePosition));

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,11 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, flatPush, MaybeArray, RequestAction, ResponseAction, UpdateModelAction } from '@eclipse-glsp/protocol';
+import { Action, Disposable, flatPush, MaybeArray, RequestAction, ResponseAction, UpdateModelAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
 import { ClientActionKinds, ClientId } from '../di/service-identifiers';
-import { Disposable } from '../utils/disposable';
 import { GLSPServerError } from '../utils/glsp-server-error';
 import { Logger } from '../utils/logger';
 import { PromiseQueue } from '../utils/promise-queue';
@@ -59,7 +58,7 @@ export interface ActionDispatcher {
 }
 
 @injectable()
-export class DefaultActionDispatcher extends Disposable implements ActionDispatcher {
+export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
     @inject(ActionHandlerRegistry)
     protected actionHandlerRegistry: ActionHandlerRegistry;
 
@@ -133,7 +132,7 @@ export class DefaultActionDispatcher extends Disposable implements ActionDispatc
         }
     }
 
-    override doDispose(): void {
+    dispose(): void {
         this.actionQueue.clear();
     }
 }

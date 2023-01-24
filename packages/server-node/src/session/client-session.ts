@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,9 +13,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { Disposable } from '@eclipse-glsp/protocol';
 import { Container } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
-import { Disposable, IDisposable, isIDisposable } from '../utils/disposable';
 
 /**
  * Stores the core information that the `GLSPServer` needs to know about a client session.
@@ -23,7 +23,7 @@ import { Disposable, IDisposable, isIDisposable } from '../utils/disposable';
  * client session from the `ClientSessionManager` and delegates the action message to its
  * {@link ActionDispatcher};
  */
-export interface ClientSession extends IDisposable {
+export interface ClientSession extends Disposable {
     /**
      * The id of the client session.
      */
@@ -46,18 +46,16 @@ export interface ClientSession extends IDisposable {
     readonly container: Container;
 }
 
-export class DefaultClientSession extends Disposable implements ClientSession {
+export class DefaultClientSession implements ClientSession {
     constructor(
         readonly id: string,
         readonly diagramType: string,
         readonly actionDispatcher: ActionDispatcher,
         readonly container: Container
-    ) {
-        super();
-    }
+    ) {}
 
-    protected override doDispose(): void {
-        if (isIDisposable(this.actionDispatcher)) {
+    dispose(): void {
+        if (Disposable.is(this.actionDispatcher)) {
             this.actionDispatcher.dispose();
         }
     }

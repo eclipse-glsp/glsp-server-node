@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { NavigationTarget } from '@eclipse-glsp/protocol';
+import { MaybePromise, NavigationTarget } from '@eclipse-glsp/protocol';
 import { ModelState } from '@eclipse-glsp/server-node';
 import { NavigationTargetResolution } from '@eclipse-glsp/server-node/lib/features/navigation/navigation-target-resolution';
 import { NavigationTargetResolver } from '@eclipse-glsp/server-node/lib/features/navigation/navigation-target-resolver';
@@ -25,7 +25,7 @@ export class WorkflowNavigationTargetResolver extends NavigationTargetResolver {
     @inject(ModelState)
     protected readonly modelState: ModelState;
 
-    async resolve(navigationTarget: NavigationTarget): Promise<NavigationTargetResolution> {
+    resolve(navigationTarget: NavigationTarget): MaybePromise<NavigationTargetResolution> {
         if (navigationTarget.args && navigationTarget.args['name']) {
             const name = navigationTarget.args['name'];
             const taskNodes = this.modelState.index.getAllByClass<TaskNode>(TaskNode);

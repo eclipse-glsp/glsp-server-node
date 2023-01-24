@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -17,6 +17,7 @@ import { GModelRootSchema } from '@eclipse-glsp/graph';
 import {
     Action,
     DirtyStateChangeReason,
+    MaybePromise,
     RequestBoundsAction,
     SetDirtyStateAction,
     SetModelAction,
@@ -56,7 +57,7 @@ export class ModelSubmissionHandler {
      * @param reason The optional reason that caused the model update.
      * @returns A list of actions to be processed in order to submit the model.
      */
-    submitModel(reason?: DirtyStateChangeReason): Action[] {
+    submitModel(reason?: DirtyStateChangeReason): MaybePromise<Action[]> {
         this.modelFactory.createModel();
         this.modelState.root.revision = (this.modelState.root.revision ?? 0) + 1;
         const root = this.serializeGModel();
@@ -81,11 +82,11 @@ export class ModelSubmissionHandler {
      * @param reason The optional reason that caused the model update.
      * @returns A list of actions to be processed in order to submit the model.
      */
-    submitModelDirectly(reason?: DirtyStateChangeReason): Action[] {
+    async submitModelDirectly(reason?: DirtyStateChangeReason): Promise<Action[]> {
         const root = this.serializeGModel();
 
         if (this.diagramConfiguration.layoutKind === ServerLayoutKind.AUTOMATIC && this.layoutEngine) {
-            this.layoutEngine.layout();
+            await this.layoutEngine.layout();
         }
         const result: Action[] = [];
         result.push(

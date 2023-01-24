@@ -28,9 +28,7 @@
     "watch": "lerna run --parallel watch"
   },
   "devDependencies": {
-    "@eclipse-glsp/cli": "1.1.0-next.4846de1.120",
-    "@eclipse-glsp/config": "1.1.0-next.4846de1.120",
-    "@eclipse-glsp/config-test": "1.1.0-next.4846de1.120",
+    "@eclipse-glsp/dev": "1.1.0-next.164cf99.124",
     "@types/node": "16.x"
   },
   "engines": {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GEdge, GModelElement, GNode } from '@eclipse-glsp/graph';
-import { DeleteElementOperation } from '@eclipse-glsp/protocol';
+import { DeleteElementOperation, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { GModelIndex } from '../features/model/gmodel-index';
 import { ModelState } from '../features/model/model-state';
@@ -34,7 +34,7 @@ export class GModelDeleteOperationHandler implements OperationHandler {
         return DeleteElementOperation.KIND;
     }
 
-    execute(operation: DeleteElementOperation): void {
+    execute(operation: DeleteElementOperation): MaybePromise<void> {
         const elementIds = operation.elementIds;
         if (!elementIds || elementIds.length === 0) {
             this.logger.warn('Elements to delete are not specified');
