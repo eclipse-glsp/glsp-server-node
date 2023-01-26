@@ -2,7 +2,11 @@
 
 ## v1.1.0 - upcoming
 
--   [node] Update minimum requirements for Node to >=16.11.0 [#210](https://github.com/eclipse-glsp/glsp-client/pull/210)
+-   [elk] Fixed a bug in the `GLSElkLayoutEngine` that skipped layouting of certain edges [#23](https://github.com/eclipse-glsp/glsp-server-node/pull/23) - Contributed on behalf of STMicroelectronics
+-   [launch] The message sent after successful startup now also contains the effective socket port [#30](https://github.com/eclipse-glsp/glsp-server-node/pull/30) - Contributed on behalf of STMicroelectronics
+-   [launch] Fixed a bug that caused the server to no properly dispose all resources when `shutdown` was called [#33](https://github.com/eclipse-glsp/glsp-server-node/pull/33) - Contributed on behalf of STMicroelectronics
+-   [diagram] Fixed a bug to ensure that the copy&paste feature is working properly [#35](https://github.com/eclipse-glsp/glsp-server-node/pull/35)
+-   [api] Ensured that all `Promise`s and `MaybePromises` have proper rejection handling [#36](https://github.com/eclipse-glsp/glsp-server-node/pull/36)- Contributed on behalf of STMicroelectronics
 
 ### Breaking Changes
 
@@ -11,6 +15,12 @@
         -   `EdgePlacement` -> `GEdgePlacement` (affected classes: `GEdgeLayoutable`, `GLabel`)
         -   `GLayoutContainer` -> `GLayouting` (affected classes: `GCompartment`, `GGraph`, `GNode`)
         -   `GShapePreRenderedElement` -> `GShapedPreRenderedElement`
+-   [deps] Update minimum requirements for Node to >=16.11.0 [#32](https://github.com/eclipse-glsp/glsp-client/pull/32)
+-   [api] Restructured `@eclipse-glsp/server-node` package to provide entry points for both node and browser-only environments [#37](https://github.com/eclipse-glsp/glsp-server-node/pull/37)
+    -   The package has been renamed to `@eclipse-glsp/server`. This change affects all import namespaces.
+    -   New namespaces for environment specific code:
+        -   `@eclipse-glsp/server/node`
+        -   `@eclipse-glsp/server/browser`
 
 ## [v1.0.0 - 30/06/2022](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v1.0.0)
 

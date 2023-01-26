@@ -29,7 +29,7 @@ import {
     MaybePromise,
     ModelState,
     Point
-} from '@eclipse-glsp/server-node';
+} from '@eclipse-glsp/server';
 import { ELK, ElkEdge, ElkExtendedEdge, ElkGraphElement, ElkLabel, ElkNode, ElkPort, ElkPrimitiveEdge, ElkShape } from 'elkjs/lib/elk-api';
 import { injectable } from 'inversify';
 import { ElkFactory } from 'sprotty-elk';

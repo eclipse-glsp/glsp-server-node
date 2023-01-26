@@ -13,3 +13,5 @@ yarn-error.log
 tsconfig.tsbuildinfo
 eslint.xml
 report.xml
+
+examples/workflow-server/bundle

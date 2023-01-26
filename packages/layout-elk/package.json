@@ -46,11 +46,11 @@
     "prepare": "yarn clean && yarn build",
     "test": "mocha --config ../../.mocharc \"./src/**/*.spec.?(ts|tsx)\"",
     "test:ci": "export JUNIT_REPORT_PATH=./report.xml && yarn test --reporter mocha-jenkins-reporter",
-    "test:coverage": "nyc yarn test:ci",
+    "test:coverage": "nyc yarn test",
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@eclipse-glsp/server-node": "1.1.0-next",
+    "@eclipse-glsp/server": "1.1.0-next",
     "elkjs": "^0.7.1",
     "sprotty-elk": "0.12.0"
   },

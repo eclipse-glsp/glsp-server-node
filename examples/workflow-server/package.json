@@ -32,24 +32,34 @@
       "url": "https://projects.eclipse.org/projects/ecd.glsp"
     }
   ],
-  "main": "lib/index",
+  "main": "./lib/node/index.js",
+  "browser": {
+    "./lib/node/index.js": "./lib/browser/index.js"
+  },
   "types": "lib/index",
   "files": [
     "lib",
     "src"
   ],
   "scripts": {
-    "build": "tsc -b",
-    "clean": "rimraf lib tsconfig.tsbuildinfo ",
+    "build": "tsc -b && yarn bundle",
+    "bundle": "webpack",
+    "bundle:browser": "webpack --env target=webworker ",
+    "clean": "rimraf lib tsconfig.tsbuildinfo bundle",
     "lint": "eslint --ext .ts,.tsx ./src",
     "lint:ci": "yarn lint -o eslint.xml -f checkstyle",
     "prepare": "yarn clean && yarn build",
-    "start:server": "yarn ts-node src/index.ts",
+    "start": "node --enable-source-maps bundle/wf-glsp-server-node.js",
     "watch": "tsc -w"
   },
   "dependencies": {
     "@eclipse-glsp/layout-elk": "1.1.0-next",
-    "@eclipse-glsp/server-node": "1.1.0-next"
+    "@eclipse-glsp/server": "1.1.0-next"
+  },
+  "devDependencies": {
+    "source-map-loader": "^4.0.1",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   },
   "publishConfig": {
     "access": "public"
