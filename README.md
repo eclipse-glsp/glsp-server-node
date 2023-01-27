@@ -1,17 +1,20 @@
-# Node GLSP Server [![Build Status](https://ci.eclipse.org/glsp/job/eclipse-glsp/job/glsp-server-node/job/main/badge/icon)](https://ci.eclipse.org/glsp/job/eclipse-glsp/job/glsp-server-node/job/main/)
+# GLSP Server [![Build Status](https://ci.eclipse.org/glsp/job/eclipse-glsp/job/glsp-server-node/job/main/badge/icon)](https://ci.eclipse.org/glsp/job/eclipse-glsp/job/glsp-server-node/job/main/)
 
-Node based server component for the Eclipse Graphical Language Platform (GLSP).
-The implementation of this server is aligned with the default Java based [GLSP Server](https://github.com/eclipse-glsp/glsp-server).
+Contains the code for the Typescript-based framework to create [GLSP](https://github.com/eclipse-glsp/glsp) server components.
+The implementation of this server is aligned with the default Java based [GLSP Server](https://github.com/eclipse-glsp/glsp-server-node).
 
 The server consists of three components:
 
--   [`@eclipse-glsp/server-node`](packages/server-node/) The base framework for building node based GLSP servers
+-   [`@eclipse-glsp/server`](packages/server/) The base framework for building GLSP servers
 -   [`@eclipse-glsp/graph`](packages/graph/) The Typescript based implementation of the graphical model used in GLSP (GModel).
 -   [`@eclipse-glsp-examples/workflow-server`](examples/workflow-server) GLSP example server using the workflow model.
 
+The main target environment is node, nevertheless, all components are implemented in an ismorphic fashion and also provide
+an entrypoint to target browser environments (e.g. running the server in a web worker)
+
 ## Integration & Features
 
-Currently the node-based API does not yet support the full feature set of the Java GLSP Server API.
+Currently the Typescript-based API does not yet support the full feature set of the Java GLSP Server API.
 Below is a list of features that are currently supported.
 
 | Integration                                       | Node Server | Java Server |

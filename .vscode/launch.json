@@ -5,8 +5,8 @@
       "name": "Run current test file",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceRoot}/node_modules/.bin/mocha",
-      "args": ["--config", "${workspaceRoot}/.mocharc", "${relativeFile}"],
+      "program": "${workspaceFolder}/node_modules/.bin/mocha",
+      "args": ["--config", "${workspaceFolder}/.mocharc", "${relativeFile}"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "env": {
@@ -17,11 +17,11 @@
       "name": "Run server-node tests",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceRoot}/node_modules/.bin/mocha",
+      "program": "${workspaceFolder}/node_modules/.bin/mocha",
       "args": [
         "--config",
-        "${workspaceRoot}/.mocharc",
-        "${workspaceRoot}/packages/server-node/src/**/*.spec.ts"
+        "${workspaceFolder}/.mocharc",
+        "${workspaceFolder}/packages/server-node/src/**/*.spec.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
@@ -33,11 +33,11 @@
       "name": "Run graph tests",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceRoot}/node_modules/.bin/mocha",
+      "program": "${workspaceFolder}/node_modules/.bin/mocha",
       "args": [
         "--config",
-        "${workspaceRoot}/.mocharc",
-        "${workspaceRoot}/packages/graph/src/**/*.spec.ts"
+        "${workspaceFolder}/.mocharc",
+        "${workspaceFolder}/packages/graph/src/**/*.spec.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
@@ -49,7 +49,7 @@
       "name": "Run layout-elk tests",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceRoot}/node_modules/.bin/mocha",
+      "program": "${workspaceFolder}/node_modules/.bin/mocha",
       "args": [
         "--config",
         "${workspaceRoot}/.mocharc",
@@ -65,17 +65,25 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Workflow Example Server",
-      "program": "${workspaceFolder}/examples/workflow-server/lib/index.js",
+      "program": "${workspaceFolder}/examples/workflow-server/bundle/wf-glsp-server-node.js",
       "env": {
         "NODE_ENV": "development"
       },
       "sourceMaps": true,
       "outFiles": [
+        "${workspaceRoot}/examples/workflow-server/bundle/**/*.js",
         "${workspaceRoot}/node_modules/@eclipse-glsp/*/lib/**/*.js",
-        "${workspaceRoot}/node_modules/@eclipse-glsp-examples/*/lib/**/*.js",
-        "${workspaceRoot}/packages/*/lib/**/*.js",
-        "${workspaceRoot}/examples/*/lib/**/*.js"
+        "${workspaceRoot}/examples/workflow-server/*/lib/**/*.js",
+        "${workspaceRoot}/packages/**/*/lib/**/*.js"
       ],
+      "sourceMapPathOverrides": {
+        "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
+        "webpack:////*": "/*",
+        "webpack://?:*/*": "${workspaceFolder}/*",
+        "webpack:///([a-z]):/(.+)": "$1:/$2",
+        "webpack://@eclipse-glsp-examples/workflow-server/(.+)": "${workspaceFolder}/examples/workflow-server/$1",
+        "meteor://💻app/*": "${workspaceFolder}/*"
+      },
       "smartStep": true,
       "internalConsoleOptions": "openOnSessionStart",
       "outputCapture": "std"

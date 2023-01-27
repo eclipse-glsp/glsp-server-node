@@ -64,6 +64,18 @@ pipeline {
             }
         }
 
+           stage('Bundle workflow-example (browser)') {
+            steps {
+                container('node') {
+                    timeout(30){
+                        dir("examples/workflow-server"){
+                            sh "yarn bundle:browser"
+                        }                     
+                    }
+                }
+            }
+        }
+
         stage('Codechecks (ESLint)'){
             steps {
                 container('node') {

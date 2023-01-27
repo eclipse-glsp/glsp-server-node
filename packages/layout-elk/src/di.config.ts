@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { LayoutEngine, ModelState } from '@eclipse-glsp/server-node';
+import { LayoutEngine, ModelState } from '@eclipse-glsp/server';
 import ElkConstructor, { LayoutOptions } from 'elkjs/lib/elk.bundled';
 import { ContainerModule } from 'inversify';
 import { ElkFactory } from 'sprotty-elk';
