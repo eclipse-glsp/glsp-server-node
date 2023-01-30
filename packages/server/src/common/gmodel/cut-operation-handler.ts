@@ -16,20 +16,21 @@
 import { CutOperation, DeleteElementOperation, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
-import { OperationHandler } from './operation-handler';
+import { Command } from '../command/command';
+import { GModelOperationHandler } from './gmodel-operation-handler';
 
 @injectable()
-export class CutOperationHandler implements OperationHandler {
-    operationType = CutOperation.KIND;
+export class GModelCutOperationHandler extends GModelOperationHandler {
+    readonly operationType = CutOperation.KIND;
 
     @inject(ActionDispatcher)
     protected actionDispatcher: ActionDispatcher;
 
-    execute(operation: CutOperation): MaybePromise<void> {
-        const cutableElementIds = this.getElementToCut(operation);
-        if (cutableElementIds.length > 0) {
-            this.actionDispatcher.dispatch(DeleteElementOperation.create(cutableElementIds));
-        }
+    createCommand(operation: CutOperation): MaybePromise<Command | undefined> {
+        const cuttableElementIds = this.getElementToCut(operation);
+        return cuttableElementIds.length > 0 //
+            ? this.commandOf(() => this.actionDispatcher.dispatch(DeleteElementOperation.create(cuttableElementIds)))
+            : undefined;
     }
 
     protected getElementToCut(cutOperation: CutOperation): string[] {

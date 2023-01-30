@@ -13,15 +13,23 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { LayoutOperation, Operation } from '@eclipse-glsp/protocol';
+import { LayoutOperation, MaybePromise, Operation } from '@eclipse-glsp/protocol';
 import { inject, injectable, optional } from 'inversify';
+import { Command } from '../../command/command';
+import { GModelRecordingCommand } from '../../command/recording-command';
 import { DiagramConfiguration, ServerLayoutKind } from '../../diagram/diagram-configuration';
 import { OperationHandler } from '../../operations/operation-handler';
 import { Logger } from '../../utils/logger';
+import { GModelSerializer } from '../model/gmodel-serializer';
 import { LayoutEngine } from './layout-engine';
 
+/**
+ * The default handler for `{@link LayoutOperation}s. Does invoke the (optional) layout engine
+ * if the server is configured for manual layouting. Changes are stored transient in the graphical model and are not
+ * persisted in the source model.
+ */
 @injectable()
-export class LayoutOperationHandler implements OperationHandler {
+export class LayoutOperationHandler extends OperationHandler {
     @inject(Logger)
     protected logger: Logger;
 
@@ -32,16 +40,23 @@ export class LayoutOperationHandler implements OperationHandler {
     @inject(DiagramConfiguration)
     protected diagramConfiguration: DiagramConfiguration;
 
+    @inject(GModelSerializer)
+    protected serializer: GModelSerializer;
+
     readonly operationType = LayoutOperation.KIND;
-    async execute(operation: Operation): Promise<void> {
-        if (operation.kind === LayoutOperation.KIND) {
-            if (this.diagramConfiguration.layoutKind === ServerLayoutKind.MANUAL) {
-                if (this.layoutEngine) {
-                    await this.layoutEngine.layout();
-                    return;
-                }
-                this.logger.warn('Could not execute layout operation. No `LayoutEngine` is bound!');
-            }
+
+    createCommand(operation: LayoutOperation): MaybePromise<Command | undefined> {
+        if (this.diagramConfiguration.layoutKind !== ServerLayoutKind.MANUAL) {
+            return undefined;
         }
+        if (!this.layoutEngine) {
+            this.logger.warn('Could not execute layout operation. No `LayoutEngine` is bound!');
+            return undefined;
+        }
+        return new GModelRecordingCommand(this.modelState, this.serializer, () => this.executeOperation(operation));
+    }
+
+    protected async executeOperation(_operation: Operation): Promise<void> {
+        await this.layoutEngine?.layout();
     }
 }

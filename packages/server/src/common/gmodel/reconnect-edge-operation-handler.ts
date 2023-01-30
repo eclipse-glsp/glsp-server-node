@@ -15,19 +15,20 @@
  ********************************************************************************/
 import { GEdge, GNode, GPort } from '@eclipse-glsp/graph';
 import { MaybePromise, ReconnectEdgeOperation } from '@eclipse-glsp/protocol';
-import { inject, injectable } from 'inversify';
-import { ModelState } from '../features/model/model-state';
-import { OperationHandler } from '../operations/operation-handler';
+import { injectable } from 'inversify';
+import { Command } from '../command/command';
 import { GLSPServerError } from '../utils/glsp-server-error';
+import { GModelOperationHandler } from './gmodel-operation-handler';
 
 @injectable()
-export class ReconnectEdgeOperationHandler implements OperationHandler {
+export class GModelReconnectEdgeOperationHandler extends GModelOperationHandler {
     operationType = ReconnectEdgeOperation.KIND;
 
-    @inject(ModelState)
-    protected readonly modelState: ModelState;
+    createCommand(operation: ReconnectEdgeOperation): MaybePromise<Command | undefined> {
+        return this.commandOf(() => this.executeReconnect(operation));
+    }
 
-    execute(operation: ReconnectEdgeOperation): MaybePromise<void> {
+    executeReconnect(operation: ReconnectEdgeOperation): MaybePromise<void> {
         if (!operation.edgeElementId || !operation.sourceElementId || !operation.targetElementId) {
             throw new GLSPServerError('Incomplete reconnect connection action');
         }

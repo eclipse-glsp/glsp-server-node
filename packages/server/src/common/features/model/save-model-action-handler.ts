@@ -16,23 +16,22 @@
 import { Action, SaveModelAction, SetDirtyStateAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
-import { ModelState } from './model-state';
+import { CommandStack } from '../../command/command-stack';
 import { SourceModelStorage } from './source-model-storage';
 
 @injectable()
 export class SaveModelActionHandler implements ActionHandler {
     actionKinds = [SaveModelAction.KIND];
 
-    @inject(ModelState)
-    protected modelState: ModelState;
+    @inject(CommandStack)
+    protected commandStack: CommandStack;
 
     @inject(SourceModelStorage)
     protected sourceModelStorage: SourceModelStorage;
 
     async execute(action: SaveModelAction): Promise<Action[]> {
         await this.sourceModelStorage.saveSourceModel(action);
-        this.modelState.isDirty = false; // TODO: call save is done when available
-
-        return [SetDirtyStateAction.create(this.modelState.isDirty, { reason: 'save' })];
+        this.commandStack.saveIsDone();
+        return [SetDirtyStateAction.create(this.commandStack.isDirty, { reason: 'save' })];
     }
 }

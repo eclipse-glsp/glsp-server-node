@@ -19,19 +19,17 @@ import { BindingTarget } from '../di/binding-target';
 import { DiagramModule } from '../di/diagram-module';
 import { InstanceMultiBinding } from '../di/multi-binding';
 import { RequestClipboardDataActionHandler } from '../features/clipboard/request-clipboard-data-action-handler';
-import { LayoutOperationHandler } from '../features/layout/layout-operation-handler';
 import { GModelFactory, GModelFactoryNullImpl } from '../features/model/gmodel-factory';
 import { DefaultModelState, ModelState } from '../features/model/model-state';
-import { SaveModelActionHandler } from '../features/model/save-model-action-handler';
-import { CutOperationHandler } from '../operations/cut-operation-handler';
-import { OperationHandlerConstructor } from '../operations/operation-handler';
-import { ApplyLabelEditOperationHandler } from './apply-label-edit-operation-handler';
-import { ChangeBoundsOperationHandler } from './change-bounds-operation-handler';
-import { ChangeRoutingPointsOperationHandler } from './change-routing-points-operation-handler';
-import { ComputedBoundsActionHandler } from './computed-bounds-action-handler';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { OperationHandler, OperationHandlerConstructor } from '../operations/operation-handler';
+import { GModelApplyLabelEditOperationHandler } from './apply-label-edit-operation-handler';
+import { GModelChangeBoundsOperationHandler } from './change-bounds-operation-handler';
+import { GModelChangeRoutingPointsOperationHandler } from './change-routing-points-operation-handler';
+import { GModelCutOperationHandler } from './cut-operation-handler';
 import { GModelDeleteOperationHandler } from './delete-operation-handler';
-import { PasteOperationHandler } from './paste-operation-handler';
-import { ReconnectEdgeOperationHandler } from './reconnect-edge-operation-handler';
+import { GModelPasteOperationHandler } from './paste-operation-handler';
+import { GModelReconnectEdgeOperationHandler } from './reconnect-edge-operation-handler';
 
 /**
  * Extension of the {@link DiagramModule} to provide GModel integration.
@@ -39,16 +37,16 @@ import { ReconnectEdgeOperationHandler } from './reconnect-edge-operation-handle
  * Contains all bindings of {@link DiagramModule}.
  *
  * Additionally binds:
- * - {@link CommandStack} to {@link DefaultCommandStack}
- * - {@link ModelState} to {@link ModelState}
  * - {@link GModelFactory} to {@link GModelFactoryNullImpl}
- * - {@link GModelIndex} to self
- * - {@link ComputedBoundsActionHandler} to {@link ActionHandler}
  * - {@link RequestClipboardDataActionHandler} to {@link ActionHandler}
- * - {@link ApplyLabelEditOperationHandler} to {@link OperationHandler}
- * - {@link ChangeBoundsOperationHandler} to {@link OperationHandler}
- * - {@link CutOperationHandler} to {@link OperationHandler}
- * - {@link PasteOperationHandler} to {@link OperationHandler}
+ * - {@link GModelApplyLabelEditOperationHandler} to {@link OperationHandler}
+ * - {@link GModelChangeBoundsOperationHandler} to {@link OperationHandler}
+ * - {@link GModelCutOperationHandler} to {@link OperationHandler}
+ * - {@link GModelDeleteOperationHandler} to {@link OperationHandler}
+ * - {@link GModelPasteOperationHandler} to {@link OperationHandler}
+ * - {@link GModelReconnectEdgeOperationHandler} to {@link OperationHandler}
+ * - {@link GModelChangeRoutingPointsOperationHandler} to {@link OperationHandler}
+
  */
 @injectable()
 export abstract class GModelDiagramModule extends DiagramModule {
@@ -62,20 +60,17 @@ export abstract class GModelDiagramModule extends DiagramModule {
 
     protected override configureActionHandlers(binding: InstanceMultiBinding<ActionHandlerConstructor>): void {
         super.configureActionHandlers(binding);
-        binding.add(ComputedBoundsActionHandler);
-        binding.add(SaveModelActionHandler);
         binding.add(RequestClipboardDataActionHandler);
     }
 
     protected override configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
         super.configureOperationHandlers(binding);
-        binding.add(ApplyLabelEditOperationHandler);
-        binding.add(ChangeBoundsOperationHandler);
-        binding.add(CutOperationHandler);
+        binding.add(GModelApplyLabelEditOperationHandler);
+        binding.add(GModelChangeBoundsOperationHandler);
+        binding.add(GModelCutOperationHandler);
         binding.add(GModelDeleteOperationHandler);
-        binding.add(PasteOperationHandler);
-        binding.add(ReconnectEdgeOperationHandler);
-        binding.add(LayoutOperationHandler);
-        binding.add(ChangeRoutingPointsOperationHandler);
+        binding.add(GModelPasteOperationHandler);
+        binding.add(GModelReconnectEdgeOperationHandler);
+        binding.add(GModelChangeRoutingPointsOperationHandler);
     }
 }

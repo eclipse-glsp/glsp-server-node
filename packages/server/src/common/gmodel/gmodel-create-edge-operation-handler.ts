@@ -16,10 +16,11 @@
 
 import { GEdge, GModelElement, GPort } from '@eclipse-glsp/graph';
 import { GNode } from '@eclipse-glsp/graph/lib/gnode';
-import { CreateEdgeOperation } from '@eclipse-glsp/protocol';
-import { inject, injectable } from 'inversify';
-import { ModelState } from '../features/model/model-state';
-import { CreateOperationHandler } from '../operations/create-operation-handler';
+import { CreateEdgeOperation, MaybePromise, TriggerEdgeCreationAction } from '@eclipse-glsp/protocol';
+import { injectable } from 'inversify';
+import { Command } from '../command/command';
+import { CreateOperationHandler, CreateOperationKind } from '../operations/create-operation-handler';
+import { GModelOperationHandler } from './gmodel-operation-handler';
 
 /**
  * An abstract base implementation of {@link CreateEdgeOperation} handlers for diagram implementations
@@ -27,15 +28,20 @@ import { CreateOperationHandler } from '../operations/create-operation-handler';
  * (i.e. all operation handlers directly modify the graphical model).
  */
 @injectable()
-export abstract class GModelCreateEdgeOperationHandler extends CreateOperationHandler {
-    @inject(ModelState)
-    protected modelState: ModelState;
+export abstract class GModelCreateEdgeOperationHandler extends GModelOperationHandler implements CreateOperationHandler {
+    override readonly operationType: CreateOperationKind = CreateEdgeOperation.KIND;
+    abstract override label: string;
+    abstract elementTypeIds: string[];
 
-    get operationType(): string {
-        return CreateEdgeOperation.KIND;
+    override createCommand(operation: CreateEdgeOperation): MaybePromise<Command | undefined> {
+        return this.commandOf(() => this.executeCreation(operation));
     }
 
-    execute(operation: CreateEdgeOperation): void {
+    getTriggerActions(): TriggerEdgeCreationAction[] {
+        return this.elementTypeIds.map(typeId => TriggerEdgeCreationAction.create(typeId));
+    }
+
+    executeCreation(operation: CreateEdgeOperation): void {
         const index = this.modelState.index;
 
         const source = index.find(operation.sourceElementId, element => element instanceof GNode || element instanceof GPort);

@@ -48,6 +48,8 @@ import { ActionDispatcher, DefaultActionDispatcher } from '../actions/action-dis
 import { ActionHandlerConstructor, ActionHandlerFactory } from '../actions/action-handler';
 import { ActionHandlerRegistry, ActionHandlerRegistryInitializer } from '../actions/action-handler-registry';
 import { ClientActionHandler } from '../actions/client-action-handler';
+import { CommandStack, DefaultCommandStack } from '../command/command-stack';
+import { UndoRedoActionHandler } from '../command/undo-redo-action-handler';
 import { DiagramConfiguration } from '../diagram/diagram-configuration';
 import { RequestTypeHintsActionHandler } from '../diagram/request-type-hints-action-handler';
 import { CommandPaletteActionProvider } from '../features/contextactions/command-palette-action-provider';
@@ -63,7 +65,9 @@ import {
 } from '../features/directediting/context-edit-validator-registry';
 import { LabelEditValidator } from '../features/directediting/label-edit-validator';
 import { RequestEditValidationHandler } from '../features/directediting/request-edit-validation-handler';
+import { ComputedBoundsActionHandler } from '../features/layout/computed-bounds-action-handler';
 import { LayoutEngine } from '../features/layout/layout-engine';
+import { LayoutOperationHandler } from '../features/layout/layout-operation-handler';
 import { GModelFactory } from '../features/model/gmodel-factory';
 import { GModelIndex } from '../features/model/gmodel-index';
 import { DefaultGModelSerializer, GModelSerializer } from '../features/model/gmodel-serializer';
@@ -137,6 +141,7 @@ import {
  * - {@link OperationHandlerFactory}
  * - {@link OperationHandlerRegistry}
  * - {@link Operations}
+ * - {@link CommandStack}
  * - {@link NavigationTargetResolver} as optional binding
  *   {@link NavigationTargetProvider} as {@link ClassMultiBinding<NavigationTargetProvider>} (empty)
  * - {@link NavigationTargetProviderRegistry}
@@ -193,6 +198,7 @@ export abstract class DiagramModule extends GLSPModule {
         applyBindingTarget(context, OperationHandlerRegistry, this.bindOperationHandlerRegistry()).inSingletonScope();
         applyBindingTarget(context, OperationHandlerFactory, this.bindOperationHandlerFactory());
         applyBindingTarget(context, Operations, this.bindOperations()).inSingletonScope();
+        applyBindingTarget(context, CommandStack, this.bindCommandStack()).inSingletonScope();
 
         // Navigation
         applyOptionalBindingTarget(context, NavigationTargetResolver, this.bindNavigationTargetResolver());
@@ -232,6 +238,8 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(RequestNavigationTargetsActionHandler);
         binding.add(ResolveNavigationTargetsActionHandler);
         binding.add(SaveModelActionHandler);
+        binding.add(UndoRedoActionHandler);
+        binding.add(ComputedBoundsActionHandler);
     }
 
     protected bindDiagramType(): BindingTarget<string> {
@@ -291,8 +299,13 @@ export abstract class DiagramModule extends GLSPModule {
         };
     }
 
+    protected bindCommandStack(): BindingTarget<CommandStack> {
+        return DefaultCommandStack;
+    }
+
     protected configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {
         binding.add(CompoundOperationHandler);
+        binding.add(LayoutOperationHandler);
     }
 
     protected configureContextActionProviders(binding: MultiBinding<ContextActionsProvider>): void {

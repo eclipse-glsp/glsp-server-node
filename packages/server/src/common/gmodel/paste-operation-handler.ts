@@ -14,29 +14,37 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GBoundsAware, GEdge, GModelElement, isGBoundsAware } from '@eclipse-glsp/graph';
-import { MaybePromise, PasteOperation, Point, SModelElementSchema } from '@eclipse-glsp/protocol';
+import { EditorContext, MaybePromise, PasteOperation, Point, SModelElementSchema } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import * as uuid from 'uuid';
+import { Command } from '../command/command';
 import { GModelSerializer } from '../features/model/gmodel-serializer';
-import { ModelState } from '../features/model/model-state';
-import { OperationHandler } from '../operations/operation-handler';
+import { GModelOperationHandler } from './gmodel-operation-handler';
 
 @injectable()
-export class PasteOperationHandler implements OperationHandler {
+export class GModelPasteOperationHandler extends GModelOperationHandler {
     operationType = PasteOperation.KIND;
 
     protected readonly DEFAULT_OFFSET = 20;
 
-    @inject(ModelState)
-    protected modelState: ModelState;
-
     @inject(GModelSerializer)
     protected modelSerializer: GModelSerializer;
 
-    execute(operation: PasteOperation): MaybePromise<void> {
-        const schemas: SModelElementSchema[] = JSON.parse(operation.clipboardData['application/json']);
-        const elements = schemas.map(schema => this.modelSerializer.createElement(schema, this.modelState.root));
-        shift(elements, this.computeOffset(elements, operation.editorContext.lastMousePosition));
+    createCommand(operation: PasteOperation): MaybePromise<Command | undefined> {
+        const elements = this.getCopiedElements(operation.clipboardData['application/json']);
+        return elements.length > 0 //
+            ? this.commandOf(() => this.executePaste(elements, operation.editorContext))
+            : undefined;
+    }
+
+    protected getCopiedElements(jsonString: string): GModelElement[] {
+        const schemas: SModelElementSchema[] = JSON.parse(jsonString);
+        return schemas.map(schema => this.modelSerializer.createElement(schema, this.modelState.root));
+    }
+
+    protected executePaste(elements: GModelElement[], context: EditorContext): MaybePromise<void> {
+        shift(elements, this.computeOffset(elements, context.lastMousePosition));
+
         const idMap = this.reassignIds(elements);
         this.filterElements(elements, idMap);
         this.rewireEdges(elements, idMap);

@@ -15,24 +15,28 @@
  ********************************************************************************/
 import { GModelRoot, GNode } from '@eclipse-glsp/graph';
 import { ChangeBoundsOperation, Dimension, MaybePromise, Point } from '@eclipse-glsp/protocol';
-import { inject, injectable } from 'inversify';
-import { ModelState } from '../features/model/model-state';
-import { OperationHandler } from '../operations/operation-handler';
+import { injectable } from 'inversify';
+import { Command } from '../command/command';
+import { GModelOperationHandler } from './gmodel-operation-handler';
 
+/**
+ * Applies {@link ChangeBoundsOperation} directly to the GModel.
+ */
 @injectable()
-export class ChangeBoundsOperationHandler implements OperationHandler {
+export class GModelChangeBoundsOperationHandler extends GModelOperationHandler {
     operationType = ChangeBoundsOperation.KIND;
 
-    @inject(ModelState)
-    protected modelState: ModelState;
+    createCommand(operation: ChangeBoundsOperation): MaybePromise<Command | undefined> {
+        return this.commandOf(() => this.executeChangeBounds(operation));
+    }
 
-    execute(operation: ChangeBoundsOperation): MaybePromise<void> {
+    protected executeChangeBounds(operation: ChangeBoundsOperation): void {
         for (const element of operation.newBounds) {
             this.changeElementBounds(element.elementId, element.newSize, element.newPosition);
         }
     }
 
-    changeElementBounds(elementId: string, newSize: Dimension, newPosition: Point | undefined): void {
+    protected changeElementBounds(elementId: string, newSize: Dimension, newPosition: Point | undefined): void {
         const index = this.modelState.index;
         const nodeToUpdate = index.findByClass(elementId, GNode);
         if (!nodeToUpdate) {

@@ -21,6 +21,12 @@
     -   New namespaces for environment specific code:
         -   `@eclipse-glsp/server/node`
         -   `@eclipse-glsp/server/browser`
+-   [operation] Implement Command API and rework OperationHandler to provide an optional command instead of direct execution to allow more execution control (including undo & redo support) [#38](https://github.com/eclipse-glsp/glsp-server-node/pull/38)
+    -   This includes major breaking changes across the whole API:
+        -   `OperationHandler` has been refactored from an interface to a common abstract base class. The `execute` method now has to return a `MaybePromise<Command|undefined>`
+        -   Refactored `CreateOperationHandler` to an interface instead of a class
+        -   Renamed the services and handlers of the direct GModel library => consistent use of `GModel` prefix
+        -   The `ModelState` interface no longer has an `isDirty` flag. Dirty state is now handled by the `CommandStack`
 
 ## [v1.0.0 - 30/06/2022](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v1.0.0)
 

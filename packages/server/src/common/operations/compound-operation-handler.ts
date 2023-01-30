@@ -15,20 +15,29 @@
  ********************************************************************************/
 import { CompoundOperation, MaybePromise, Operation } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
+import { Command, CompoundCommand } from '../command/command';
 import { OperationActionHandler } from './operation-action-handler';
 import { OperationHandler } from './operation-handler';
 import { OperationHandlerRegistry } from './operation-handler-registry';
 
 @injectable()
-export class CompoundOperationHandler implements OperationHandler {
+export class CompoundOperationHandler extends OperationHandler {
+    @inject(OperationHandlerRegistry)
+    protected operationHandlerRegistry: OperationHandlerRegistry;
+
     operationType = CompoundOperation.KIND;
 
-    @inject(OperationHandlerRegistry) protected operationHandlerRegistry: OperationHandlerRegistry;
+    async createCommand(operation: CompoundOperation): Promise<Command | undefined> {
+        const maybeCommands = operation.operationList.map(op => this.operationHandlerRegistry.getExecutableCommand(op));
+        const commands: Command[] = [];
 
-    execute(operation: CompoundOperation): void {
-        operation.operationList.forEach(nestedOperation => this.executeNestedOperation(nestedOperation));
+        for await (const command of maybeCommands) {
+            if (command) {
+                commands.push(command);
+            }
+        }
+        return new CompoundCommand(commands);
     }
-
     executeNestedOperation(operation: Operation): MaybePromise<void> {
         const operationHandler = OperationActionHandler.getOperationHandler(operation, this.operationHandlerRegistry);
         if (operationHandler) {

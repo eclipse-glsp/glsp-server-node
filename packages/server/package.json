@@ -63,6 +63,7 @@
     "@eclipse-glsp/protocol": "next",
     "@types/uuid": "8.3.1",
     "commander": "^8.3.0",
+    "fast-json-patch": "^3.1.0",
     "inversify": "^5.1.1",
     "winston": "^3.3.3"
   },

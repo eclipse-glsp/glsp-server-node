@@ -49,7 +49,7 @@ export class TaskNode extends GNode {
     references: string;
 
     static override builder(): TaskNodeBuilder {
-        return new TaskNodeBuilder(TaskNode).layout('vbox').addArgs(ArgsUtil.cornerRadius(5));
+        return new TaskNodeBuilder(TaskNode).layout('vbox').addArgs(ArgsUtil.cornerRadius(5)).addCssClass('task');
     }
 }
 

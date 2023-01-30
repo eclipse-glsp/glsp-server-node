@@ -16,32 +16,38 @@
 import { GEdge, GModelElement, GNode } from '@eclipse-glsp/graph';
 import { DeleteElementOperation, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
+import { Command } from '../command/command';
 import { GModelIndex } from '../features/model/gmodel-index';
-import { ModelState } from '../features/model/model-state';
-import { OperationHandler } from '../operations/operation-handler';
 import { Logger } from '../utils/logger';
+import { GModelOperationHandler } from './gmodel-operation-handler';
 
 @injectable()
-export class GModelDeleteOperationHandler implements OperationHandler {
+export class GModelDeleteOperationHandler extends GModelOperationHandler {
     @inject(Logger)
     protected logger: Logger;
 
-    protected allDependantsIds: Set<string>;
-
-    @inject(ModelState) protected readonly modelState: ModelState;
+    protected allDependentsIds: Set<string>;
 
     get operationType(): string {
         return DeleteElementOperation.KIND;
     }
 
-    execute(operation: DeleteElementOperation): MaybePromise<void> {
+    createCommand(operation: DeleteElementOperation): MaybePromise<Command | undefined> {
         const elementIds = operation.elementIds;
+        if (!elementIds || elementIds.length === 0) {
+            this.logger.warn('Elements to delete are not specified');
+            return undefined;
+        }
+        return this.commandOf(() => this.deleteElements(elementIds));
+    }
+
+    deleteElements(elementIds: string[]): MaybePromise<void> {
         if (!elementIds || elementIds.length === 0) {
             this.logger.warn('Elements to delete are not specified');
             return;
         }
         const index = this.modelState.index;
-        this.allDependantsIds = new Set<string>();
+        this.allDependentsIds = new Set<string>();
         const success = elementIds.every(eId => this.delete(eId, index));
         if (!success) {
             this.logger.warn('Could not delete all elements as requested (see messages above to find out why)');
@@ -49,7 +55,7 @@ export class GModelDeleteOperationHandler implements OperationHandler {
     }
 
     protected delete(elementId: string, index: GModelIndex): boolean {
-        if (this.allDependantsIds.has(elementId)) {
+        if (this.allDependentsIds.has(elementId)) {
             return true;
         }
 
@@ -73,7 +79,7 @@ export class GModelDeleteOperationHandler implements OperationHandler {
             if (index > -1) {
                 this.modelState.root.children.splice(index, 1);
             }
-            this.allDependantsIds.add(dependant.id);
+            this.allDependentsIds.add(dependant.id);
         });
 
         return true;
