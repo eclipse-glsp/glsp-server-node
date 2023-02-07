@@ -13,8 +13,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Args } from '@eclipse-glsp/protocol';
+import { Args, CreateOperation, MaybePromise, Operation } from '@eclipse-glsp/protocol';
 import { inject, injectable, optional } from 'inversify';
+import { Command } from '../command/command';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
 import { Registry } from '../utils/registry';
 import { CreateOperationHandler } from './create-operation-handler';
@@ -23,12 +24,26 @@ import { OperationHandler, OperationHandlerConstructor, OperationHandlerFactory 
 @injectable()
 export class OperationHandlerRegistry extends Registry<string, OperationHandler> {
     registerHandler(handler: OperationHandler): boolean {
-        if (handler instanceof CreateOperationHandler) {
+        if (CreateOperationHandler.is(handler)) {
             handler.elementTypeIds.forEach(typeId => this.register(`${handler.operationType}_${typeId}`, handler));
             return true;
         } else {
             return this.register(handler.operationType, handler);
         }
+    }
+
+    getOperationHandler(operation: Operation): OperationHandler | undefined {
+        return CreateOperation.is(operation) ? this.get(`${operation.kind}_${operation.elementTypeId}`) : this.get(operation.kind);
+    }
+
+    /**
+     * Returns the matching command for the given operation.
+     *
+     * @param operation operation
+     * @return the matching command for the given operation
+     */
+    getExecutableCommand(operation: Operation): MaybePromise<Command | undefined> {
+        return this.getOperationHandler(operation)?.createCommand(operation);
     }
 }
 
@@ -44,7 +59,7 @@ export class OperationHandlerRegistryInitializer implements ClientSessionInitial
     @inject(OperationHandlerRegistry)
     protected registry: OperationHandlerRegistry;
 
-    initialize(args?: Args): void {
+    initialize(_args?: Args): void {
         const handlers = this.handlerConstructors.map(constructor => this.factory(constructor));
         handlers.forEach(handler => this.registry.registerHandler(handler));
     }

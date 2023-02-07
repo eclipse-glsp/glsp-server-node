@@ -16,11 +16,16 @@
 import { GModelRoot } from '@eclipse-glsp/graph';
 import { Action, ComputedBoundsAction, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { ActionHandler } from '../actions/action-handler';
-import { ModelState } from '../features/model/model-state';
-import { ModelSubmissionHandler } from '../features/model/model-submission-handler';
-import { applyAlignment, applyBounds, applyRoute } from '../utils/layout-util';
+import { ActionHandler } from '../../actions/action-handler';
+import { applyAlignment, applyBounds, applyRoute } from '../../utils/layout-util';
+import { ModelState } from '../model/model-state';
+import { ModelSubmissionHandler } from '../model/model-submission-handler';
 
+/**
+ * Syncs the bounds computed by the client (i.e. the actual bounds after applying CSS styles) back to the `GModel`.
+ * In this default implementation the updated bounds are stored transient. This means they are applied to the graphical model but
+ * are not persisted to the source model.
+ */
 @injectable()
 export class ComputedBoundsActionHandler implements ActionHandler {
     @inject(ModelSubmissionHandler)

@@ -29,7 +29,6 @@ export abstract class CreateTaskHandler extends CreateWorkflowNodeOperationHandl
     protected builder(point: Point | undefined): TaskNodeBuilder {
         return TaskNode.builder()
             .position(point ?? Point.ORIGIN)
-            .addCssClass('task')
             .name(this.label.replace(' ', '') + this.modelState.index.getAllByClass(TaskNode).length)
             .type(this.elementTypeIds[0])
             .taskType(ModelTypes.toNodeType(this.elementTypeIds[0]))

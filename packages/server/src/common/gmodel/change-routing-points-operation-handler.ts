@@ -15,20 +15,21 @@
  ********************************************************************************/
 
 import { ChangeRoutingPointsOperation, MaybePromise } from '@eclipse-glsp/protocol';
-import { inject, injectable } from 'inversify';
-import { ModelState } from '../features/model/model-state';
-import { OperationHandler } from '../operations/operation-handler';
+import { injectable } from 'inversify';
+import { Command } from '../command/command';
 import { GLSPServerError } from '../utils/glsp-server-error';
 import { applyRoutingPoints } from '../utils/layout-util';
+import { GModelOperationHandler } from './gmodel-operation-handler';
 
 @injectable()
-export class ChangeRoutingPointsOperationHandler implements OperationHandler {
+export class GModelChangeRoutingPointsOperationHandler extends GModelOperationHandler {
     operationType = ChangeRoutingPointsOperation.KIND;
 
-    @inject(ModelState)
-    protected modelState: ModelState;
+    createCommand(operation: ChangeRoutingPointsOperation): MaybePromise<Command | undefined> {
+        return this.commandOf(() => this.executeChangeRoutingPoints(operation));
+    }
 
-    execute(operation: ChangeRoutingPointsOperation): MaybePromise<void> {
+    executeChangeRoutingPoints(operation: ChangeRoutingPointsOperation): MaybePromise<void> {
         if (!operation.newRoutingPoints) {
             throw new GLSPServerError('Incomplete change routingPoints  action');
         }

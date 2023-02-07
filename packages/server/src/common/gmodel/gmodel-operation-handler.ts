@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,14 +14,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-export * from './apply-label-edit-operation-handler';
-export * from './change-bounds-operation-handler';
-export * from './change-routing-points-operation-handler';
-export * from './cut-operation-handler';
-export * from './delete-operation-handler';
-export * from './gmodel-create-edge-operation-handler';
-export * from './gmodel-create-node-operation-handler';
-export * from './gmodel-diagram-module';
-export * from './gmodel-operation-handler';
-export * from './paste-operation-handler';
-export * from './reconnect-edge-operation-handler';
+import { inject, injectable } from 'inversify';
+import { Command } from '../command/command';
+import { GModelRecordingCommand } from '../command/recording-command';
+import { GModelSerializer } from '../features/model/gmodel-serializer';
+import { OperationHandler } from '../operations/operation-handler';
+
+injectable();
+export abstract class GModelOperationHandler extends OperationHandler {
+    @inject(GModelSerializer)
+    protected serializer: GModelSerializer;
+
+    protected commandOf(runnable: () => void): Command {
+        return new GModelRecordingCommand(this.modelState, this.serializer, runnable);
+    }
+}

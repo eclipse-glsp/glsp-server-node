@@ -13,6 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+/* eslint-disable @typescript-eslint/no-empty-function */
 // Stub-implementation classes used for unit testing
 
 import { GEdge, GModelElement, GModelElementConstructor, GNode } from '@eclipse-glsp/graph';
@@ -33,6 +34,7 @@ import { Container } from 'inversify';
 import { MessageConnection } from 'vscode-jsonrpc';
 import { ActionDispatcher } from '../actions/action-dispatcher';
 import { ActionHandler, ActionHandlerFactory } from '../actions/action-handler';
+import { Command } from '../command/command';
 import { DiagramConfiguration, ServerLayoutKind } from '../diagram/diagram-configuration';
 import { ContextEditValidator } from '../features/directediting/context-edit-validator';
 import { LabelEditValidator } from '../features/directediting/label-edit-validator';
@@ -103,9 +105,7 @@ export class StubCreateEdgeOperationHandler extends GModelCreateEdgeOperationHan
 }
 
 export class StubActionDispatcher implements ActionDispatcher {
-    dispatchAfterNextUpdate(...actions: MaybeArray<Action[]>): void {
-        // NO-OP
-    }
+    dispatchAfterNextUpdate(...actions: MaybeArray<Action[]>): void {}
 
     dispatch(action: Action): Promise<void> {
         return Promise.resolve();
@@ -158,51 +158,31 @@ export class StubLogger extends Logger {
     logLevel = LogLevel.none;
     caller = undefined;
 
-    info(message: string, ...params: any[]): void {
-        // no-op
-    }
+    info(message: string, ...params: any[]): void {}
 
-    warn(message: string, ...params: any[]): void {
-        // no-op
-    }
+    warn(message: string, ...params: any[]): void {}
 
-    error(message: string, ...params: any[]): void {
-        // no-op
-    }
+    error(message: string, ...params: any[]): void {}
 
-    debug(message: string, ...params: any[]): void {
-        // no-op
-    }
+    debug(message: string, ...params: any[]): void {}
 }
 
 export class StubClientSessionListener implements ClientSessionListener {
-    sessionCreated(clientSession: ClientSession): void {
-        // no-op
-    }
+    sessionCreated(clientSession: ClientSession): void {}
 
-    sessionDisposed(clientSession: ClientSession): void {
-        // no-op
-    }
+    sessionDisposed(clientSession: ClientSession): void {}
 }
 
 export class StubGLSPClientProxy implements JsonRpcGLSPClientProxy {
-    connect(connection: MessageConnection): void {
-        // no-op
-    }
+    connect(connection: MessageConnection): void {}
 
-    process(message: ActionMessage<Action>): void {
-        // no-op
-    }
+    process(message: ActionMessage<Action>): void {}
 }
 
 export class StubGLSPServerListener implements GLSPServerListener {
-    serverInitialized(server: GLSPServer): void {
-        // no-op
-    }
+    serverInitialized(server: GLSPServer): void {}
 
-    serverShutDown(server: GLSPServer): void {
-        // no-op
-    }
+    serverShutDown(server: GLSPServer): void {}
 }
 
 export class StubDiagramConfiguration implements DiagramConfiguration {
@@ -250,7 +230,12 @@ export class TestContextEditValidator implements ContextEditValidator {
 export const stubActionHandlerFactory: ActionHandlerFactory = constructor => new constructor();
 
 export class StubClientSessionInitializer implements ClientSessionInitializer {
-    initialize(args?: Args): void {
-        // no-op
-    }
+    initialize(args?: Args): void {}
+}
+
+export class StubCommand implements Command {
+    execute(): void {}
+    undo(): void {}
+    redo(): void {}
+    canUndo?(): boolean;
 }

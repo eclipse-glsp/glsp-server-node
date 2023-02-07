@@ -16,6 +16,8 @@
 import {
     BindingTarget,
     CommandPaletteActionProvider,
+    ContextActionsProvider,
+    ContextEditValidator,
     ContextMenuItemProvider,
     DiagramConfiguration,
     GLSPServer,
@@ -49,6 +51,9 @@ import { NodeDocumentationNavigationTargetProvider } from './provider/node-docum
 import { PreviousNodeNavigationTargetProvider } from './provider/previous-node-navigation-target-provider';
 import { WorkflowCommandPaletteActionProvider } from './provider/workflow-command-palette-action-provider';
 import { WorkflowContextMenuItemProvider } from './provider/workflow-context-menu-item-provider';
+import { EditTaskOperationHandler } from './taskedit/edit-task-operation-handler';
+import { TaskEditContextActionProvider } from './taskedit/task-edit-context-provider';
+import { TaskEditValidator } from './taskedit/task-edit-validator';
 import { WorkflowDiagramConfiguration } from './workflow-diagram-configuration';
 import { WorkflowGLSPServer } from './workflow-glsp-server';
 import { WorkflowPopupFactory } from './workflow-popup-factory';
@@ -81,6 +86,7 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
         binding.add(CreateMergeNodeHandler);
         binding.add(CreateDecisionNodeHandler);
         binding.add(CreateCategoryHandler);
+        binding.add(EditTaskOperationHandler);
     }
 
     protected bindDiagramConfiguration(): BindingTarget<DiagramConfiguration> {
@@ -116,5 +122,15 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
         binding.add(NextNodeNavigationTargetProvider);
         binding.add(PreviousNodeNavigationTargetProvider);
         binding.add(NodeDocumentationNavigationTargetProvider);
+    }
+
+    protected override configureContextActionProviders(binding: MultiBinding<ContextActionsProvider>): void {
+        super.configureContextActionProviders(binding);
+        binding.add(TaskEditContextActionProvider);
+    }
+
+    protected override configureContextEditValidators(binding: MultiBinding<ContextEditValidator>): void {
+        super.configureContextEditValidators(binding);
+        binding.add(TaskEditValidator);
     }
 }

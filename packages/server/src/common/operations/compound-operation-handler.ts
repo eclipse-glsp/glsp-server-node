@@ -13,26 +13,28 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { CompoundOperation, MaybePromise, Operation } from '@eclipse-glsp/protocol';
+import { CompoundOperation } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { OperationActionHandler } from './operation-action-handler';
+import { Command, CompoundCommand } from '../command/command';
 import { OperationHandler } from './operation-handler';
 import { OperationHandlerRegistry } from './operation-handler-registry';
 
 @injectable()
-export class CompoundOperationHandler implements OperationHandler {
+export class CompoundOperationHandler extends OperationHandler {
+    @inject(OperationHandlerRegistry)
+    protected operationHandlerRegistry: OperationHandlerRegistry;
+
     operationType = CompoundOperation.KIND;
 
-    @inject(OperationHandlerRegistry) protected operationHandlerRegistry: OperationHandlerRegistry;
+    async createCommand(operation: CompoundOperation): Promise<Command | undefined> {
+        const maybeCommands = operation.operationList.map(op => this.operationHandlerRegistry.getExecutableCommand(op));
+        const commands: Command[] = [];
 
-    execute(operation: CompoundOperation): void {
-        operation.operationList.forEach(nestedOperation => this.executeNestedOperation(nestedOperation));
-    }
-
-    executeNestedOperation(operation: Operation): MaybePromise<void> {
-        const operationHandler = OperationActionHandler.getOperationHandler(operation, this.operationHandlerRegistry);
-        if (operationHandler) {
-            operationHandler.execute(operation);
+        for await (const command of maybeCommands) {
+            if (command) {
+                commands.push(command);
+            }
         }
+        return new CompoundCommand(commands);
     }
 }

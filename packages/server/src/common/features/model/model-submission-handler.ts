@@ -24,6 +24,7 @@ import {
     UpdateModelAction
 } from '@eclipse-glsp/protocol';
 import { inject, injectable, optional } from 'inversify';
+import { CommandStack } from '../../command/command-stack';
 import { DiagramConfiguration, ServerLayoutKind } from '../../diagram/diagram-configuration';
 import { LayoutEngine } from '../layout/layout-engine';
 import { GModelFactory } from './gmodel-factory';
@@ -48,6 +49,9 @@ export class ModelSubmissionHandler {
     @optional()
     protected layoutEngine: LayoutEngine;
 
+    @inject(CommandStack)
+    protected commandStack: CommandStack;
+
     /**
      * Returns a list of actions to update the client-side model, based on the specified <code>modelState</code>.
      *
@@ -63,7 +67,7 @@ export class ModelSubmissionHandler {
         const root = this.serializeGModel();
 
         if (this.diagramConfiguration.needsClientLayout) {
-            return [RequestBoundsAction.create(root), SetDirtyStateAction.create(this.modelState.isDirty, { reason })];
+            return [RequestBoundsAction.create(root), SetDirtyStateAction.create(this.commandStack.isDirty, { reason })];
         }
         return [SetModelAction.create(root)];
     }
@@ -95,7 +99,7 @@ export class ModelSubmissionHandler {
                 : UpdateModelAction.create(root, { animate: this.diagramConfiguration.animatedUpdate })
         );
         if (!this.diagramConfiguration.needsClientLayout) {
-            result.push(SetDirtyStateAction.create(this.modelState.isDirty, { reason }));
+            result.push(SetDirtyStateAction.create(this.commandStack.isDirty, { reason }));
         }
         return result;
     }

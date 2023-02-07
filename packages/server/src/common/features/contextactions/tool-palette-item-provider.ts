@@ -63,10 +63,8 @@ export class DefaultToolPaletteItemProvider extends ToolPaletteItemProvider {
     @inject(OperationHandlerRegistry) operationHandlerRegistry: OperationHandlerRegistry;
     protected counter: number;
 
-    getItems(args?: Args): PaletteItem[] {
-        const handlers = this.operationHandlerRegistry
-            .getAll()
-            .filter(handler => handler instanceof CreateOperationHandler) as CreateOperationHandler[];
+    getItems(_args?: Args): PaletteItem[] {
+        const handlers = this.operationHandlerRegistry.getAll().filter(CreateOperationHandler.is) as CreateOperationHandler[];
         this.counter = 0;
         const nodes = this.createPaletteItem(handlers, CreateNodeOperation.KIND);
         const edges = this.createPaletteItem(handlers, CreateEdgeOperation.KIND);

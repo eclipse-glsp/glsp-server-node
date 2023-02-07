@@ -15,24 +15,22 @@
  ********************************************************************************/
 import { GLabel } from '@eclipse-glsp/graph';
 import { ApplyLabelEditOperation, MaybePromise } from '@eclipse-glsp/protocol';
-import { inject, injectable } from 'inversify';
-import { ModelState } from '../features/model/model-state';
-import { OperationHandler } from '../operations/operation-handler';
-import { GLSPServerError } from '../utils/glsp-server-error';
+import { injectable } from 'inversify';
+import { Command } from '../command/command';
+import { getOrThrow } from '../utils/glsp-server-error';
+import { GModelOperationHandler } from './gmodel-operation-handler';
 
 @injectable()
-export class ApplyLabelEditOperationHandler implements OperationHandler {
+export class GModelApplyLabelEditOperationHandler extends GModelOperationHandler {
     readonly operationType = ApplyLabelEditOperation.KIND;
 
-    @inject(ModelState)
-    protected readonly modelState: ModelState;
-
-    execute(operation: ApplyLabelEditOperation): MaybePromise<void> {
-        const element = this.modelState.index.findByClass(operation.labelId, GLabel);
-        if (element) {
-            element.text = operation.text;
-        } else {
-            throw new GLSPServerError('Element with provided ID cannot be found or is not a GLabel');
-        }
+    createCommand(operation: ApplyLabelEditOperation): MaybePromise<Command | undefined> {
+        const label = getOrThrow(
+            this.modelState.index.findByClass(operation.labelId, GLabel),
+            'Element with provided ID cannot be found or is not a GLabel'
+        );
+        return label.text !== operation.text //
+            ? this.commandOf(() => (label.text = operation.text))
+            : undefined;
     }
 }
