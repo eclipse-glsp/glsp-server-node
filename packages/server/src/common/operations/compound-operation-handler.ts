@@ -13,10 +13,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { CompoundOperation, MaybePromise, Operation } from '@eclipse-glsp/protocol';
+import { CompoundOperation } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { Command, CompoundCommand } from '../command/command';
-import { OperationActionHandler } from './operation-action-handler';
 import { OperationHandler } from './operation-handler';
 import { OperationHandlerRegistry } from './operation-handler-registry';
 
@@ -37,11 +36,5 @@ export class CompoundOperationHandler extends OperationHandler {
             }
         }
         return new CompoundCommand(commands);
-    }
-    executeNestedOperation(operation: Operation): MaybePromise<void> {
-        const operationHandler = OperationActionHandler.getOperationHandler(operation, this.operationHandlerRegistry);
-        if (operationHandler) {
-            operationHandler.execute(operation);
-        }
     }
 }

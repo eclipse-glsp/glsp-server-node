@@ -66,7 +66,8 @@ describe('test DefaultCommandStack', () => {
         });
 
         it('should clear the redo stack after execution', () => {
-            commandStack['redoStack'].push(command2);
+            commandStack['commands'].push(command2);
+            commandStack['top'] = -1;
             expect(commandStack.canRedo()).to.be.true;
 
             commandStack.execute(command1);
@@ -94,7 +95,8 @@ describe('test DefaultCommandStack', () => {
         });
 
         it('should undo the command and become non-dirty again', () => {
-            commandStack['undoStack'].push(command1);
+            commandStack['commands'].push(command1);
+            commandStack['top'] = 0;
             expect(commandStack.isDirty).to.be.true;
             expect(commandStack.canUndo()).to.be.true;
             expect(commandStack.canRedo()).to.be.false;
@@ -107,7 +109,8 @@ describe('test DefaultCommandStack', () => {
         });
 
         it('should undo multiple command and become non-dirty again', () => {
-            commandStack['undoStack'].push(command1, command2);
+            commandStack['commands'].push(command1, command2);
+            commandStack['top'] = 1;
             expect(commandStack.isDirty).to.be.true;
             expect(commandStack.canUndo()).to.be.true;
             expect(commandStack.canRedo()).to.be.false;
@@ -128,7 +131,8 @@ describe('test DefaultCommandStack', () => {
         it('should flush the stack in case of an execution error', () => {
             command2.undo.throwsException();
             const flushSpy = sandbox.spy(commandStack, 'flush');
-            commandStack['undoStack'].push(command2);
+            commandStack['commands'].push(command2);
+            commandStack['top'] = 0;
 
             expect(() => commandStack.undo()).to.throw();
             expect(command2.undo.calledOnce).to.be.true;
@@ -147,7 +151,8 @@ describe('test DefaultCommandStack', () => {
         });
 
         it('should redo the command and become dirty again', () => {
-            commandStack['redoStack'].push(command1);
+            commandStack['commands'].push(command1);
+            commandStack['top'] = -1;
             expect(commandStack.isDirty).to.be.false;
             expect(commandStack.canUndo()).to.be.false;
             expect(commandStack.canRedo()).to.be.true;
@@ -160,7 +165,9 @@ describe('test DefaultCommandStack', () => {
         });
 
         it('should undo multiple command and become non-dirty again', () => {
-            commandStack['redoStack'].push(command1, command2);
+            commandStack['commands'].push(command2, command1);
+            commandStack['top'] = -1;
+            commandStack['saveIndex'] = -1;
             expect(commandStack.isDirty).to.be.false;
             expect(commandStack.canUndo()).to.be.false;
             expect(commandStack.canRedo()).to.be.true;
@@ -181,14 +188,16 @@ describe('test DefaultCommandStack', () => {
         it('should flush the stack in case of an execution error', () => {
             command2.redo.throwsException();
             const flushSpy = sandbox.spy(commandStack, 'flush');
-            commandStack['redoStack'].push(command2);
+            commandStack['commands'].push(command2);
+            commandStack['top'] = -1;
 
             expect(() => commandStack.redo()).to.throw();
             expect(command2.redo.calledOnce).to.be.true;
             expect(flushSpy.calledOnce).to.be.true;
         });
         it('should be able to undo after redo', () => {
-            commandStack['redoStack'].push(command1);
+            commandStack['commands'].push(command1);
+            commandStack['top'] = -1;
             expect(commandStack.canUndo()).to.be.false;
             commandStack.redo();
             expect(commandStack.canUndo()).to.be.true;
@@ -197,13 +206,34 @@ describe('test DefaultCommandStack', () => {
 
     describe('flush', () => {
         it('should reset the internal state of the command stack', () => {
-            commandStack['undoStack'].push(command1);
-            commandStack['redoStack'].push(command1);
+            commandStack['commands'].push(command1, command1);
+            commandStack['top'] = 0;
 
             commandStack.flush();
             expect(commandStack.isDirty).to.be.false;
             expect(commandStack.canUndo()).to.be.false;
             expect(commandStack.canRedo()).to.be.false;
+        });
+    });
+
+    describe('isSaveDone', () => {
+        it('should become non-dirty after execution', () => {
+            commandStack['commands'].push(command1);
+            commandStack['top'] = 0;
+            expect(commandStack.isDirty).to.be.true;
+
+            commandStack.saveIsDone();
+            expect(commandStack.isDirty).to.be.false;
+        });
+        it('should maintain undo/redo history after execution', () => {
+            commandStack['commands'].push(command1, command2);
+            commandStack['top'] = 0;
+            expect(commandStack.canUndo()).to.be.true;
+            expect(commandStack.canRedo()).to.be.true;
+
+            commandStack.saveIsDone();
+            expect(commandStack.canUndo()).to.be.true;
+            expect(commandStack.canRedo()).to.be.true;
         });
     });
 });

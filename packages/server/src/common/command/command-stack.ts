@@ -74,64 +74,83 @@ export class DefaultCommandStack implements CommandStack {
     @inject(Logger)
     protected logger: Logger;
 
-    protected undoStack: Command[] = [];
-    protected redoStack: Command[] = [];
+    protected commands: Command[] = [];
+
+    /**
+     * The current position within the command list from which the next execute, undo, or redo, will be performed.
+     */
+    protected top = -1;
+
+    /**
+     * The current position within the command list when {@link DefaultCommandStack.saveIsDone} is called.
+     */
+    protected saveIndex = -1;
 
     execute(command: Command): void {
-        this.redoStack = [];
         try {
             command.execute();
         } catch (error) {
             this.handleError(error);
         }
-        this.undoStack.push(command);
+        // Clear the command list past the top (i.e. the old redo list)
+        this.commands = this.commands.slice(0, this.top + 1);
+        this.commands.push(command);
+        ++this.top;
+
+        // if the saveIndex points to the old redo list we can never reach a state again
+        // where save is not necessary. => ensure that 'isSaveNeeded' always returns true
+        if (this.saveIndex >= this.top) {
+            this.saveIndex = -2;
+        }
     }
 
     undo(): void {
-        const command = this.undoStack.pop();
-        if (command && Command.canUndo(command)) {
+        if (this.canUndo()) {
+            const command = this.commands[this.top--];
             try {
                 command.undo();
             } catch (error) {
                 this.handleError(error);
             }
-            this.redoStack.push(command);
         }
     }
 
     canUndo(): boolean {
-        return this.undoStack.length > 0 //
-            ? Command.canUndo(this.undoStack[this.undoStack.length - 1])
+        return this.top !== -1 //
+            ? Command.canUndo(this.commands[this.top])
             : false;
     }
 
     redo(): void {
-        const command = this.redoStack.pop();
-        if (command) {
+        if (this.canRedo()) {
+            const command = this.commands[++this.top];
             try {
                 command.redo();
             } catch (error) {
                 this.handleError(error);
+
+                // Clear the command list past the top (i.e. the old redo list)
+                this.commands = this.commands.slice(0, this.top + 1);
             }
-            this.undoStack.push(command);
         }
     }
 
     canRedo(): boolean {
-        return this.redoStack.length > 0;
+        return this.top < this.commands.length - 1;
     }
 
     get isDirty(): boolean {
-        return this.undoStack.length > 0;
+        return this.saveIndex !== this.top;
     }
 
     saveIsDone(): void {
-        this.flush();
+        this.saveIndex = this.top;
     }
 
     flush(): void {
-        this.undoStack = [];
-        this.redoStack = [];
+        this.commands = [];
+        this.top = -1;
+        this.saveIndex = -1;
     }
 
     protected handleError(error: any): never {
