@@ -98,7 +98,7 @@ export class DefaultCommandStack implements CommandStack {
         ++this.top;
 
         // if the saveIndex points to the old redo list we can never reach a state again
-        // where save is not necessary. => ensure that 'isSaveNeeded' always returns true
+        // where save is not necessary. => ensure that `isDirty` always returns true
         if (this.saveIndex >= this.top) {
             this.saveIndex = -2;
         }
@@ -128,9 +128,6 @@ export class DefaultCommandStack implements CommandStack {
                 command.redo();
             } catch (error) {
                 this.handleError(error);
-
-                // Clear the command list past the top (i.e. the old redo list)
-                this.commands = this.commands.slice(0, this.top + 1);
             }
         }
     }
