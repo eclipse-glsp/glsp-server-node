@@ -39,36 +39,36 @@ describe('RecordingCommand', () => {
         beforeState = JSON.parse(JSON.stringify(jsonObject));
     });
 
-    it('should be undoable after execution', () => {
+    it('should be undoable after execution', async () => {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         const command = new RecordingCommand(jsonObject, () => {});
         expect(command.canUndo()).to.be.false;
-        command.execute();
+        await command.execute();
         expect(command.canUndo()).to.be.true;
     });
 
-    it('should restore the pre execution state when undo is called', () => {
+    it('should restore the pre execution state when undo is called', async () => {
         const command = new RecordingCommand(jsonObject, () => {
             jsonObject.string = 'bar';
             jsonObject.flag = false;
             jsonObject.maybe = { hello: 'world' };
         });
-        command.execute();
+        await command.execute();
         expect(jsonObject).to.not.be.deep.equals(beforeState);
-        command.undo();
+        await command.undo();
         expect(jsonObject).to.be.deep.equals(beforeState);
     });
 
-    it('should restore the post execution state when redo is called', () => {
+    it('should restore the post execution state when redo is called', async () => {
         const command = new RecordingCommand(jsonObject, () => {
             jsonObject.string = 'bar';
             jsonObject.flag = false;
             jsonObject.maybe = { hello: 'world' };
         });
-        command.execute();
+        await command.execute();
         const afterState = JSON.parse(JSON.stringify(jsonObject));
         jsonObject = JSON.parse(JSON.stringify(afterState));
-        command.redo();
+        await command.redo();
         expect(jsonObject).to.be.deep.equals(afterState);
     });
 });

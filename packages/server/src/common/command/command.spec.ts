@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { expect } from 'chai';
 import * as sinon from 'sinon';
-import { StubCommand } from '../test/mock-util';
+import { expectToThrowAsync, StubCommand } from '../test/mock-util';
 import { CompoundCommand } from './command';
 
 describe('CompoundCommand', () => {
@@ -32,18 +32,18 @@ describe('CompoundCommand', () => {
     });
 
     describe('execute', () => {
-        it('Should execute the subcommands in order', () => {
-            compoundCommand.execute();
+        it('Should execute the subcommands in order', async () => {
+            await compoundCommand.execute();
             expect(command1.execute.calledOnce).to.be.true;
             expect(command2.execute.calledOnce).to.be.true;
             expect(command3.execute.calledOnce).to.be.true;
             expect(command1.execute.calledBefore(command2.execute)).to.be.true;
             expect(command2.execute.calledBefore(command3.execute)).to.be.true;
         });
-        it('Should undo partially executed subcommands in  case of an error', () => {
+        it('Should undo partially executed subcommands in  case of an error', async () => {
             command3.execute.throwsException();
 
-            expect(() => compoundCommand.execute()).to.throw();
+            await expectToThrowAsync(() => compoundCommand.execute());
 
             expect(command1.execute.calledOnce).to.be.true;
             expect(command2.execute.calledOnce).to.be.true;
@@ -54,8 +54,8 @@ describe('CompoundCommand', () => {
     });
 
     describe('undo', () => {
-        it('Should undo the subcommands in reverse order', () => {
-            compoundCommand.undo();
+        it('Should undo the subcommands in reverse order', async () => {
+            await compoundCommand.undo();
             expect(command1.undo.calledOnce).to.be.true;
             expect(command2.undo.calledOnce).to.be.true;
             expect(command3.undo.calledOnce).to.be.true;
@@ -63,10 +63,9 @@ describe('CompoundCommand', () => {
             expect(command2.undo.calledAfter(command3.undo)).to.be.true;
         });
 
-        it('Should redo partially undone subcommands in  case of an error', () => {
+        it('Should redo partially undone subcommands in  case of an error', async () => {
             command1.undo.throwsException();
-
-            expect(() => compoundCommand.undo()).to.throw();
+            await expectToThrowAsync(() => compoundCommand.undo());
 
             expect(command1.undo.calledOnce).to.be.true;
             expect(command2.undo.calledOnce).to.be.true;
