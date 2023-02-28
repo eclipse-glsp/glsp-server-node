@@ -106,17 +106,17 @@ export class CompoundCommand implements Command {
         }
     }
 
-    redo(): void {
+    async redo(): Promise<void> {
         const alreadyRedone: Command[] = [];
 
         try {
             for (const command of this.commands) {
-                command.redo();
+                await command.redo();
                 alreadyRedone.unshift(command);
             }
         } catch (err) {
             for (const command of alreadyRedone) {
-                command.undo();
+                await command.undo();
             }
             throw err;
         }
