@@ -25,11 +25,13 @@ import {
     EdgeTypeHint,
     InitializeClientSessionParameters,
     MaybeArray,
+    MaybePromise,
     Point,
     RequestEditValidationAction,
     ShapeTypeHint,
     ValidationStatus
 } from '@eclipse-glsp/protocol';
+import { expect } from 'chai';
 import { Container } from 'inversify';
 import { MessageConnection } from 'vscode-jsonrpc';
 import { ActionDispatcher } from '../actions/action-dispatcher';
@@ -51,6 +53,25 @@ import { Logger, LogLevel } from '../utils/logger';
 
 export async function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Consumes a maybe async function and checks for error
+ * @param  method - The function to check
+ * @param  message - Optional message to match with error message
+ */
+export async function expectToThrowAsync(toEvaluate: () => MaybePromise<void>, message?: string): Promise<void> {
+    let err: Error | undefined = undefined;
+    try {
+        await toEvaluate();
+    } catch (error: any) {
+        err = error;
+    }
+    if (message) {
+        expect(err?.message).to.be.equal(message);
+    } else {
+        expect(err).to.be.an('Error');
+    }
 }
 
 export function createClientSession(

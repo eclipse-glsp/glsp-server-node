@@ -66,13 +66,13 @@ export class OperationActionHandler implements ActionHandler {
     protected async executeHandler(operation: Operation, handler: OperationHandler): Promise<Action[]> {
         const command = await handler.execute(operation);
         if (command) {
-            this.executeCommand(command);
+            await this.executeCommand(command);
         }
         return this.modelSubmissionHandler.submitModel('operation');
     }
 
-    protected executeCommand(command: Command): void {
-        this.commandStack.execute(command);
+    protected async executeCommand(command: Command): Promise<void> {
+        return this.commandStack.execute(command);
     }
 
     protected submitModel(): MaybePromise<Action[]> {
