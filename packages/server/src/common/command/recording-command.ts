@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { GModelRootSchema } from '@eclipse-glsp/graph';
-import { AnyObject } from '@eclipse-glsp/protocol';
+import { AnyObject, MaybePromise } from '@eclipse-glsp/protocol';
 import * as jsonPatch from 'fast-json-patch';
 import { GModelSerializer } from '../features/model/gmodel-serializer';
 import { ModelState } from '../features/model/model-state';
@@ -28,9 +28,9 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
     protected undoPatch?: jsonPatch.Operation[];
     protected redoPatch?: jsonPatch.Operation[];
 
-    execute(): void {
+    async execute(): Promise<void> {
         const beforeState = this.deepClone(this.getJsonObject());
-        this.doExecute();
+        await this.doExecute();
         const afterState = this.getJsonObject();
         this.undoPatch = jsonPatch.compare(afterState, beforeState);
         this.redoPatch = jsonPatch.compare(beforeState, afterState);
@@ -46,7 +46,7 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
     /**
      * The actual execution i.e. series of changes applied to the JSOn object that should be captured.
      */
-    protected abstract doExecute(): void;
+    protected abstract doExecute(): MaybePromise<void>;
 
     protected applyPatch(object: JsonObject, patch: jsonPatch.Operation[]): void {
         jsonPatch.applyPatch(object, patch, false, true);
@@ -84,7 +84,7 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
  * the the given `doExecute` function.
  */
 export class RecordingCommand<JsonObject extends AnyObject = AnyObject> extends AbstractRecordingCommand<JsonObject> {
-    constructor(protected jsonObject: JsonObject, protected doExecute: () => void) {
+    constructor(protected jsonObject: JsonObject, protected doExecute: () => MaybePromise<void>) {
         super();
     }
 
@@ -98,12 +98,12 @@ export class RecordingCommand<JsonObject extends AnyObject = AnyObject> extends 
  * to the `GModelRoot` ({@link ModelState.root}) during the given `doExecute` function
  */
 export class GModelRecordingCommand extends AbstractRecordingCommand<GModelRootSchema> {
-    constructor(protected modelState: ModelState, protected serializer: GModelSerializer, protected doExecute: () => void) {
+    constructor(protected modelState: ModelState, protected serializer: GModelSerializer, protected doExecute: () => MaybePromise<void>) {
         super();
     }
 
-    override execute(): void {
-        super.execute();
+    override async execute(): Promise<void> {
+        await super.execute();
         this.modelState.index.indexRoot(this.modelState.root);
     }
 

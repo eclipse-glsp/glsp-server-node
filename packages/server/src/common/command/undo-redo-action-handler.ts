@@ -39,17 +39,17 @@ export class UndoRedoActionHandler implements ActionHandler {
         return [];
     }
 
-    protected undo(): MaybePromise<Action[]> {
+    protected async undo(): Promise<Action[]> {
         if (this.commandStack.canUndo()) {
-            this.commandStack.undo();
+            await this.commandStack.undo();
             return this.modelSubmissionHandler.submitModel('undo');
         }
         return [];
     }
 
-    protected redo(): MaybePromise<Action[]> {
+    protected async redo(): Promise<Action[]> {
         if (this.commandStack.canRedo()) {
-            this.commandStack.redo();
+            await this.commandStack.redo();
             return this.modelSubmissionHandler.submitModel('redo');
         }
         return [];

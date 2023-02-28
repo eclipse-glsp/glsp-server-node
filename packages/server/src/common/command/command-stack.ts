@@ -14,6 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { inject, injectable } from 'inversify';
+import { MaybePromise } from '..';
 import { Logger } from '../utils/logger';
 import { Command } from './command';
 
@@ -31,12 +32,12 @@ export interface CommandStack {
      * Clears any redoable commands not yet redone, adds the command to the stack and then invokes {@link Command.execute}.
      * @param command the command to execute.
      */
-    execute(command: Command): void;
+    execute(command: Command): MaybePromise<void>;
 
     /**
      * Removes the topmost (i.e. last executed) command from the stack and invokes {@link Command.undo}.
      */
-    undo(): void;
+    undo(): MaybePromise<void>;
 
     /**
      * Returns `true` if the top command on the stack can be undone.
@@ -46,7 +47,7 @@ export interface CommandStack {
     /**
      * Re-adds the last undo command on top of the stack and invokes {@link Command.redo}
      */
-    redo(): void;
+    redo(): MaybePromise<void>;
 
     /**
      * Returns `true` if there are  redoable commands in the stack.
@@ -86,9 +87,9 @@ export class DefaultCommandStack implements CommandStack {
      */
     protected saveIndex = -1;
 
-    execute(command: Command): void {
+    async execute(command: Command): Promise<void> {
         try {
-            command.execute();
+            await command.execute();
         } catch (error) {
             this.handleError(error);
         }
@@ -104,11 +105,11 @@ export class DefaultCommandStack implements CommandStack {
         }
     }
 
-    undo(): void {
+    async undo(): Promise<void> {
         if (this.canUndo()) {
             const command = this.commands[this.top--];
             try {
-                command.undo();
+                await command.undo();
             } catch (error) {
                 this.handleError(error);
             }
@@ -121,11 +122,11 @@ export class DefaultCommandStack implements CommandStack {
             : false;
     }
 
-    redo(): void {
+    async redo(): Promise<void> {
         if (this.canRedo()) {
             const command = this.commands[++this.top];
             try {
-                command.redo();
+                await command.redo();
             } catch (error) {
                 this.handleError(error);
             }

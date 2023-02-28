@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { flatPush, MaybeArray } from '@eclipse-glsp/protocol';
+import { flatPush, MaybeArray, MaybePromise } from '@eclipse-glsp/protocol';
 
 /**
  * A command implements a specific modification of the source model, which can be applied by invoking `execute()`.
@@ -30,19 +30,19 @@ export interface Command {
     /**
      * Performs the command activity required for the effect (e.g. source model change).
      */
-    execute(): void;
+    execute(): MaybePromise<void>;
 
     /**
      * Performs the command activity required to `undo` the effects of a preceding `execute` (or `redo`).
      * The effect, if any, of calling `undo` before `execute` or `redo` have been called, is undefined.
      */
-    undo(): void;
+    undo(): MaybePromise<void>;
 
     /**
      * Performs the command activity required to `redo` the effect after undoing the effect.
      * The effect, if any, of calling `redo` before `undo` is called is undefined.
      */
-    redo(): void;
+    redo(): MaybePromise<void>;
 
     /**
      * Returns whether the command can be undone.
@@ -71,18 +71,18 @@ export class CompoundCommand implements Command {
         flatPush(this.commands, commands);
     }
 
-    execute(): void {
+    async execute(): Promise<void> {
         const alreadyExecuted: Command[] = [];
 
         try {
-            this.commands.forEach(command => {
-                command.execute();
+            for (const command of this.commands) {
+                await command.execute();
                 alreadyExecuted.unshift(command);
-            });
+            }
         } catch (err) {
             for (const command of alreadyExecuted) {
                 if (Command.canUndo(command)) {
-                    command.undo();
+                    await command.undo();
                 } else {
                     break;
                 }
@@ -91,29 +91,33 @@ export class CompoundCommand implements Command {
         }
     }
 
-    undo(): void {
+    async undo(): Promise<void> {
         const alreadyUndone: Command[] = [];
         try {
-            [...this.commands].reverse().forEach(command => {
-                command.undo();
+            for (const command of [...this.commands].reverse()) {
+                await command.undo();
                 alreadyUndone.unshift(command);
-            });
+            }
         } catch (err) {
-            alreadyUndone.forEach(command => command.redo());
+            for (const command of alreadyUndone) {
+                await command.redo();
+            }
             throw err;
         }
     }
 
-    redo(): void {
+    async redo(): Promise<void> {
         const alreadyRedone: Command[] = [];
 
         try {
-            this.commands.forEach(command => {
-                command.redo();
+            for (const command of this.commands) {
+                await command.redo();
                 alreadyRedone.unshift(command);
-            });
+            }
         } catch (err) {
-            alreadyRedone.forEach(command => command.undo());
+            for (const command of alreadyRedone) {
+                await command.undo();
+            }
             throw err;
         }
     }
