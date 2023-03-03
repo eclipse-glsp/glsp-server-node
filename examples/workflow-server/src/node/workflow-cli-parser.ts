@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 EclipseSource and others.
+ * Copyright (c) 2023 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,12 +13,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-export * from '../common/index';
-export * from './abstract-json-model-storage';
-export * from './di/app-module';
-export * from './di/winston-logger';
-export * from './gmodel/gmodel-storage';
-export * from './launch/cli-parser';
-export * from './launch/socket-cli-parser';
-export * from './launch/socket-server-launcher';
-export * from './launch/websocket-server-launcher';
+
+import { CliParser, createSocketCliParser, defaultSocketLaunchOptions, SocketLaunchOptions } from '@eclipse-glsp/server/node';
+
+export interface WorkflowLaunchOptions extends SocketLaunchOptions {
+    webSocket: boolean;
+}
+
+export function createWorkflowCliParser<O extends WorkflowLaunchOptions = WorkflowLaunchOptions>(
+    defaultOptions: WorkflowLaunchOptions = { webSocket: false, ...defaultSocketLaunchOptions }
+): CliParser<O> {
+    const parser = createSocketCliParser<O>(defaultOptions);
+    parser.command.option('-w , --webSocket', 'Flag to use websocket launcher instead of default launcher', false);
+    return parser;
+}

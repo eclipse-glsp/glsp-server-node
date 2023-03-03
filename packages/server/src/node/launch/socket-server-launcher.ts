@@ -20,7 +20,7 @@ import { GLSPServerLauncher } from '../../common/launch/glsp-server-launcher';
 import { GLSPServer, JsonRpcGLSPServer } from '../../common/protocol/glsp-server';
 import { Logger } from '../../common/utils/logger';
 
-const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed. Accepting requests on port:';
+export const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed. Accepting requests on port:';
 @injectable()
 export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnectOpts> {
     @inject(Logger) protected override logger: Logger;

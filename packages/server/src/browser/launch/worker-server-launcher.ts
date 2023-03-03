@@ -16,18 +16,26 @@
 
 import { Container, injectable } from 'inversify';
 import * as jsonrpc from 'vscode-jsonrpc/browser';
-import { GLSPServer, GLSPServerLauncher, JsonRpcGLSPServer, MaybePromise, START_UP_COMPLETE_MSG } from '../../common/index';
+import { GLSPServer, GLSPServerLauncher, JsonRpcGLSPServer, MaybePromise } from '../../common/index';
+export interface WorkerLaunchOptions {
+    context?: Worker;
+}
 
+const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed.';
 @injectable()
-export class WorkerServerLauncher extends GLSPServerLauncher {
-    private connection?: jsonrpc.MessageConnection;
+export class WorkerServerLauncher extends GLSPServerLauncher<WorkerLaunchOptions> {
+    protected connection?: jsonrpc.MessageConnection;
 
-    protected run(): MaybePromise<void> {
+    override start(options: WorkerLaunchOptions = {}): MaybePromise<void> {
+        super.start(options);
+    }
+
+    protected run(options: WorkerLaunchOptions): MaybePromise<void> {
         if (this.connection) {
             throw new Error('Error during launch. Server already has an active client connection');
         }
         const container = this.createContainer();
-        this.connection = this.createConnection();
+        this.connection = this.createConnection(options);
         const glspServer = container.get<JsonRpcGLSPServer>(JsonRpcGLSPServer);
         glspServer.connect(this.connection);
         this.connection.onDispose(() => this.disposeClientConnection(container, glspServer));
@@ -52,7 +60,10 @@ export class WorkerServerLauncher extends GLSPServerLauncher {
         this.connection?.dispose();
     }
 
-    protected createConnection(): jsonrpc.MessageConnection {
-        return jsonrpc.createMessageConnection(new jsonrpc.BrowserMessageReader(self), new jsonrpc.BrowserMessageWriter(self));
+    protected createConnection(options: WorkerLaunchOptions): jsonrpc.MessageConnection {
+        return jsonrpc.createMessageConnection(
+            new jsonrpc.BrowserMessageReader(options.context ?? self),
+            new jsonrpc.BrowserMessageWriter(options.context ?? self)
+        );
     }
 }

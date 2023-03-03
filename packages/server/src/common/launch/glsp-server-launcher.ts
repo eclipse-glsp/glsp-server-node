@@ -19,10 +19,8 @@ import { ServerModule } from '../di/server-module';
 import { InjectionContainer } from '../di/service-identifiers';
 import { Logger } from '../utils/logger';
 
-export const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed';
-
 @injectable()
-export abstract class GLSPServerLauncher<T = undefined> {
+export abstract class GLSPServerLauncher<T> {
     @inject(Logger) protected logger: Logger;
 
     protected _modules: ContainerModule[] = [];
@@ -40,7 +38,7 @@ export abstract class GLSPServerLauncher<T = undefined> {
         return container;
     }
 
-    start(startParams?: T): MaybePromise<void> {
+    start(startParams: T): MaybePromise<void> {
         if (!this.running) {
             this.running = true;
             return this.run(startParams);
@@ -48,7 +46,7 @@ export abstract class GLSPServerLauncher<T = undefined> {
         this.logger.warn('Could not start launcher. Launcher is already running!');
     }
 
-    protected abstract run(startParams?: T): MaybePromise<void>;
+    protected abstract run(startParams: T): MaybePromise<void>;
 
     shutdown(): MaybePromise<void> {
         if (this.running) {
