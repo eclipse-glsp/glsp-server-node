@@ -29,9 +29,9 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
     protected redoPatch?: jsonPatch.Operation[];
 
     async execute(): Promise<void> {
-        const beforeState = this.deepClone(this.getJsonObject());
+        const beforeState = this.deepClone(await this.getJsonObject());
         await this.doExecute();
-        const afterState = this.getJsonObject();
+        const afterState = await this.getJsonObject();
         this.undoPatch = jsonPatch.compare(afterState, beforeState);
         this.redoPatch = jsonPatch.compare(beforeState, afterState);
     }
@@ -41,14 +41,14 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
      * right after {@link AbstractRecordingCommand.doExecute} to derive the undo & redo patches.
      * @returns The current state of the JSON object
      */
-    protected abstract getJsonObject(): JsonObject;
+    protected abstract getJsonObject(): MaybePromise<JsonObject>;
 
     /**
      * The actual execution i.e. series of changes applied to the JSOn object that should be captured.
      */
     protected abstract doExecute(): MaybePromise<void>;
 
-    protected applyPatch(object: JsonObject, patch: jsonPatch.Operation[]): void {
+    protected applyPatch(object: JsonObject, patch: jsonPatch.Operation[]): MaybePromise<void> {
         jsonPatch.applyPatch(object, patch, false, true);
     }
 
@@ -62,15 +62,15 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
         return jsonPatch.deepClone(object);
     }
 
-    undo(): void {
+    async undo(): Promise<void> {
         if (this.undoPatch) {
-            this.applyPatch(this.getJsonObject(), this.undoPatch);
+            return this.applyPatch(await this.getJsonObject(), this.undoPatch);
         }
     }
 
-    redo(): void {
+    async redo(): Promise<void> {
         if (this.redoPatch) {
-            this.applyPatch(this.getJsonObject(), this.redoPatch);
+            return this.applyPatch(await this.getJsonObject(), this.redoPatch);
         }
     }
 
@@ -88,7 +88,7 @@ export class RecordingCommand<JsonObject extends AnyObject = AnyObject> extends 
         super();
     }
 
-    protected getJsonObject(): JsonObject {
+    protected getJsonObject(): MaybePromise<JsonObject> {
         return this.jsonObject;
     }
 }
@@ -107,11 +107,11 @@ export class GModelRecordingCommand extends AbstractRecordingCommand<GModelRootS
         this.modelState.index.indexRoot(this.modelState.root);
     }
 
-    protected getJsonObject(): GModelRootSchema {
+    protected getJsonObject(): MaybePromise<GModelRootSchema> {
         return this.serializer.createSchema(this.modelState.root);
     }
 
-    protected override applyPatch(rootSchema: GModelRootSchema, patch: jsonPatch.Operation[]): void {
+    protected override applyPatch(rootSchema: GModelRootSchema, patch: jsonPatch.Operation[]): MaybePromise<void> {
         super.applyPatch(rootSchema, patch);
         const newRoot = this.serializer.createRoot(rootSchema);
         this.modelState.updateRoot(newRoot);

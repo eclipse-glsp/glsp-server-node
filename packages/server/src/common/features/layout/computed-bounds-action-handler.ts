@@ -17,7 +17,7 @@ import { GModelRoot } from '@eclipse-glsp/graph';
 import { Action, ComputedBoundsAction, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
-import { applyAlignment, applyBounds, applyRoute } from '../../utils/layout-util';
+import { applyAlignment, applyElementAndBounds, applyRoute } from '../../utils/layout-util';
 import { ModelState } from '../model/model-state';
 import { ModelSubmissionHandler } from '../model/model-submission-handler';
 
@@ -47,7 +47,7 @@ export class ComputedBoundsActionHandler implements ActionHandler {
 
     protected applyBounds(root: GModelRoot, action: ComputedBoundsAction): void {
         const index = this.modelState.index;
-        action.bounds.forEach(bounds => applyBounds(bounds, index));
+        action.bounds.forEach(bounds => applyElementAndBounds(bounds, index));
         (action.alignments ?? []).forEach(alignment => applyAlignment(alignment, index));
         (action.routes ?? []).forEach(route => applyRoute(route, index));
     }

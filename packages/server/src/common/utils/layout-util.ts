@@ -27,7 +27,7 @@ import { getOrThrow, GLSPServerError } from './glsp-server-error';
  * @param index  The model index.
  * @returns The changed element.
  */
-export function applyBounds(bounds: ElementAndBounds, index: GModelIndex): GBoundsAware | undefined {
+export function applyElementAndBounds(bounds: ElementAndBounds, index: GModelIndex): GBoundsAware | undefined {
     const element = getOrThrow(index.get(bounds.elementId), 'Model element not found! ID: ' + bounds.elementId);
     if (isGBoundsAware(element)) {
         if (bounds.newPosition !== undefined) {
