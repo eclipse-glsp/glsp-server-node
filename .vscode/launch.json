@@ -77,12 +77,30 @@
         "${workspaceRoot}/packages/**/*/lib/**/*.js"
       ],
       "sourceMapPathOverrides": {
-        "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
-        "webpack:////*": "/*",
-        "webpack://?:*/*": "${workspaceFolder}/*",
-        "webpack:///([a-z]):/(.+)": "$1:/$2",
-        "webpack://@eclipse-glsp-examples/workflow-server/(.+)": "${workspaceFolder}/examples/workflow-server/$1",
-        "meteor://💻app/*": "${workspaceFolder}/*"
+        "webpack://@eclipse-glsp-examples/workflow-server/(.+)": "${workspaceFolder}/examples/workflow-server/$1"
+      },
+      "smartStep": true,
+      "internalConsoleOptions": "openOnSessionStart",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Workflow Example Server (Websocket)",
+      "program": "${workspaceFolder}/examples/workflow-server/bundle/wf-glsp-server-node.js",
+      "args": ["--webSocket", "--port", "8081"],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/examples/workflow-server/bundle/**/*.js",
+        "${workspaceRoot}/node_modules/@eclipse-glsp/*/lib/**/*.js",
+        "${workspaceRoot}/examples/workflow-server/*/lib/**/*.js",
+        "${workspaceRoot}/packages/**/*/lib/**/*.js"
+      ],
+      "sourceMapPathOverrides": {
+        "webpack://@eclipse-glsp-examples/workflow-server/(.+)": "${workspaceFolder}/examples/workflow-server/$1"
       },
       "smartStep": true,
       "internalConsoleOptions": "openOnSessionStart",

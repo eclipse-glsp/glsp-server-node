@@ -16,34 +16,41 @@
 import { configureELKLayoutModule } from '@eclipse-glsp/layout-elk';
 import {
     createAppModule,
-    createSocketCliParser,
     GModelStorage,
     Logger,
     LoggerFactory,
-    SocketServerLauncher
+    SocketServerLauncher,
+    WebSocketServerLauncher
 } from '@eclipse-glsp/server/node';
 import { Container } from 'inversify';
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
 import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-diagram-module';
+import { createWorkflowCliParser } from './workflow-cli-parser';
 
 export async function launch(argv?: string[]): Promise<void> {
     let logger: Logger | undefined;
     try {
-        const options = createSocketCliParser().parse(argv);
+        const options = createWorkflowCliParser().parse(argv);
         const appContainer = new Container();
         appContainer.load(createAppModule(options));
 
         logger = appContainer.get<LoggerFactory>(LoggerFactory)('WorkflowServerApp');
-        const launcher = appContainer.resolve(SocketServerLauncher);
+
         const elkLayoutModule = configureELKLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator });
         const serverModule = new WorkflowServerModule().configureDiagramModule(
             new WorkflowDiagramModule(() => GModelStorage),
             elkLayoutModule
         );
 
-        launcher.configure(serverModule);
-
-        launcher.start({ port: options.port, host: options.host });
+        if (options.webSocket) {
+            const launcher = appContainer.resolve(WebSocketServerLauncher);
+            launcher.configure(serverModule);
+            launcher.start({ port: options.port, host: options.host, path: 'workflow' });
+        } else {
+            const launcher = appContainer.resolve(SocketServerLauncher);
+            launcher.configure(serverModule);
+            launcher.start({ port: options.port, host: options.host });
+        }
     } catch (error) {
         (logger ?? console).error('Error in workflow server launcher:', error);
     }

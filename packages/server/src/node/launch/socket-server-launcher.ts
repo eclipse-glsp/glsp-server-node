@@ -16,11 +16,13 @@
 import { Container, inject, injectable } from 'inversify';
 import * as net from 'net';
 import * as jsonrpc from 'vscode-jsonrpc/node';
+import { Disposable } from '..';
 import { GLSPServerLauncher } from '../../common/launch/glsp-server-launcher';
 import { GLSPServer, JsonRpcGLSPServer } from '../../common/protocol/glsp-server';
 import { Logger } from '../../common/utils/logger';
 
-const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed. Accepting requests on port:';
+export const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed. Accepting requests on port:';
+
 @injectable()
 export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnectOpts> {
     @inject(Logger) protected override logger: Logger;
@@ -28,6 +30,16 @@ export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnec
     protected currentConnections: jsonrpc.MessageConnection[] = [];
     protected startupCompleteMessage = START_UP_COMPLETE_MSG;
     protected netServer: net.Server;
+
+    constructor() {
+        super();
+        this.toDispose.push(
+            Disposable.create(() => {
+                this.currentConnections.forEach(connection => connection.dispose());
+                this.netServer.close();
+            })
+        );
+    }
 
     protected run(opts: net.TcpSocketConnectOpts): Promise<void> {
         this.netServer = net.createServer(socket => this.createClientConnection(socket));
@@ -80,11 +92,5 @@ export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnec
 
     protected createConnection(socket: net.Socket): jsonrpc.MessageConnection {
         return jsonrpc.createMessageConnection(new jsonrpc.SocketMessageReader(socket), new jsonrpc.SocketMessageWriter(socket), console);
-    }
-
-    protected stop(): void {
-        this.logger.info('Shutdown SocketServerLauncher');
-        this.currentConnections.forEach(connection => connection.dispose());
-        this.netServer.close();
     }
 }
