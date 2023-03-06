@@ -21,14 +21,11 @@ export interface WorkerLaunchOptions {
     context?: Worker;
 }
 
-const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed.';
+export const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed.';
+
 @injectable()
 export class WorkerServerLauncher extends GLSPServerLauncher<WorkerLaunchOptions> {
     protected connection?: jsonrpc.MessageConnection;
-
-    override start(options: WorkerLaunchOptions = {}): MaybePromise<void> {
-        super.start(options);
-    }
 
     protected run(options: WorkerLaunchOptions): MaybePromise<void> {
         if (this.connection) {
@@ -42,6 +39,7 @@ export class WorkerServerLauncher extends GLSPServerLauncher<WorkerLaunchOptions
 
         this.logger.info('GLSP server worker connection established');
         this.connection.listen();
+        this.toDispose.push(this.connection);
         postMessage(START_UP_COMPLETE_MSG);
         return new Promise((resolve, rejects) => {
             this.connection?.onClose(() => resolve(undefined));
@@ -53,11 +51,6 @@ export class WorkerServerLauncher extends GLSPServerLauncher<WorkerLaunchOptions
         glspServer.shutdown();
         container.unbindAll();
         this.connection = undefined;
-    }
-
-    protected stop(): MaybePromise<void> {
-        this.logger.info('Shutdown WorkerServerLauncher');
-        this.connection?.dispose();
     }
 
     protected createConnection(options: WorkerLaunchOptions): jsonrpc.MessageConnection {

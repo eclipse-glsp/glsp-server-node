@@ -53,17 +53,39 @@ Simply select a test file (`*.spec.ts`), then go to the `Run & Debug` View (`Ctr
 
 ## Start & Debug
 
-The example server can be launched with:
+### Socket
+
+To launch the server for TCP sockets use:
 
 ```console
 yarn start
 ```
 
+This starts a server that is listening on port 5007 for incoming client requests.
+
 To debug you can use the `Debug workflow example GLSP Server` launch configuration.
-This starts the example server in a dedicated process. To test the server you have to connect a workflow GLSP client that supports JSON-RPC via socket.
+To test the server you have to connect a workflow GLSP client that supports JSON-RPC via socket.
 We recommend to use the client provided by the [`glsp-integration`](https://github.com/eclipse-glsp/glsp-theia-integration#how-to-start-the-workflow-diagram-example-server-from-the-sources).
+
+### Websocket
+
+To launch the server for WebSockets use:
+
+```console
+yarn start:websocket
+```
+
+This starts a server that is listening on the `ws://localhost:8081/workflow` endpoint for incoming client requests.
+
+To debug you can use the `Debug workflow example GLSP Server (Websocket)` launch configuration.
+To test the server you have to connect a workflow GLSP client that supports JSON-RPC via WebSocket.
+We recommend to use the standalone example provided by [`glsp-client`](https://github.com/eclipse-glsp/glsp-client/blob/master/README.md#how-to-start-the-workflow-diagram-example).
 
 ## More information
 
 For more information, please visit the [Eclipse GLSP Umbrella repository](https://github.com/eclipse-glsp/glsp) and the [Eclipse GLSP Website](https://www.eclipse.org/glsp/).
 If you have questions, please raise them in the [discussions](https://github.com/eclipse-glsp/glsp/discussions) and have a look at our [communication and support options](https://www.eclipse.org/glsp/contact/).
+
+```
+
+```

@@ -25,11 +25,11 @@
     "test:ci": "lerna run test:ci",
     "test:coverage": "lerna run test:coverage",
     "test:coverage:ci": "yarn glsp coverageReport .",
-    "upgrade:next": "yarn upgrade -p \"@eclipse-glsp.*|sprotty.*\" --next ",
+    "upgrade:next": "yarn upgrade @eclipse-glsp/protocol@next",
     "watch": "lerna run --parallel watch"
   },
   "devDependencies": {
-    "@eclipse-glsp/dev": "1.1.0-next.164cf99.124",
+    "@eclipse-glsp/dev": "1.1.0-next.7026c40.129",
     "@types/node": "16.x"
   },
   "engines": {

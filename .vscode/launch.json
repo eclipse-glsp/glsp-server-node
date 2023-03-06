@@ -77,12 +77,7 @@
         "${workspaceRoot}/packages/**/*/lib/**/*.js"
       ],
       "sourceMapPathOverrides": {
-        "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
-        "webpack:////*": "/*",
-        "webpack://?:*/*": "${workspaceFolder}/*",
-        "webpack:///([a-z]):/(.+)": "$1:/$2",
-        "webpack://@eclipse-glsp-examples/workflow-server/(.+)": "${workspaceFolder}/examples/workflow-server/$1",
-        "meteor://💻app/*": "${workspaceFolder}/*"
+        "webpack://@eclipse-glsp-examples/workflow-server/(.+)": "${workspaceFolder}/examples/workflow-server/$1"
       },
       "smartStep": true,
       "internalConsoleOptions": "openOnSessionStart",
@@ -105,12 +100,7 @@
         "${workspaceRoot}/packages/**/*/lib/**/*.js"
       ],
       "sourceMapPathOverrides": {
-        "webpack:///./~/*": "${workspaceFolder}/node_modules/*",
-        "webpack:////*": "/*",
-        "webpack://?:*/*": "${workspaceFolder}/*",
-        "webpack:///([a-z]):/(.+)": "$1:/$2",
-        "webpack://@eclipse-glsp-examples/workflow-server/(.+)": "${workspaceFolder}/examples/workflow-server/$1",
-        "meteor://💻app/*": "${workspaceFolder}/*"
+        "webpack://@eclipse-glsp-examples/workflow-server/(.+)": "${workspaceFolder}/examples/workflow-server/$1"
       },
       "smartStep": true,
       "internalConsoleOptions": "openOnSessionStart",

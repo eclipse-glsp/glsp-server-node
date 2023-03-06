@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { createWebSocketConnection, MaybePromise, WebSocketWrapper } from '@eclipse-glsp/protocol';
+import { createWebSocketConnection, Disposable, MaybePromise, WebSocketWrapper } from '@eclipse-glsp/protocol';
 import * as http from 'http';
 import { Container, inject, injectable } from 'inversify';
 import * as net from 'net';
@@ -43,6 +43,8 @@ export interface WebsocketConnectionData {
     connection: jsonrpc.MessageConnection;
 }
 
+const STATUS_UPGRADE_REQUIRED = 426;
+
 @injectable()
 export class WebSocketServerLauncher extends GLSPServerLauncher<WebSocketServerOptions> {
     @inject(Logger)
@@ -51,6 +53,16 @@ export class WebSocketServerLauncher extends GLSPServerLauncher<WebSocketServerO
     protected server: Server;
     protected startupCompleteMessage = START_UP_COMPLETE_MSG;
     protected currentConnections: jsonrpc.MessageConnection[] = [];
+
+    constructor() {
+        super();
+        this.toDispose.push(
+            Disposable.create(() => {
+                this.currentConnections.forEach(connection => connection.dispose());
+                this.server.close();
+            })
+        );
+    }
 
     protected async run(options: WebSocketServerOptions): Promise<void> {
         const resolvedOptions = await this.resolveOptions(options);
@@ -105,7 +117,7 @@ export class WebSocketServerLauncher extends GLSPServerLauncher<WebSocketServerO
 
     protected createHttpServer(port: number, host?: string): http.Server {
         const server = http.createServer((req, res) => {
-            const body = http.STATUS_CODES[426];
+            const body = http.STATUS_CODES[STATUS_UPGRADE_REQUIRED];
 
             res.writeHead(426, {
                 'Content-Length': body?.length,
@@ -117,11 +129,6 @@ export class WebSocketServerLauncher extends GLSPServerLauncher<WebSocketServerO
         // Set server timeout to infinite
         server.setTimeout(0);
         return server;
-    }
-    protected stop(): MaybePromise<void> {
-        this.logger.info('Shutdown WebSocketServerLauncher');
-        this.currentConnections.forEach(connection => connection.dispose());
-        this.server.close();
     }
 
     override start(options: WebSocketServerOptions): MaybePromise<void> {

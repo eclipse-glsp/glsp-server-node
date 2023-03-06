@@ -38,7 +38,7 @@ export async function launch(argv?: string[]): Promise<void> {
 
         launcher.configure(serverModule);
 
-        await launcher.start();
+        await launcher.start({});
     } catch (error) {
         (logger ?? console).error('Error in workflow server launcher:', error);
     }

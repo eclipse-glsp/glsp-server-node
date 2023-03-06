@@ -13,18 +13,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { MaybePromise } from '@eclipse-glsp/protocol';
+import { Disposable, DisposableCollection, MaybePromise } from '@eclipse-glsp/protocol';
 import { Container, ContainerModule, inject, injectable, optional } from 'inversify';
 import { ServerModule } from '../di/server-module';
 import { InjectionContainer } from '../di/service-identifiers';
 import { Logger } from '../utils/logger';
 
 @injectable()
-export abstract class GLSPServerLauncher<T> {
+export abstract class GLSPServerLauncher<T> implements Disposable {
     @inject(Logger) protected logger: Logger;
 
     protected _modules: ContainerModule[] = [];
     protected running: boolean;
+    protected toDispose = new DisposableCollection();
 
     @inject(InjectionContainer) @optional() protected parentContainer?: Container;
 
@@ -50,6 +51,7 @@ export abstract class GLSPServerLauncher<T> {
 
     shutdown(): MaybePromise<void> {
         if (this.running) {
+            this.logger.info('Shutdown GLSPServerLauncher');
             const result = this.stop();
             this.running = false;
             return result;
@@ -57,7 +59,13 @@ export abstract class GLSPServerLauncher<T> {
         this.logger.warn('Could not stop launcher. Launcher is not running!');
     }
 
-    protected abstract stop(): MaybePromise<void>;
+    protected stop(): MaybePromise<void> {
+        this.dispose();
+    }
+
+    dispose(): void {
+        this.toDispose.dispose();
+    }
 
     get modules(): ContainerModule[] {
         if (!this._modules) {
