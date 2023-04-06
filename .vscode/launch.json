@@ -66,6 +66,7 @@
       "request": "launch",
       "name": "Debug Workflow Example Server",
       "program": "${workspaceFolder}/examples/workflow-server/bundle/wf-glsp-server-node.js",
+      "args": ["--port", "5007"],
       "env": {
         "NODE_ENV": "development"
       },
