@@ -17,16 +17,20 @@ import { GModelRootSchema } from '@eclipse-glsp/graph';
 import {
     Action,
     DirtyStateChangeReason,
+    MarkersReason,
     MaybePromise,
     RequestBoundsAction,
     SetDirtyStateAction,
+    SetMarkersAction,
     SetModelAction,
     UpdateModelAction
 } from '@eclipse-glsp/protocol';
+
 import { inject, injectable, optional } from 'inversify';
 import { CommandStack } from '../../command/command-stack';
 import { DiagramConfiguration, ServerLayoutKind } from '../../diagram/diagram-configuration';
 import { LayoutEngine } from '../layout/layout-engine';
+import { ModelValidator } from '../validation/model-validator';
 import { GModelFactory } from './gmodel-factory';
 import { GModelSerializer } from './gmodel-serializer';
 import { ModelState } from './model-state';
@@ -51,6 +55,10 @@ export class ModelSubmissionHandler {
 
     @inject(CommandStack)
     protected commandStack: CommandStack;
+
+    @inject(ModelValidator)
+    @optional()
+    protected validator?: ModelValidator;
 
     /**
      * Returns a list of actions to update the client-side model, based on the specified <code>modelState</code>.
@@ -100,6 +108,10 @@ export class ModelSubmissionHandler {
         );
         if (!this.diagramConfiguration.needsClientLayout) {
             result.push(SetDirtyStateAction.create(this.commandStack.isDirty, { reason }));
+        }
+        if (this.validator) {
+            const markers = await this.validator.validate([this.modelState.root], MarkersReason.LIVE);
+            result.push(SetMarkersAction.create(markers, { reason: MarkersReason.LIVE }));
         }
         return result;
     }
