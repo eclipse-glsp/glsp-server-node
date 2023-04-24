@@ -13,33 +13,30 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import 'reflect-metadata';
+
 import { configureELKLayoutModule } from '@eclipse-glsp/layout-elk';
-import { createAppModule, Logger, LoggerFactory, LogLevel, WorkerServerLauncher } from '@eclipse-glsp/server/browser';
+import { createAppModule, LogLevel, WorkerServerLauncher } from '@eclipse-glsp/server/browser';
 import { Container } from 'inversify';
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
 import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-diagram-module';
 import { WorkflowMockModelStorage } from './mock-model-storage';
 
 export async function launch(argv?: string[]): Promise<void> {
-    let logger: Logger | undefined;
+    const appContainer = new Container();
+    appContainer.load(createAppModule({ logLevel: LogLevel.info }));
 
-    try {
-        const appContainer = new Container();
-        appContainer.load(createAppModule({ logLevel: LogLevel.info }));
+    const launcher = appContainer.resolve(WorkerServerLauncher);
+    const elkLayoutModule = configureELKLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator });
 
-        logger = appContainer.get<LoggerFactory>(LoggerFactory)('WorkflowServerApp');
-        const launcher = appContainer.resolve(WorkerServerLauncher);
-        const elkLayoutModule = configureELKLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator });
+    const serverModule = new WorkflowServerModule().configureDiagramModule(
+        new WorkflowDiagramModule(() => WorkflowMockModelStorage),
+        elkLayoutModule
+    );
 
-        const serverModule = new WorkflowServerModule().configureDiagramModule(
-            new WorkflowDiagramModule(() => WorkflowMockModelStorage),
-            elkLayoutModule
-        );
+    launcher.configure(serverModule);
 
-        launcher.configure(serverModule);
-
-        await launcher.start({});
-    } catch (error) {
-        (logger ?? console).error('Error in workflow server launcher:', error);
-    }
+    await launcher.start({});
 }
+
+launch().catch(error => console.error('Error in workflow server launcher:', error));

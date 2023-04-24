@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { injectable } from 'inversify';
+import { injectable, interfaces } from 'inversify';
 
 @injectable()
 export abstract class Logger {
@@ -67,6 +67,21 @@ export function asLogLevel(level: string | number): LogLevel | undefined {
 
     if (levelKey in LogLevel) {
         return (LogLevel as any)[level];
+    }
+    return undefined;
+}
+
+export interface LoggerConfigOptions {
+    consoleLog?: boolean;
+    logLevel?: LogLevel;
+}
+
+export function getRequestParentName(context: interfaces.Context): string | undefined {
+    if (context.currentRequest.parentRequest) {
+        const bindings = context.currentRequest.parentRequest.bindings;
+        if (bindings.length > 0) {
+            return bindings[0].implementationType?.name;
+        }
     }
     return undefined;
 }

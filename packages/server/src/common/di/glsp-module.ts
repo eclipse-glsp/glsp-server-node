@@ -13,12 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { BindingContext } from '@eclipse-glsp/protocol';
 import { ContainerModule, injectable, interfaces } from 'inversify';
 import { AbstractMultiBinding } from './multi-binding';
 
 /**
  * A wrapper interface to get access to the binding related functions
  * for a inversify container.
+ * @deprecated Use `BindingContext` from `@eclipse-glsp/protocol` instead
  */
 export interface ModuleContext {
     bind: interfaces.Bind;
@@ -34,7 +36,7 @@ export interface ModuleContext {
 export abstract class GLSPModule extends ContainerModule {
     public static CLIENT_ACTIONS = 'ClientActions';
 
-    protected context: ModuleContext;
+    protected context: BindingContext;
 
     constructor() {
         super((bind, unbind, isBound, rebind) => {

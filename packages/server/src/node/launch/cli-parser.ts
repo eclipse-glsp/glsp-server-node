@@ -16,13 +16,12 @@
 import * as cmd from 'commander';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { asLogLevel, LogLevel } from '../../common/utils/logger';
+import { LogLevel, LoggerConfigOptions, asLogLevel } from '../../common/utils/logger';
 
-export interface LaunchOptions {
+export interface LaunchOptions extends LoggerConfigOptions {
     logLevel: LogLevel;
     logDir?: string;
     fileLog: boolean;
-    consoleLog: boolean;
 }
 
 export interface CliParser<O extends LaunchOptions = LaunchOptions> {

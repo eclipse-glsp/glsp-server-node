@@ -16,14 +16,12 @@
 
 import { createWebSocketConnection, Disposable, MaybePromise, WebSocketWrapper } from '@eclipse-glsp/protocol';
 import * as http from 'http';
-import { Container, inject, injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import * as net from 'net';
 import * as jsonrpc from 'vscode-jsonrpc';
 import { Server, WebSocket } from 'ws';
-import { GLSPServerLauncher } from '../../common/launch/glsp-server-launcher';
-import { GLSPServer, JsonRpcGLSPServer } from '../../common/protocol/glsp-server';
+import { JsonRpcGLSPServerLauncher } from '../../common/launch/jsonrpc-server-launcher';
 import { Logger } from '../../common/utils/logger';
-import { START_UP_COMPLETE_MSG } from './socket-server-launcher';
 
 export interface WebSocketServerOptions {
     host?: string;
@@ -46,19 +44,16 @@ export interface WebsocketConnectionData {
 const STATUS_UPGRADE_REQUIRED = 426;
 
 @injectable()
-export class WebSocketServerLauncher extends GLSPServerLauncher<WebSocketServerOptions> {
+export class WebSocketServerLauncher extends JsonRpcGLSPServerLauncher<WebSocketServerOptions> {
     @inject(Logger)
     protected override logger: Logger;
 
     protected server: Server;
-    protected startupCompleteMessage = START_UP_COMPLETE_MSG;
-    protected currentConnections: jsonrpc.MessageConnection[] = [];
 
     constructor() {
         super();
         this.toDispose.push(
             Disposable.create(() => {
-                this.currentConnections.forEach(connection => connection.dispose());
                 this.server.close();
             })
         );
@@ -72,35 +67,14 @@ export class WebSocketServerLauncher extends GLSPServerLauncher<WebSocketServerO
         console.log(this.startupCompleteMessage.concat(resolvedOptions.port.toString()));
 
         this.server.on('connection', (ws, req) => {
-            this.createClientConnection(ws);
+            const connection = this.createConnection(ws);
+            this.createServerInstance(connection);
         });
 
         return new Promise((resolve, reject) => {
             this.server.on('close', () => resolve(undefined));
             this.server.on('error', error => reject(error));
         });
-    }
-
-    protected async createClientConnection(socket: WebSocket): Promise<void> {
-        const container = this.createContainer();
-        const connection = this.createConnection(socket);
-        this.currentConnections.push(connection);
-        const glspServer = container.get<JsonRpcGLSPServer>(JsonRpcGLSPServer);
-        glspServer.connect(connection);
-        this.logger.info('Starting GLSP server connection');
-        connection.listen();
-        connection.onDispose(() => this.disposeClientConnection(container, glspServer));
-        socket.on('close', () => this.disposeClientConnection(container, glspServer));
-        connection.onClose(() => console.log('GOD dam'));
-        return new Promise((resolve, rejects) => {
-            connection.onClose(() => resolve(undefined));
-            connection.onError(error => rejects(error));
-        });
-    }
-
-    protected disposeClientConnection(container: Container, glspServer: GLSPServer): void {
-        glspServer.shutdown();
-        container.unbindAll();
     }
 
     protected createConnection(socket: WebSocket): jsonrpc.MessageConnection {

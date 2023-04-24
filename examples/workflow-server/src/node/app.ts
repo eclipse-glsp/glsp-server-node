@@ -13,45 +13,33 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import 'reflect-metadata';
+
 import { configureELKLayoutModule } from '@eclipse-glsp/layout-elk';
-import {
-    createAppModule,
-    GModelStorage,
-    Logger,
-    LoggerFactory,
-    SocketServerLauncher,
-    WebSocketServerLauncher
-} from '@eclipse-glsp/server/node';
+import { createAppModule, GModelStorage, SocketServerLauncher, WebSocketServerLauncher } from '@eclipse-glsp/server/node';
 import { Container } from 'inversify';
+
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
 import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-diagram-module';
 import { createWorkflowCliParser } from './workflow-cli-parser';
 
-export async function launch(argv?: string[]): Promise<void> {
-    let logger: Logger | undefined;
-    try {
-        const options = createWorkflowCliParser().parse(argv);
-        const appContainer = new Container();
-        appContainer.load(createAppModule(options));
+async function launch(argv?: string[]): Promise<void> {
+    const options = createWorkflowCliParser().parse(argv);
+    const appContainer = new Container();
+    appContainer.load(createAppModule(options));
 
-        logger = appContainer.get<LoggerFactory>(LoggerFactory)('WorkflowServerApp');
+    const elkLayoutModule = configureELKLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator });
+    const serverModule = new WorkflowServerModule().configureDiagramModule(new WorkflowDiagramModule(() => GModelStorage), elkLayoutModule);
 
-        const elkLayoutModule = configureELKLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator });
-        const serverModule = new WorkflowServerModule().configureDiagramModule(
-            new WorkflowDiagramModule(() => GModelStorage),
-            elkLayoutModule
-        );
-
-        if (options.webSocket) {
-            const launcher = appContainer.resolve(WebSocketServerLauncher);
-            launcher.configure(serverModule);
-            launcher.start({ port: options.port, host: options.host, path: 'workflow' });
-        } else {
-            const launcher = appContainer.resolve(SocketServerLauncher);
-            launcher.configure(serverModule);
-            launcher.start({ port: options.port, host: options.host });
-        }
-    } catch (error) {
-        (logger ?? console).error('Error in workflow server launcher:', error);
+    if (options.webSocket) {
+        const launcher = appContainer.resolve(WebSocketServerLauncher);
+        launcher.configure(serverModule);
+        launcher.start({ port: options.port, host: options.host, path: 'workflow' });
+    } else {
+        const launcher = appContainer.resolve(SocketServerLauncher);
+        launcher.configure(serverModule);
+        launcher.start({ port: options.port, host: options.host });
     }
 }
+
+launch(process.argv).catch(error => console.error('Error in workflow server launcher:', error));

@@ -33,9 +33,9 @@ export abstract class GLSPServerLauncher<T> implements Disposable {
         this._modules.push(serverModule, ...additionalModules);
     }
 
-    createContainer(): Container {
+    createContainer(...additionalModules: ContainerModule[]): Container {
         const container = this.parentContainer ? this.parentContainer.createChild() : new Container();
-        container.load(...this._modules);
+        container.load(...this._modules, ...additionalModules);
         return container;
     }
 

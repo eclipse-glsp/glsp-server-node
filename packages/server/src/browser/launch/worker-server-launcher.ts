@@ -14,9 +14,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Container, injectable } from 'inversify';
+import { injectable } from 'inversify';
 import * as jsonrpc from 'vscode-jsonrpc/browser';
-import { GLSPServer, GLSPServerLauncher, JsonRpcGLSPServer, MaybePromise } from '../../common/index';
+import { MaybePromise } from '../../common/index';
+import { JsonRpcGLSPServerLauncher, JsonRpcServerInstance } from '../../common/launch/jsonrpc-server-launcher';
 export interface WorkerLaunchOptions {
     context?: Worker;
 }
@@ -24,22 +25,16 @@ export interface WorkerLaunchOptions {
 export const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed.';
 
 @injectable()
-export class WorkerServerLauncher extends GLSPServerLauncher<WorkerLaunchOptions> {
+export class WorkerServerLauncher extends JsonRpcGLSPServerLauncher<WorkerLaunchOptions> {
     protected connection?: jsonrpc.MessageConnection;
 
     protected run(options: WorkerLaunchOptions): MaybePromise<void> {
         if (this.connection) {
             throw new Error('Error during launch. Server already has an active client connection');
         }
-        const container = this.createContainer();
         this.connection = this.createConnection(options);
-        const glspServer = container.get<JsonRpcGLSPServer>(JsonRpcGLSPServer);
-        glspServer.connect(this.connection);
-        this.connection.onDispose(() => this.disposeClientConnection(container, glspServer));
-
+        this.createServerInstance(this.connection);
         this.logger.info('GLSP server worker connection established');
-        this.connection.listen();
-        this.toDispose.push(this.connection);
         postMessage(START_UP_COMPLETE_MSG);
         return new Promise((resolve, rejects) => {
             this.connection?.onClose(() => resolve(undefined));
@@ -47,9 +42,8 @@ export class WorkerServerLauncher extends GLSPServerLauncher<WorkerLaunchOptions
         });
     }
 
-    protected disposeClientConnection(container: Container, glspServer: GLSPServer): void {
-        glspServer.shutdown();
-        container.unbindAll();
+    protected override disposeServerInstance(instance: JsonRpcServerInstance): void {
+        super.disposeServerInstance(instance);
         this.connection = undefined;
     }
 

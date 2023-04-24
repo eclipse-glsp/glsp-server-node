@@ -13,7 +13,5 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import 'reflect-metadata';
-import { launch } from './app';
-
-launch(process.argv);
+export * from '../common/index';
+export * from './workflow-cli-parser';

@@ -14,9 +14,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+import { GLSPServer } from '@eclipse-glsp/protocol';
 import { expect } from 'chai';
 import { Container } from 'inversify';
 import * as net from 'net';
+import * as sinon from 'sinon';
+import { DefaultGLSPServer } from '../../common/protocol/glsp-server';
 import { createAppModule } from '../di/app-module';
 import { defaultSocketLaunchOptions } from './socket-cli-parser';
 import { SocketServerLauncher } from './socket-server-launcher';
@@ -24,7 +27,10 @@ const severPort = 5008;
 describe('test SocketServerLauncher', () => {
     it('starts and stops', async () => {
         const appContainer = new Container();
+        const serverStub = sinon.createStubInstance(DefaultGLSPServer);
         appContainer.load(createAppModule(defaultSocketLaunchOptions));
+
+        appContainer.bind(GLSPServer).toConstantValue(serverStub);
         const launcher = appContainer.resolve(SocketServerLauncher);
         launcher.start({ port: severPort });
         const sockStart = new net.Socket();

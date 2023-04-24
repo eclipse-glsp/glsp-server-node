@@ -23,6 +23,9 @@ import {
     Args,
     CreateNodeOperation,
     EdgeTypeHint,
+    GLSPClientProxy,
+    GLSPServer,
+    GLSPServerListener,
     InitializeClientSessionParameters,
     MaybeArray,
     MaybePromise,
@@ -41,15 +44,12 @@ import { DiagramConfiguration, ServerLayoutKind } from '../diagram/diagram-confi
 import { ContextEditValidator } from '../features/directediting/context-edit-validator';
 import { LabelEditValidator } from '../features/directediting/label-edit-validator';
 import { GModelCreateEdgeOperationHandler, GModelCreateNodeOperationHandler } from '../gmodel/index';
-import { JsonRpcGLSPClientProxy } from '../protocol/glsp-client-proxy';
-import { GLSPServer } from '../protocol/glsp-server';
-import { GLSPServerListener } from '../protocol/glsp-server-listener';
 import { ClientSession } from '../session/client-session';
 import { ClientSessionFactory } from '../session/client-session-factory';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
 import { ClientSessionListener } from '../session/client-session-listener';
 import { ClientSessionManager } from '../session/client-session-manager';
-import { Logger, LogLevel } from '../utils/logger';
+import { LogLevel, Logger } from '../utils/logger';
 
 export async function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -194,7 +194,7 @@ export class StubClientSessionListener implements ClientSessionListener {
     sessionDisposed(clientSession: ClientSession): void {}
 }
 
-export class StubGLSPClientProxy implements JsonRpcGLSPClientProxy {
+export class StubGLSPClientProxy implements GLSPClientProxy {
     connect(connection: MessageConnection): void {}
 
     process(message: ActionMessage<Action>): void {}
