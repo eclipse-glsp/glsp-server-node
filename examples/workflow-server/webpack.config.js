@@ -20,7 +20,7 @@ const appRoot = path.resolve(__dirname, 'bundle');
 
 module.exports = env => {
     const target = env.target ?? 'node';
-    const pathToIndex = target !== 'node' ? 'browser/index' : 'node/index';
+    const pathToIndex = target !== 'node' ? 'browser/app' : 'node/app';
     const filename = `wf-glsp-server-${target}.js`;
     return {
         entry: [path.resolve(buildRoot, pathToIndex)],

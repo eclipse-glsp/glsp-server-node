@@ -15,5 +15,4 @@
  ********************************************************************************/
 export * from '../common/index';
 export * from './di/app-module';
-export * from './di/console-logger';
 export * from './launch/worker-server-launcher';

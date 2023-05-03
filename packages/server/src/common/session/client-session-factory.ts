@@ -13,12 +13,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { InitializeClientSessionParameters } from '@eclipse-glsp/protocol';
+import { GLSPClientProxy, InitializeClientSessionParameters } from '@eclipse-glsp/protocol';
 import { Container, ContainerModule, inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
 import { createClientSessionModule } from '../di/client-session-module';
 import { DiagramModules, InjectionContainer } from '../di/service-identifiers';
-import { GLSPClientProxy } from '../protocol/glsp-client-proxy';
 import { GLSPServerError } from '../utils/glsp-server-error';
 import { ClientSession, DefaultClientSession } from './client-session';
 import { ClientSessionInitializer } from './client-session-initializer';

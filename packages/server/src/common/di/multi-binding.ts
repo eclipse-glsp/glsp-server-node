@@ -13,9 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { distinctAdd, flatPush, MaybeArray, remove } from '@eclipse-glsp/protocol';
+import { BindingContext, distinctAdd, flatPush, MaybeArray, remove } from '@eclipse-glsp/protocol';
 import { applyBindingTarget, BindingTarget } from './binding-target';
-import { ModuleContext } from './glsp-module';
 
 /**
  * A helper class used in `GLSPModules` to ease the configuration of multi-injected service identifiers.
@@ -29,7 +28,7 @@ export abstract class AbstractMultiBinding<T> {
 
     constructor(readonly identifier: string | symbol) {}
 
-    abstract applyBindings(context: ModuleContext): void;
+    abstract applyBindings(context: BindingContext): void;
 
     add(newBinding: T): void {
         distinctAdd(this.bindings, newBinding);
@@ -71,7 +70,7 @@ export abstract class AbstractMultiBinding<T> {
  * @typeparam T the base type of {@link BindingTarget}.
  */
 export class MultiBinding<T> extends AbstractMultiBinding<BindingTarget<T>> {
-    applyBindings(context: ModuleContext): void {
+    applyBindings(context: BindingContext): void {
         this.bindings.forEach(binding => applyBindingTarget(context, this.identifier, binding));
     }
 }
@@ -83,7 +82,7 @@ export class MultiBinding<T> extends AbstractMultiBinding<BindingTarget<T>> {
  * * @typeparam T the type of the instances
  */
 export class InstanceMultiBinding<T> extends AbstractMultiBinding<T> {
-    applyBindings(context: ModuleContext): void {
+    applyBindings(context: BindingContext): void {
         context.bind(this.identifier).toConstantValue(this.bindings);
     }
 }

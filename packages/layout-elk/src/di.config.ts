@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 STMicroelectronics and others.
+ * Copyright (c) 2022-2023 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -17,10 +17,9 @@ import { LayoutEngine, ModelState } from '@eclipse-glsp/server';
 import ElkConstructor, { LayoutOptions } from 'elkjs/lib/elk.bundled';
 import { ContainerModule } from 'inversify';
 import { ElkFactory } from 'sprotty-elk';
-import { ElementFilter, LayoutConfigurator } from '.';
-import { DefaultElementFilter } from './element-filter';
+import { DefaultElementFilter, ElementFilter } from './element-filter';
 import { GlspElkLayoutEngine } from './glsp-elk-layout-engine';
-import { FallbackLayoutConfigurator } from './layout-configurator';
+import { FallbackLayoutConfigurator, LayoutConfigurator } from './layout-configurator';
 
 type Constructor<T> = new (...args: any[]) => T;
 

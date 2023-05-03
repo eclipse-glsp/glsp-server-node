@@ -25,7 +25,7 @@
     "test:ci": "lerna run test:ci",
     "test:coverage": "lerna run test:coverage",
     "test:coverage:ci": "yarn glsp coverageReport .",
-    "upgrade:next": "yarn upgrade @eclipse-glsp/protocol@next",
+    "upgrade:next": "yarn upgrade -p '@eclipse-glsp/protocol'",
     "watch": "lerna run --parallel watch"
   },
   "devDependencies": {

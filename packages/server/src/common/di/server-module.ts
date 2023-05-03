@@ -13,14 +13,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { GLSPServer, GLSPServerListener } from '@eclipse-glsp/protocol';
 import { ContainerModule, interfaces } from 'inversify';
 import { DefaultGlobalActionProvider, GlobalActionProvider } from '../actions/global-action-provider';
-import { DefaultGLSPClientProxy, GLSPClientProxy, JsonRpcGLSPClientProxy } from '../protocol/glsp-client-proxy';
-import { DefaultGLSPServer, GLSPServer, JsonRpcGLSPServer } from '../protocol/glsp-server';
-import { GLSPServerListener } from '../protocol/glsp-server-listener';
+import { DefaultGLSPServer } from '../protocol/glsp-server';
 import { ClientSessionFactory, DefaultClientSessionFactory } from '../session/client-session-factory';
 import { ClientSessionManager, DefaultClientSessionManager } from '../session/client-session-manager';
-import { applyBindingTarget, BindingTarget } from './binding-target';
+import { BindingTarget, applyBindingTarget } from './binding-target';
 import { DiagramModule } from './diagram-module';
 import { GLSPModule } from './glsp-module';
 import { MultiBinding } from './multi-binding';
@@ -74,7 +73,6 @@ export class ServerModule extends GLSPModule {
         applyBindingTarget(context, DiagramModules, this.bindDiagramModules());
 
         applyBindingTarget(context, GLSPServer, this.bindGLSPServer()).inSingletonScope();
-        applyBindingTarget(context, JsonRpcGLSPServer, this.bindJsonRpcGLSPServer());
         applyBindingTarget(context, ClientSessionFactory, this.bindClientSessionFactory()).inSingletonScope();
         applyBindingTarget(context, ClientSessionManager, this.bindClientSessionManager()).inSingletonScope();
         this.configureMultiBinding(new MultiBinding<GLSPServerListener>(GLSPServerListener), binding =>
@@ -83,10 +81,9 @@ export class ServerModule extends GLSPModule {
 
         applyBindingTarget(context, GlobalActionProvider, this.bindGlobalActionProvider()).inSingletonScope();
 
-        applyBindingTarget(context, InjectionContainer, this.bindInjectionContainer());
-
-        applyBindingTarget(context, GLSPClientProxy, this.bindGLSPClientProxy()).inSingletonScope();
-        applyBindingTarget(context, JsonRpcGLSPClientProxy, this.bindJsonRpcGLSPClientProxy());
+        if (!isBound(InjectionContainer)) {
+            applyBindingTarget(context, InjectionContainer, this.bindInjectionContainer());
+        }
     }
 
     protected bindDiagramModules(): BindingTarget<Map<string, ContainerModule[]>> {
@@ -95,10 +92,6 @@ export class ServerModule extends GLSPModule {
 
     protected bindGLSPServer(): BindingTarget<GLSPServer> {
         return DefaultGLSPServer;
-    }
-
-    protected bindJsonRpcGLSPServer(): BindingTarget<JsonRpcGLSPServer> {
-        return { service: GLSPServer };
     }
 
     protected bindClientSessionFactory(): BindingTarget<ClientSessionFactory> {
@@ -115,14 +108,6 @@ export class ServerModule extends GLSPModule {
 
     protected bindInjectionContainer(): BindingTarget<interfaces.Container> {
         return { dynamicValue: context => context.container };
-    }
-
-    protected bindGLSPClientProxy(): BindingTarget<GLSPClientProxy> {
-        return DefaultGLSPClientProxy;
-    }
-
-    protected bindJsonRpcGLSPClientProxy(): BindingTarget<JsonRpcGLSPClientProxy> {
-        return { service: GLSPClientProxy };
     }
 
     protected configureGLSPServerListeners(binding: MultiBinding<GLSPServerListener>): void {

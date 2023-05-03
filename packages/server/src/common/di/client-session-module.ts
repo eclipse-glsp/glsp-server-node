@@ -13,8 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { GLSPClientProxy } from '@eclipse-glsp/protocol';
 import { ContainerModule } from 'inversify';
-import { GLSPClientProxy } from '../protocol/glsp-client-proxy';
 import { ClientId } from './service-identifiers';
 
 export function createClientSessionModule(clientId: string, glspClient: GLSPClientProxy): ContainerModule {

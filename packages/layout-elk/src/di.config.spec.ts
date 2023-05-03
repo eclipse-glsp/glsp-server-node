@@ -18,10 +18,9 @@ import { StubDiagramConfiguration } from '@eclipse-glsp/server/lib/common/test/m
 import { expect } from 'chai';
 import { Container, ContainerModule, injectable } from 'inversify';
 import * as sinon from 'sinon';
-import { AbstractLayoutConfigurator } from '.';
 import { configureELKLayoutModule } from './di.config';
 import { DefaultElementFilter, ElementFilter } from './element-filter';
-import { FallbackLayoutConfigurator, LayoutConfigurator } from './layout-configurator';
+import { AbstractLayoutConfigurator, FallbackLayoutConfigurator, LayoutConfigurator } from './layout-configurator';
 
 @injectable()
 class CustomLayoutConfigurator extends AbstractLayoutConfigurator {}

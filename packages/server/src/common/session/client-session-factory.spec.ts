@@ -13,11 +13,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { GLSPClientProxy } from '@eclipse-glsp/protocol';
 import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
 import { DiagramModules, InjectionContainer } from '../di/service-identifiers';
-import { GLSPClientProxy } from '../protocol/glsp-client-proxy';
 import * as mock from '../test/mock-util';
 import { GLSPServerError } from '../utils/glsp-server-error';
 import { Logger } from '../utils/logger';

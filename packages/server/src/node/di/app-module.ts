@@ -13,9 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { ContainerModule, interfaces } from 'inversify';
+import { BindingContext } from '@eclipse-glsp/protocol';
+import { ContainerModule } from 'inversify';
 import * as winston from 'winston';
-import { InjectionContainer, Logger, LoggerFactory, LogLevel, ModuleContext } from '../../common/index';
+import { InjectionContainer, LogLevel, Logger, LoggerFactory, getRequestParentName } from '../../common';
 import { LaunchOptions } from '../launch/cli-parser';
 import { WinstonLogger } from './winston-logger';
 
@@ -68,7 +69,7 @@ export function createWinstonInstance<T extends LaunchOptions>(options: T): wins
  * @param baseLoggerCreator The underling global {@link winston.Logger} instance.
  */
 export function configureWinstonLogger<T extends LaunchOptions>(
-    context: ModuleContext,
+    context: BindingContext,
     options: T,
     rebind = true,
     baseLoggerCreator: (launchOptions: T) => winston.Logger = createWinstonInstance
@@ -89,14 +90,4 @@ export function configureWinstonLogger<T extends LaunchOptions>(
         logger.caller = caller;
         return logger;
     });
-}
-
-function getRequestParentName(context: interfaces.Context): string | undefined {
-    if (context.currentRequest.parentRequest) {
-        const bindings = context.currentRequest.parentRequest.bindings;
-        if (bindings.length > 0) {
-            return bindings[0].implementationType?.name;
-        }
-    }
-    return undefined;
 }

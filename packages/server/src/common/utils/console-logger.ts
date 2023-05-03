@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 EclipseSource and others.
+ * Copyright (c) 2023 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,9 +14,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+import { BindingContext } from '@eclipse-glsp/protocol';
 import { injectable } from 'inversify';
-import { Logger, LogLevel } from '../../common/index';
+import { LogLevel, Logger, LoggerConfigOptions, LoggerFactory, NullLogger, getRequestParentName } from './logger';
 
+/**
+ *  Simple logger implementation that forwards logging calls to the `console` and
+ *  can be used in both the browser and node context.
+ */
 @injectable()
 export class ConsoleLogger extends Logger {
     constructor(public logLevel: LogLevel = LogLevel.none, public caller?: string) {
@@ -68,4 +73,17 @@ export class ConsoleLogger extends Logger {
         }
         return JSON.stringify(param, undefined, 4);
     }
+}
+
+export function configureConsoleLogger<T extends LoggerConfigOptions>(context: BindingContext, options: T): void {
+    if (!options.consoleLog) {
+        context.bind(Logger).to(NullLogger).inSingletonScope();
+    } else {
+        context.bind(Logger).toDynamicValue(ctx => new ConsoleLogger(options.logLevel, getRequestParentName(ctx)));
+    }
+    context.bind(LoggerFactory).toFactory(dynamicContext => (caller: string) => {
+        const logger = dynamicContext.container.get(Logger);
+        logger.caller = caller;
+        return logger;
+    });
 }

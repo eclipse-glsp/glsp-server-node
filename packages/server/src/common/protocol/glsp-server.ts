@@ -18,134 +18,26 @@ import {
     Args,
     DisposeClientSessionParameters,
     distinctAdd,
+    GLSPClientProxy,
+    GLSPServer,
+    GLSPServerListener,
     InitializeClientSessionParameters,
     InitializeParameters,
     InitializeResult,
-    JsonrpcGLSPClient,
     MaybePromise,
     remove,
     ServerActions,
     ServerMessageAction
 } from '@eclipse-glsp/protocol';
 import { inject, injectable, multiInject, optional } from 'inversify';
-import * as jsonrpc from 'vscode-jsonrpc';
-import { MessageConnection } from 'vscode-jsonrpc';
 import { GlobalActionProvider } from '../actions/global-action-provider';
 import { ClientSession } from '../session/client-session';
 import { ClientSessionManager } from '../session/client-session-manager';
 import { GLSPServerError } from '../utils/glsp-server-error';
 import { Logger } from '../utils/logger';
-import { JsonRpcGLSPClientProxy } from './glsp-client-proxy';
-import { GLSPServerListener } from './glsp-server-listener';
-
-export const GLSPServer = Symbol('GLSPServer');
-
-/**
- * Interface for implementations of a server component using json-rpc for client-server communication.
- * Based on the specification of the Graphical Language Server Protocol:
- * https://github.com/eclipse-glsp/glsp/blob/master/PROTOCOL.md
- */
-export interface GLSPServer {
-    /**
-     *
-     * The `initialize` request has to be the first request from the client to the server. Until the server has responded
-     * with an {@link InitializeResult} no other request or notification can be handled and is expected to throw an
-     * error. A client is uniquely identified by an `applicationId` and has to specify on which `protocolVersion` it is
-     * based on. In addition, custom arguments can be provided in the `args` map to allow for custom initialization
-     * behavior on the server.
-     *
-     * After successfully initialization all {@link GLSPServerListener}s are notified via the
-     * {@link GLSPServerListener.serverInitialized} method.
-     *
-     * @param params the {@link InitializeParameters}.
-     * @returns A promise of the {@link InitializeResult} .
-     *
-     * @throws {@link Error} Subsequent initialize requests return the {@link InitializeResult} of the initial request
-     * if the given application id and protocol version are matching, otherwise the promise rejects with an error.
-     *
-     */
-    initialize(params: InitializeParameters): Promise<InitializeResult>;
-
-    /**
-     * The `initializeClientSession` request is sent to the server whenever a new graphical representation (diagram) is
-     * created. Each individual diagram on the client side counts as one session and has to provide a unique
-     * `clientSessionId` and its `diagramType`. In addition, custom arguments can be provided in the `args` map to allow
-     * for custom initialization behavior on the server. Subsequent `initializeClientSession` requests for the same
-     * client id and diagram type are expected to resolve successfully but don't have an actual effect because the
-     * corresponding client session is  already initialized.
-     *
-     * @param params the {@link InitializeClientSessionParameters}.
-     * @returns A promise that completes when the initialization was successful.
-     */
-    initializeClientSession(params: InitializeClientSessionParameters): Promise<void>;
-
-    /**
-     * The 'DisposeClientSession' request is sent to the server when a graphical representation (diagram) is no longer
-     * needed, e.g. the tab containing the diagram widget has been closed. The session is identified by its unique
-     * `clientSessionId`. In addition, custom arguments can be provided in the `args` map to allow for custom dispose
-     * behavior on the server.
-     *
-     * @param params the {@link DisposeClientSessionParameters}.
-     * @returns A `void` promise that completes if the disposal was successful.
-     *
-     */
-    disposeClientSession(params: DisposeClientSessionParameters): Promise<void>;
-
-    /**
-     * A `process` notification is sent from the client to server when the server should handle i.e. process a specific
-     * {@link ActionMessage}. Any communication that is performed between initialization and shutdown is handled by
-     * sending action messages, either from the client to the server or from the server to the client. This is the core
-     * part of the Graphical Language Server Protocol.
-     *
-     * @param message The {@link ActionMessage} that should be processed.
-     */
-    process(message: ActionMessage): void;
-
-    /**
-     * The `shutdown` notification is sent from the client to the server if the client disconnects from the server (e.g.
-     * the client application has been closed).
-     * This gives the server a chance to clean up and dispose any resources dedicated to the client and its sessions.
-     * All {@link GLSPServerListener}s are notified via the {@link GLSPServerListener.serverShutDown} method.
-     * Afterwards the server instance is considered to be disposed and can no longer be used for handling requests.
-     *
-     */
-    shutdown(): void;
-
-    /**
-     * Register a new {@link GLSPServerListener}.
-     *
-     * @param listener The listener that should be registered.
-     * @returns `true` if the listener was registered successfully, `false` otherwise (e.g. listener is already
-     *         registered).
-     */
-    addListener(listener: GLSPServerListener): boolean;
-
-    /**
-     * Unregister a {@link GLSPServerListener}.
-     *
-     * @param listener The listener that should be removed
-     * @returns 'true' if the listener was unregistered successfully, `false` otherwise (e.g. listener is was not
-     *         registered in the first place).
-     */
-    removeListener(listener: GLSPServerListener): boolean;
-
-    /**
-     * get a {@link ClientSession}.
-     *
-     * @param sessionId The id of the session to get
-     * @returns The either the ClientSession or undefined, if no ClientSession was found for the given id.
-     */
-    getClientSession(sessionId: string): ClientSession | undefined;
-}
-
-export const JsonRpcGLSPServer = Symbol('JsonRpcGLSPServer');
-
-export interface JsonRpcGLSPServer extends GLSPServer {
-    connect(connection: jsonrpc.MessageConnection): void;
-}
 
 @injectable()
-export class DefaultGLSPServer implements JsonRpcGLSPServer {
+export class DefaultGLSPServer implements GLSPServer {
     public static readonly PROTOCOL_VERSION = '1.0.0';
 
     @inject(Logger)
@@ -157,8 +49,9 @@ export class DefaultGLSPServer implements JsonRpcGLSPServer {
     @inject(GlobalActionProvider)
     protected actionProvider: GlobalActionProvider;
 
-    @inject(JsonRpcGLSPClientProxy)
-    protected glspClient: JsonRpcGLSPClientProxy;
+    @inject(GLSPClientProxy)
+    @optional()
+    protected glspClientProxy?: GLSPClientProxy;
 
     protected initializeResult?: InitializeResult;
 
@@ -170,18 +63,6 @@ export class DefaultGLSPServer implements JsonRpcGLSPServer {
     constructor(@multiInject(GLSPServerListener) @optional() serverListeners: GLSPServerListener[] = []) {
         this.clientSessions = new Map<string, ClientSession>();
         serverListeners.forEach(listener => this.addListener(listener));
-    }
-
-    protected setupJsonRpc(connection: MessageConnection): void {
-        connection.onRequest(JsonrpcGLSPClient.InitializeRequest.method, (params: InitializeParameters) => this.initialize(params));
-        connection.onRequest(JsonrpcGLSPClient.InitializeClientSessionRequest, (params: InitializeClientSessionParameters) =>
-            this.initializeClientSession(params)
-        );
-        connection.onRequest(JsonrpcGLSPClient.DisposeClientSessionRequest, (params: DisposeClientSessionParameters) =>
-            this.disposeClientSession(params)
-        );
-        connection.onNotification(JsonrpcGLSPClient.ActionMessageNotification, message => this.process(message));
-        connection.onNotification(JsonrpcGLSPClient.ShutdownNotification, () => this.shutdown());
     }
 
     protected validateProtocolVersion(params: InitializeParameters): void {
@@ -237,6 +118,7 @@ export class DefaultGLSPServer implements JsonRpcGLSPServer {
         this.validateServerInitialized();
 
         const session = this.sessionManager.getOrCreateClientSession(params);
+
         this.clientSessions.set(params.clientSessionId, session);
         return this.handleInitializeClientSessionArgs(params.args);
     }
@@ -281,7 +163,15 @@ export class DefaultGLSPServer implements JsonRpcGLSPServer {
             errorMsg = reason.message;
         }
         const errorAction = ServerMessageAction.create(errorMsg, { severity: 'ERROR', details });
-        this.glspClient.process({ clientId: message.clientId, action: errorAction });
+        this.sendToClient({ clientId: message.clientId, action: errorAction });
+    }
+
+    protected sendToClient(message: ActionMessage): void {
+        if (this.glspClientProxy) {
+            this.glspClientProxy.process(message);
+            return;
+        }
+        throw new Error("Could not send message to client. No 'GLSPClientProxy' is connected");
     }
 
     getClientSession(sessionId: string): ClientSession | undefined {
@@ -293,11 +183,6 @@ export class DefaultGLSPServer implements JsonRpcGLSPServer {
         this.getListenersToNotify('serverShutDown').forEach(listener => listener.serverShutDown!(this));
         this.clientSessions.clear();
         this.initializeResult = undefined;
-    }
-
-    public connect(connection: jsonrpc.MessageConnection): void {
-        this.setupJsonRpc(connection);
-        this.glspClient.connect(connection);
     }
 
     protected isInitialized(): boolean {

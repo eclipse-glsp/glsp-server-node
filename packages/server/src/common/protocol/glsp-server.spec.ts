@@ -13,7 +13,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { DisposeClientSessionParameters, InitializeClientSessionParameters, InitializeParameters } from '@eclipse-glsp/protocol';
+import {
+    DisposeClientSessionParameters,
+    GLSPClientProxy,
+    GLSPServerListener,
+    InitializeClientSessionParameters,
+    InitializeParameters
+} from '@eclipse-glsp/protocol';
 import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
 import * as sinon from 'sinon';
@@ -21,9 +27,7 @@ import { GlobalActionProvider } from '../actions/global-action-provider';
 import { ClientSessionManager } from '../session/client-session-manager';
 import * as mock from '../test/mock-util';
 import { Logger } from '../utils/logger';
-import { GLSPClientProxy, JsonRpcGLSPClientProxy } from './glsp-client-proxy';
 import { DefaultGLSPServer } from './glsp-server';
-import { GLSPServerListener } from './glsp-server-listener';
 import assert = require('assert');
 
 describe('test DefaultGLSPServer', () => {
@@ -48,7 +52,6 @@ describe('test DefaultGLSPServer', () => {
         new ContainerModule(bind => {
             bind(Logger).toConstantValue(new mock.StubLogger());
             bind(GLSPClientProxy).toConstantValue(new mock.StubGLSPClientProxy());
-            bind(JsonRpcGLSPClientProxy).toConstantValue(new mock.StubGLSPClientProxy());
             bind(ClientSessionManager).toConstantValue(sessionManager);
             bind(GlobalActionProvider).toConstantValue({ clientActionKinds: new Map<string, string[]>(), serverActionKinds });
             bind(GLSPServerListener).toConstantValue(listener1);

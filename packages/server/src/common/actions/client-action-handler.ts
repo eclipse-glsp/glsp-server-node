@@ -13,10 +13,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, ActionMessage } from '@eclipse-glsp/protocol';
+import { Action, ActionMessage, GLSPClientProxy } from '@eclipse-glsp/protocol';
 import { inject, injectable, optional } from 'inversify';
 import { ClientActionKinds, ClientId } from '../di/service-identifiers';
-import { GLSPClientProxy } from '../protocol/glsp-client-proxy';
 
 /**
  * The client action handler is responsible of handling action kinds that are intended for the

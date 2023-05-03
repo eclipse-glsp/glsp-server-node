@@ -13,36 +13,35 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Container, inject, injectable } from 'inversify';
+import { Disposable } from '@eclipse-glsp/protocol';
+import { inject, injectable } from 'inversify';
 import * as net from 'net';
 import * as jsonrpc from 'vscode-jsonrpc/node';
-import { Disposable } from '..';
-import { GLSPServerLauncher } from '../../common/launch/glsp-server-launcher';
-import { GLSPServer, JsonRpcGLSPServer } from '../../common/protocol/glsp-server';
+import { JsonRpcGLSPServerLauncher } from '../../common/launch/jsonrpc-server-launcher';
 import { Logger } from '../../common/utils/logger';
 
 export const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed. Accepting requests on port:';
 
 @injectable()
-export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnectOpts> {
+export class SocketServerLauncher extends JsonRpcGLSPServerLauncher<net.TcpSocketConnectOpts> {
     @inject(Logger) protected override logger: Logger;
 
-    protected currentConnections: jsonrpc.MessageConnection[] = [];
-    protected startupCompleteMessage = START_UP_COMPLETE_MSG;
     protected netServer: net.Server;
 
     constructor() {
         super();
         this.toDispose.push(
             Disposable.create(() => {
-                this.currentConnections.forEach(connection => connection.dispose());
                 this.netServer.close();
             })
         );
     }
 
     protected run(opts: net.TcpSocketConnectOpts): Promise<void> {
-        this.netServer = net.createServer(socket => this.createClientConnection(socket));
+        this.netServer = net.createServer(socket => {
+            const connection = this.createConnection(socket);
+            this.createServerInstance(connection);
+        });
 
         this.netServer.listen(opts.port, opts.host);
         this.netServer.on('listening', () => {
@@ -67,27 +66,6 @@ export class SocketServerLauncher extends GLSPServerLauncher<net.TcpSocketConnec
             this.netServer.on('close', () => resolve(undefined));
             this.netServer.on('error', error => reject(error));
         });
-    }
-
-    protected async createClientConnection(socket: net.Socket): Promise<void> {
-        const container = this.createContainer();
-        const connection = this.createConnection(socket);
-        this.currentConnections.push(connection);
-        const glspServer = container.get<JsonRpcGLSPServer>(JsonRpcGLSPServer);
-        glspServer.connect(connection);
-        this.logger.info(`Starting GLSP server connection for client: '${socket.localAddress}'`);
-        connection.listen();
-        connection.onDispose(() => this.disposeClientConnection(container, glspServer));
-        socket.on('close', () => this.disposeClientConnection(container, glspServer));
-        return new Promise((resolve, rejects) => {
-            connection.onClose(() => resolve(undefined));
-            connection.onError(error => rejects(error));
-        });
-    }
-
-    protected disposeClientConnection(container: Container, glspServer: GLSPServer): void {
-        glspServer.shutdown();
-        container.unbindAll();
     }
 
     protected createConnection(socket: net.Socket): jsonrpc.MessageConnection {
