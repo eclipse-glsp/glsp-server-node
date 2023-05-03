@@ -13,8 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { MaybePromise } from '..';
 import { Logger } from '../utils/logger';
 import { Command } from './command';
 

@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { GLSPClientProxy, InitializeClientSessionParameters } from '@eclipse-glsp/protocol';
 import { Container, ContainerModule, inject, injectable } from 'inversify';
-import { ActionDispatcher } from '..';
+import { ActionDispatcher } from '../actions/action-dispatcher';
 import { createClientSessionModule } from '../di/client-session-module';
 import { DiagramModules, InjectionContainer } from '../di/service-identifiers';
 import { GLSPServerError } from '../utils/glsp-server-error';
