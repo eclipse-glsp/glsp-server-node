@@ -27,6 +27,7 @@
         -   Refactored `CreateOperationHandler` to an interface instead of a class
         -   Renamed the services and handlers of the direct GModel library => consistent use of `GModel` prefix
         -   The `ModelState` interface no longer has an `isDirty` flag. Dirty state is now handled by the `CommandStack`
+-   [server] Default port has changed from 5007 (and 8081 for websocket) to 0, which implies autoassignment by the OS [#42](https://github.com/eclipse-glsp/glsp-server-node/pull/42)
 
 ## [v1.0.0 - 30/06/2022](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v1.0.0)
 

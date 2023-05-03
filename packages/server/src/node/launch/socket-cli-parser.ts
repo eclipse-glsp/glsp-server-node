@@ -23,7 +23,7 @@ export interface SocketLaunchOptions extends LaunchOptions {
 
 export const defaultSocketLaunchOptions: Required<SocketLaunchOptions> = {
     ...defaultLaunchOptions,
-    port: 5007,
+    port: 0,
     host: 'localhost'
 };
 
