@@ -39,7 +39,11 @@
   "types": "lib/index",
   "files": [
     "lib",
-    "src"
+    "src",
+    "node.js",
+    "node.d.ts",
+    "browser.d.ts",
+    "browser.js"
   ],
   "scripts": {
     "build": "tsc -b && yarn bundle",
