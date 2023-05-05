@@ -7,6 +7,9 @@
 -   [launch] Fixed a bug that caused the server to no properly dispose all resources when `shutdown` was called [#33](https://github.com/eclipse-glsp/glsp-server-node/pull/33) - Contributed on behalf of STMicroelectronics
 -   [diagram] Fixed a bug to ensure that the copy&paste feature is working properly [#35](https://github.com/eclipse-glsp/glsp-server-node/pull/35)
 -   [api] Ensured that all `Promise`s and `MaybePromises` have proper rejection handling [#36](https://github.com/eclipse-glsp/glsp-server-node/pull/36)- Contributed on behalf of STMicroelectronics
+-   [launch] Add a launcher component for starting WebSocket based GLSP servers [#41](https://github.com/eclipse-glsp/glsp-server-node/pull/41)
+-   [validation] Add explicit support and API for live and batch validation [#43](https://github.com/eclipse-glsp/glsp-server-node/pull/43)
+-   [launch] Launcher components now auto allocate a free port if the port argument is 0 [#42](https://github.com/eclipse-glsp/glsp-server-node/pull/42)
 
 ### Breaking Changes
 
@@ -32,6 +35,9 @@
     -   Server type definitions are now consumed from `@eclipse-glsp/protocol`
     -   `GLSPServer` implementation is no longer relies on json-rpc implementation details.
     -   JSON-RPC setup is now done with `JsonRpcGLSPServerLauncher`
+-   Provide `CommandStack` API to support undo/redo of model changes [#38](https://github.com/eclipse-glsp/glsp-server-node/pull/38) [#39](https://github.com/eclipse-glsp/glsp-server-node/pull/39) - Contributed on behalf of STMicroelectronics
+    -   `ModelState` no longer has a `isDirty` property
+    -   Breaking refactor of `OperationHandler` API
 
 ## [v1.0.0 - 30/06/2022](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v1.0.0)
 
