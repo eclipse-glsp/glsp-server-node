@@ -43,7 +43,8 @@
     "node.js",
     "node.d.ts",
     "browser.d.ts",
-    "browser.js"
+    "browser.js",
+    "bundle"
   ],
   "scripts": {
     "build": "tsc -b && yarn bundle",
