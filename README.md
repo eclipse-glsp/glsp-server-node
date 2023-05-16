@@ -51,9 +51,29 @@ yarn test
 It's also possible to execute and debug a single test file in VSCode/Theia via the File explorer.
 Simply select a test file (`*.spec.ts`), then go to the `Run & Debug` View (`Ctrl+Shift+D`), select the 'Run current test" launch config and start debugging (`Ctrl+F11`)
 
-## Start & Debug
+## Workflow Diagram Example
 
-### Socket
+The workflow diagram is a consistent example provided by all GLSP components.
+The example implements a simple flow chart diagram editor with different types of nodes and edges (see screenshot below).
+The example can be used to try out different GLSP features, as well as several available integrations with IDE platforms (Theia, VSCode, Eclipse, Standalone).
+As the example is fully open source, you can also use it as a blueprint for a custom implementation of a GLSP diagram editor.
+See [our project website](https://www.eclipse.org/glsp/documentation/#workflowoverview) for an overview of the workflow example and all components implementing it.
+
+https://user-images.githubusercontent.com/588090/154459938-849ca684-11b3-472c-8a59-98ea6cb0b4c1.mp4
+
+### How to start the Workflow Diagram example?
+
+To see the diagram in action, you need to choose and launch one diagram client, see [here for an overview of available clients](https://www.eclipse.org/glsp/examples/#workflowoverview).
+
+-   [`glsp-theia-integration`](https://github.com/eclipse-glsp/glsp-theia-integration): Diagrams clients integrated into [Theia](https://github.com/theia-ide/theia).
+-   [`glsp-vscode-integration`](https://github.com/eclipse-glsp/glsp-vscode-integration): Diagram clients integrated into [VSCode](https://github.com/microsoft/vscode).
+-   [`glsp-eclipse-integration`](https://github.com/eclipse-glsp/glsp-eclipse-integration): Diagram clients integrated into Eclipse IDE.
+
+Please look at the workflow example guides in the repository linked above to get more information on building and running the respective GLSP clients.
+
+### Launch Workflow Example Server
+
+#### Socket
 
 To launch the server for TCP sockets use:
 
@@ -67,7 +87,7 @@ To debug you can use the `Debug workflow example GLSP Server` launch configurati
 To test the server you have to connect a workflow GLSP client that supports JSON-RPC via socket.
 We recommend to use the client provided by the [`glsp-integration`](https://github.com/eclipse-glsp/glsp-theia-integration#how-to-start-the-workflow-diagram-example-server-from-the-sources).
 
-### Websocket
+#### Websocket
 
 To launch the server for WebSockets use:
 
@@ -85,7 +105,3 @@ We recommend to use the standalone example provided by [`glsp-client`](https://g
 
 For more information, please visit the [Eclipse GLSP Umbrella repository](https://github.com/eclipse-glsp/glsp) and the [Eclipse GLSP Website](https://www.eclipse.org/glsp/).
 If you have questions, please raise them in the [discussions](https://github.com/eclipse-glsp/glsp/discussions) and have a look at our [communication and support options](https://www.eclipse.org/glsp/contact/).
-
-```
-
-```

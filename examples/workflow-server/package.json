@@ -43,7 +43,8 @@
     "node.js",
     "node.d.ts",
     "browser.d.ts",
-    "browser.js"
+    "browser.js",
+    "bundle/wf-glsp-server-node.js"
   ],
   "scripts": {
     "build": "tsc -b && yarn bundle",
