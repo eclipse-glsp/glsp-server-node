@@ -7,6 +7,6 @@
     "baseUrl": "src",
     "types": ["node", "mocha", "reflect-metadata"]
   },
-  "include": ["src"],
-  "exclude": ["**/*.spec.ts"]
+  "exclude": ["**/*.spec.ts"],
+  "include": ["src"]
 }
