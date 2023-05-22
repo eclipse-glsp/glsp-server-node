@@ -44,8 +44,7 @@
     "node.d.ts",
     "browser.d.ts",
     "browser.js",
-    "bundle/wf-glsp-server-node.js",
-    "bundle/wf-glsp-server-webworker.js"
+    "bundle/wf-glsp-server-node.js"
   ],
   "scripts": {
     "build": "tsc -b && yarn bundle",
@@ -55,7 +54,6 @@
     "lint": "eslint --ext .ts,.tsx ./src",
     "lint:ci": "yarn lint -o eslint.xml -f checkstyle",
     "prepare": "yarn clean && yarn build",
-    "prepublish": "yarn bundle && yarn bundle:browser",
     "start": "node --enable-source-maps bundle/wf-glsp-server-node.js --port 5007",
     "start:websocket": "node --enable-source-maps bundle/wf-glsp-server-node.js -w --port 8081",
     "watch": "tsc -w"

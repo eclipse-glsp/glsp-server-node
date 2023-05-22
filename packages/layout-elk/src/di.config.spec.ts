@@ -13,8 +13,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { DefaultModelState, GGraph, GModelElementConstructor, ModelState } from '@eclipse-glsp/server';
-import { StubDiagramConfiguration } from '@eclipse-glsp/server/lib/common/test/mock-util';
+import {
+    DefaultModelState,
+    DiagramConfiguration,
+    EdgeTypeHint,
+    GGraph,
+    GModelElementConstructor,
+    ModelState,
+    ServerLayoutKind,
+    ShapeTypeHint
+} from '@eclipse-glsp/server';
 import { expect } from 'chai';
 import { Container, ContainerModule, injectable } from 'inversify';
 import * as sinon from 'sinon';
@@ -27,6 +35,20 @@ class CustomLayoutConfigurator extends AbstractLayoutConfigurator {}
 
 @injectable()
 class CustomElementFilter extends DefaultElementFilter {}
+
+class StubDiagramConfiguration implements DiagramConfiguration {
+    typeMapping = new Map<string, GModelElementConstructor>();
+
+    shapeTypeHints: ShapeTypeHint[] = [];
+
+    edgeTypeHints: EdgeTypeHint[] = [];
+
+    layoutKind = ServerLayoutKind.NONE;
+
+    needsClientLayout = true;
+
+    animatedUpdate = true;
+}
 
 describe('test configureELKLayoutModule', () => {
     const sandbox = sinon.createSandbox();
