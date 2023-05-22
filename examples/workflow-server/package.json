@@ -44,11 +44,13 @@
     "node.d.ts",
     "browser.d.ts",
     "browser.js",
-    "bundle/wf-glsp-server-node.js"
+    "bundle/wf-glsp-server-node.js",
+    "bundle/wf-glsp-server-webworker.js"
   ],
   "scripts": {
     "build": "tsc -b && yarn bundle",
     "bundle": "webpack",
+    "bundle:all": "yarn bundle && yarn bundle:browser",
     "bundle:browser": "webpack --env target=webworker ",
     "clean": "rimraf lib tsconfig.tsbuildinfo bundle",
     "lint": "eslint --ext .ts,.tsx ./src",
