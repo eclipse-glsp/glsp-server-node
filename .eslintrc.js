@@ -9,13 +9,13 @@ module.exports = {
         project: 'tsconfig.eslint.json'
     },
     rules: {
-        'no-shadow': 'off',
+        '@typescript-eslint/no-shadow': 'off',
         'no-restricted-imports': [
             'warn',
             {
                 name: 'sprotty-protocol',
                 message:
-                    "The sprotty-protocol default exports are customized and reexported by GLSP. Please import from '@eclipse-glsp/client' instead"
+                    "The sprotty-protocol default exports are customized and reexported by GLSP. Please import from '@eclipse-glsp/protocol' instead"
             }
         ]
     }

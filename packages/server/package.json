@@ -64,13 +64,15 @@
     "@types/uuid": "8.3.1",
     "commander": "^8.3.0",
     "fast-json-patch": "^3.1.0",
-    "inversify": "^5.1.1",
     "winston": "^3.3.3",
     "ws": "^8.12.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
     "@types/ws": "^8.5.4"
+  },
+  "peerDependencies": {
+    "inversify": "^6.0.0"
   },
   "publishConfig": {
     "access": "public"

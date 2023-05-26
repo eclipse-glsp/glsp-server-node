@@ -14,9 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GEdge, GGraph, GLabel, GModelElement, GNode, GPort, ModelState } from '@eclipse-glsp/server';
+import { LayoutOptions } from 'elkjs';
 import { inject, injectable } from 'inversify';
-import { LayoutOptions } from './sprotty-elk';
-
 export const LayoutConfigurator = Symbol('LayoutConfigurator');
 /**
  * Configurator for ELK layout algorithms; provides mappings of layout options for each model element.
