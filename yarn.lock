@@ -303,10 +303,10 @@
   dependencies:
     prettier-plugin-packagejson "^2.3.0"
 
-"@eclipse-glsp/protocol@next":
-  version "1.1.0-next.697cc23.237"
-  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-1.1.0-next.697cc23.237.tgz#9d6190d88ee944d27a7e6a1d9bed91d0f454149b"
-  integrity sha512-qX/WgWnAZ+D8Dj8wiyezaX8a0JNi5+KSDz2TKZBktRfDEoee2sngyru3m5AQ0kt2dVLuA5isVyHRIaHb8wks7Q==
+"@eclipse-glsp/protocol@1.1.0-RC09":
+  version "1.1.0-RC09"
+  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-1.1.0-RC09.tgz#5985a82c62342bae921a687246e7101595d9d4d2"
+  integrity sha512-mq3qV4LeIAXU+hezGfHibjXqTF6GryK7hjRMajLfGrViJIj2MKza6qC17earWGXEX2qxk8Ha4c6TS6QeYt/5Ag==
   dependencies:
     sprotty-protocol "0.13.0-next.f4445dd.342"
     uuid "7.0.3"

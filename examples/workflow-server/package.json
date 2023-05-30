@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-glsp-examples/workflow-server",
-  "version": "1.1.0-next",
+  "version": "1.1.0-RC09",
   "description": "GLSP node server for the workflow example",
   "keywords": [
     "eclipse",
@@ -59,8 +59,8 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@eclipse-glsp/layout-elk": "1.1.0-next",
-    "@eclipse-glsp/server": "1.1.0-next"
+    "@eclipse-glsp/layout-elk": "1.1.0-RC09",
+    "@eclipse-glsp/server": "1.1.0-RC09"
   },
   "devDependencies": {
     "source-map-loader": "^4.0.1",
