@@ -1,7 +1,7 @@
 {
-  "name": "@eclipse-glsp-examples/workflow-server",
+  "name": "@eclipse-glsp-examples/workflow-server-bundled",
   "version": "1.1.0-next",
-  "description": "GLSP node server for the workflow example",
+  "description": "GLSP node server for the workflow example (bundled)",
   "keywords": [
     "eclipse",
     "graphics",
@@ -32,18 +32,13 @@
       "url": "https://projects.eclipse.org/projects/ecd.glsp"
     }
   ],
-  "main": "./lib/node/index.js",
+  "main": "./wf-glsp-server-node.js",
   "browser": {
     "./lib/node/index.js": "./lib/browser/index.js"
   },
-  "types": "lib/index",
   "files": [
-    "lib",
-    "src",
-    "node.js",
-    "node.d.ts",
-    "browser.d.ts",
-    "browser.js"
+    "wf-glsp-server-node.js",
+    "wf-glsp-server-node.js.map"
   ],
   "scripts": {
     "build": "tsc -b && yarn bundle",
@@ -59,7 +54,8 @@
   },
   "dependencies": {
     "@eclipse-glsp/layout-elk": "1.1.0-next",
-    "@eclipse-glsp/server": "1.1.0-next"
+    "@eclipse-glsp/server": "1.1.0-next",
+    "inversify": "^6.0.1"
   },
   "devDependencies": {
     "source-map-loader": "^4.0.1",

@@ -16,7 +16,7 @@
 const webpack = require('webpack');
 const path = require('path');
 const buildRoot = path.resolve(__dirname, 'lib');
-const appRoot = path.resolve(__dirname, 'bundle');
+const appRoot = path.resolve(__dirname, '..', 'workflow-server-bundled');
 
 module.exports = env => {
     const target = env.target ?? 'node';
