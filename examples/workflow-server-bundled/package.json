@@ -41,26 +41,11 @@
     "wf-glsp-server-node.js.map"
   ],
   "scripts": {
-    "build": "tsc -b && yarn bundle",
-    "bundle": "webpack",
-    "bundle:browser": "webpack --env target=webworker ",
-    "clean": "rimraf lib tsconfig.tsbuildinfo bundle",
-    "lint": "eslint --ext .ts,.tsx ./src",
-    "lint:ci": "yarn lint -o eslint.xml -f checkstyle",
-    "prepare": "yarn clean && yarn build",
-    "start": "node --enable-source-maps bundle/wf-glsp-server-node.js --port 5007",
-    "start:websocket": "node --enable-source-maps bundle/wf-glsp-server-node.js -w --port 8081",
+    "clean": "rimraf ./*.js./*.js.map",
+    "prepare": "yarn clean",
+    "start": "node --enable-source-maps ./wf-glsp-server-node.js --port 5007",
+    "start:websocket": "node --enable-source-maps ./wf-glsp-server-node.js -w --port 8081",
     "watch": "tsc -w"
-  },
-  "dependencies": {
-    "@eclipse-glsp/layout-elk": "1.1.0-next",
-    "@eclipse-glsp/server": "1.1.0-next",
-    "inversify": "^6.0.1"
-  },
-  "devDependencies": {
-    "source-map-loader": "^4.0.1",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1"
   },
   "publishConfig": {
     "access": "public"
