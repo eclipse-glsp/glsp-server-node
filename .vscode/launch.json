@@ -65,14 +65,14 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Workflow Example Server",
-      "program": "${workspaceFolder}/examples/workflow-server/bundle/wf-glsp-server-node.js",
+      "program": "${workspaceFolder}/examples/workflow-server-bundled/wf-glsp-server-node.js",
       "args": ["--port", "5007"],
       "env": {
         "NODE_ENV": "development"
       },
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/examples/workflow-server/bundle/**/*.js",
+        "${workspaceRoot}/examples/workflow-server-bundled/*.js",
         "${workspaceRoot}/node_modules/@eclipse-glsp/*/lib/**/*.js",
         "${workspaceRoot}/examples/workflow-server/*/lib/**/*.js",
         "${workspaceRoot}/packages/**/*/lib/**/*.js"
@@ -88,14 +88,14 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Workflow Example Server (Websocket)",
-      "program": "${workspaceFolder}/examples/workflow-server/bundle/wf-glsp-server-node.js",
+      "program": "${workspaceFolder}/examples/workflow-server-bundled/wf-glsp-server-node.js",
       "args": ["--webSocket", "--port", "8081"],
       "env": {
         "NODE_ENV": "development"
       },
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/examples/workflow-server/bundle/**/*.js",
+        "${workspaceRoot}/examples/workflow-server-bundled/*.js",
         "${workspaceRoot}/node_modules/@eclipse-glsp/*/lib/**/*.js",
         "${workspaceRoot}/examples/workflow-server/*/lib/**/*.js",
         "${workspaceRoot}/packages/**/*/lib/**/*.js"
