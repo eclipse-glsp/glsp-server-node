@@ -32,9 +32,17 @@ import {
 } from '@eclipse-glsp/server';
 import { ELK, ElkEdge, ElkExtendedEdge, ElkGraphElement, ElkLabel, ElkNode, ElkPort, ElkPrimitiveEdge, ElkShape } from 'elkjs/lib/elk-api';
 import { injectable } from 'inversify';
-import { ElkFactory } from 'sprotty-elk';
 import { ElementFilter } from './element-filter';
 import { LayoutConfigurator } from './layout-configurator';
+
+/**
+ * Factory for ELK instances. Follow the elkjs package documentation on how to configure ELK
+ * instances. For example, the bundled version can be used by importing the ELK constructor
+ * from `"elkjs/lib/elk.bundled"`. For the webworker version, import the constructor from
+ * `"elkjs/lib/elk-api"` and add the option `workerUrl: "elk/elk-worker.min.js"`.
+ */
+export type ElkFactory = () => ELK;
+export const ElkFactory = Symbol('ElkFactory');
 
 /**
  * An implementation of GLSP's {@link LayoutEngine} interface that retrieves the graphical model from the {@link ModelState},

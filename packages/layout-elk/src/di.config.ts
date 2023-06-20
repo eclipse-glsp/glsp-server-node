@@ -16,9 +16,8 @@
 import { LayoutEngine, ModelState } from '@eclipse-glsp/server';
 import ElkConstructor, { LayoutOptions } from 'elkjs/lib/elk.bundled';
 import { ContainerModule } from 'inversify';
-import { ElkFactory } from 'sprotty-elk';
 import { DefaultElementFilter, ElementFilter } from './element-filter';
-import { GlspElkLayoutEngine } from './glsp-elk-layout-engine';
+import { ElkFactory, GlspElkLayoutEngine } from './glsp-elk-layout-engine';
 import { FallbackLayoutConfigurator, LayoutConfigurator } from './layout-configurator';
 
 type Constructor<T> = new (...args: any[]) => T;

@@ -152,6 +152,7 @@ namespace NoOPSyntax {
         };
         const syntax = {
             onActivation: noOpReturn,
+            onDeactivation: noOpReturn,
             when: noOpReturn,
             whenAnyAncestorIs: noOpReturn,
             whenAnyAncestorMatches: noOpReturn,

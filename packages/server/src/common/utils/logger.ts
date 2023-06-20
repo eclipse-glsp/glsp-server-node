@@ -80,7 +80,8 @@ export function getRequestParentName(context: interfaces.Context): string | unde
     if (context.currentRequest.parentRequest) {
         const bindings = context.currentRequest.parentRequest.bindings;
         if (bindings.length > 0) {
-            return bindings[0].implementationType?.name;
+            const binding = bindings[0] as interfaces.Binding<{ name?: string }>;
+            return binding.implementationType?.name;
         }
     }
     return undefined;

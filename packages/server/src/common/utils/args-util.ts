@@ -48,7 +48,7 @@ export namespace ArgsUtil {
         }
 
         return {
-            [KEY_RADIUS_TOP_RIGHT]: topLeft,
+            [KEY_RADIUS_TOP_LEFT]: topLeft,
             [KEY_RADIUS_BOTTOM_LEFT]: bottomLeft,
             [KEY_RADIUS_BOTTOM_RIGHT]: bottomRight,
             [KEY_RADIUS_TOP_RIGHT]: topRight
