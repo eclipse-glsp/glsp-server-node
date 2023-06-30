@@ -301,12 +301,12 @@
   dependencies:
     prettier-plugin-packagejson "~2.4.3"
 
-"@eclipse-glsp/protocol@next":
-  version "1.1.0-next.697cc23.237"
-  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-1.1.0-next.697cc23.237.tgz#9d6190d88ee944d27a7e6a1d9bed91d0f454149b"
-  integrity sha512-qX/WgWnAZ+D8Dj8wiyezaX8a0JNi5+KSDz2TKZBktRfDEoee2sngyru3m5AQ0kt2dVLuA5isVyHRIaHb8wks7Q==
+"@eclipse-glsp/protocol@1.1.0-RC10":
+  version "1.1.0-RC10"
+  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-1.1.0-RC10.tgz#123fc350277431ce36a719b582c0cc12746df6a9"
+  integrity sha512-00sT68AbyiiMF63kXdQcQz0vPpf4Nuf1pWoxsJq82npyCIL1PP2rqqE3v+RfQQFic0cmYQObXhJCueK/BjvDaw==
   dependencies:
-    sprotty-protocol "0.13.0-next.f4445dd.342"
+    sprotty-protocol "0.14.0-next.02bbac0.26"
     uuid "7.0.3"
     vscode-jsonrpc "^8.0.2"
 
@@ -6690,10 +6690,10 @@ sprintf-js@~1.0.2:
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
 
-sprotty-protocol@0.13.0-next.f4445dd.342:
-  version "0.13.0-next.f4445dd.342"
-  resolved "https://registry.yarnpkg.com/sprotty-protocol/-/sprotty-protocol-0.13.0-next.f4445dd.342.tgz#79e39a3427202d59173f61f3f03429dfdec7ab9c"
-  integrity sha512-6cNoZrvay1Gk3uk6NqlmraBy68dskvhuDKDiUlpxbzFQ/ZVO4MKY2D41S5AXzjDyOtYQO6tZjlPrNCjmj5Kvrg==
+sprotty-protocol@0.14.0-next.02bbac0.26:
+  version "0.14.0-next.02bbac0.26"
+  resolved "https://registry.yarnpkg.com/sprotty-protocol/-/sprotty-protocol-0.14.0-next.02bbac0.26.tgz#e9bf147aa8e5c8e05f4392339573ee03fa0b3d7f"
+  integrity sha512-a8gbAKjRAIhCV+kM5+E96na7WgWwlqWU/jxhv23w4aLbkurs1gNR6uAF4sm0ahyhXnFxSl7KMUyYJG5km7Iyug==
 
 ssri@9.0.1, ssri@^9.0.0:
   version "9.0.1"
