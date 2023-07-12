@@ -13,11 +13,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, RequestModelAction, ServerMessageAction, ServerStatusAction } from '@eclipse-glsp/protocol';
+import { Action, RequestModelAction, ServerStatusAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../../actions/action-dispatcher';
 import { ActionHandler } from '../../actions/action-handler';
 import { Logger } from '../../utils/logger';
+import { ProgressMonitor, ProgressService } from '../progress/progress-service';
 import { ModelState } from './model-state';
 import { ModelSubmissionHandler } from './model-submission-handler';
 import { SourceModelStorage } from './source-model-storage';
@@ -41,27 +42,27 @@ export class RequestModelActionHandler implements ActionHandler {
     @inject(ModelSubmissionHandler)
     protected submissionHandler: ModelSubmissionHandler;
 
+    @inject(ProgressService)
+    protected progressService: ProgressService;
+
     async execute(action: RequestModelAction): Promise<Action[]> {
         this.logger.debug('Execute RequestModelAction:', action);
         this.modelState.setAll(action.options ?? {});
 
-        this.notifyClient('Model loading in progress');
+        const progress = this.reportModelLoading('Model loading in progress');
         await this.sourceModelStorage.loadSourceModel(action);
-        // Clear the previous notification.
-        this.notifyClient();
+        this.reportModelLoadingFinished(progress);
+
         return this.submissionHandler.submitModel();
     }
 
-    /**
-     * Send a message and status notification with the given message to the client.
-     * An empty message is an indication for the client to clear previously received notifications.
-     * @param message The message that should be sent to the client
-     */
-    protected notifyClient(message = ''): void {
-        const severity = message.length > 0 ? 'INFO' : 'NONE';
-        this.actionDispatcher.dispatchAll(
-            ServerMessageAction.create(message, { severity }),
-            ServerStatusAction.create(message, { severity })
-        );
+    protected reportModelLoading(message: string): ProgressMonitor {
+        this.actionDispatcher.dispatch(ServerStatusAction.create(message, { severity: 'INFO' }));
+        return this.progressService.start(message);
+    }
+
+    protected reportModelLoadingFinished(monitor: ProgressMonitor): void {
+        this.actionDispatcher.dispatch(ServerStatusAction.create('', { severity: 'NONE' }));
+        monitor.end();
     }
 }
