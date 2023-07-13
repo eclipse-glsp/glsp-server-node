@@ -10,6 +10,7 @@
 -   [launch] Add a launcher component for starting WebSocket based GLSP servers [#41](https://github.com/eclipse-glsp/glsp-server-node/pull/41)
 -   [validation] Add explicit support and API for live and batch validation [#43](https://github.com/eclipse-glsp/glsp-server-node/pull/43)
 -   [launch] Launcher components now auto allocate a free port if the port argument is 0 [#42](https://github.com/eclipse-glsp/glsp-server-node/pull/42)
+-   [server] Add support for server progress reporting [#52](https://github.com/eclipse-glsp/glsp-server-node/pull/52)
 
 ### Breaking Changes
 

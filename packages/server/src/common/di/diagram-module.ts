@@ -16,6 +16,7 @@
 import {
     CenterAction,
     DeleteMarkersAction,
+    EndProgressAction,
     ExportSvgAction,
     FitToScreenAction,
     NavigateToExternalTargetAction,
@@ -39,9 +40,11 @@ import {
     SetTypeHintsAction,
     SetViewportAction,
     SourceModelChangedAction,
+    StartProgressAction,
     TriggerEdgeCreationAction,
     TriggerNodeCreationAction,
-    UpdateModelAction
+    UpdateModelAction,
+    UpdateProgressAction
 } from '@eclipse-glsp/protocol';
 import { interfaces } from 'inversify';
 import { ActionDispatcher, DefaultActionDispatcher } from '../actions/action-dispatcher';
@@ -86,6 +89,7 @@ import { RequestNavigationTargetsActionHandler } from '../features/navigation/re
 import { ResolveNavigationTargetsActionHandler } from '../features/navigation/resolve-navigation-targets-action-handler';
 import { PopupModelFactory } from '../features/popup/popup-model-factory';
 import { RequestPopupModelActionHandler } from '../features/popup/request-popup-model-action-handler';
+import { DefaultProgressService, ProgressService } from '../features/progress/progress-service';
 import { ModelValidator } from '../features/validation/model-validator';
 import { RequestMarkersHandler } from '../features/validation/request-markers-handler';
 import { CompoundOperationHandler } from '../operations/compound-operation-handler';
@@ -93,7 +97,7 @@ import { OperationActionHandler } from '../operations/operation-action-handler';
 import { OperationHandlerConstructor, OperationHandlerFactory } from '../operations/operation-handler';
 import { OperationHandlerRegistry, OperationHandlerRegistryInitializer } from '../operations/operation-handler-registry';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
-import { applyBindingTarget, applyOptionalBindingTarget, BindingTarget } from './binding-target';
+import { BindingTarget, applyBindingTarget, applyOptionalBindingTarget } from './binding-target';
 import { GLSPModule } from './glsp-module';
 import { InstanceMultiBinding, MultiBinding } from './multi-binding';
 import {
@@ -133,6 +137,7 @@ import {
  * - {@link ContextActionsProviders} as {@link ClassMultiBinding<ContextActionsProvider>} (empty)
  * - {@link ContextActionsProviderRegistry}
  * - {@link ActionDispatcher}
+ * - {@link ProgressService}
  * - {@link ClientActionKinds} as {@link InstanceMultiBinding<string>}
  * - {@link ActionHandler} as {@link InstanceMultiBinding<ActionHandlerConstructor>}
  * - {@link ActionHandlerFactory}
@@ -217,6 +222,7 @@ export abstract class DiagramModule extends GLSPModule {
         this.configureMultiBinding(new MultiBinding<ClientSessionInitializer>(ClientSessionInitializer), binding =>
             this.configureClientSessionInitializers(binding)
         );
+        applyBindingTarget(context, ProgressService, this.bindProgressService()).inSingletonScope();
         applyOptionalBindingTarget(context, PopupModelFactory, this.bindPopupModelFactory());
         applyOptionalBindingTarget(context, LayoutEngine, this.bindLayoutEngine?.());
     }
@@ -308,6 +314,10 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(LayoutOperationHandler);
     }
 
+    protected bindProgressService(): BindingTarget<ProgressService> {
+        return DefaultProgressService;
+    }
+
     protected configureContextActionProviders(binding: MultiBinding<ContextActionsProvider>): void {
         // empty as default
     }
@@ -322,16 +332,17 @@ export abstract class DiagramModule extends GLSPModule {
 
     protected configureClientActions(binding: InstanceMultiBinding<string>): void {
         binding.add(CenterAction.KIND);
-        binding.add(ExportSvgAction.KIND);
         binding.add(DeleteMarkersAction.KIND);
+        binding.add(EndProgressAction.KIND);
+        binding.add(ExportSvgAction.KIND);
         binding.add(FitToScreenAction.KIND);
-        binding.add(SourceModelChangedAction.KIND);
-        binding.add(NavigateToTargetAction.KIND);
         binding.add(NavigateToExternalTargetAction.KIND);
+        binding.add(NavigateToTargetAction.KIND);
         binding.add(RequestBoundsAction.KIND);
         binding.add(SelectAction.KIND);
         binding.add(SelectAllAction.KIND);
         binding.add(ServerMessageAction.KIND);
+        binding.add(ServerStatusAction.KIND);
         binding.add(SetBoundsAction.KIND);
         binding.add(SetClipboardDataAction.KIND);
         binding.add(SetContextActions.KIND);
@@ -345,10 +356,12 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(SetResolvedNavigationTargetAction.KIND);
         binding.add(SetTypeHintsAction.KIND);
         binding.add(SetViewportAction.KIND);
-        binding.add(ServerStatusAction.KIND);
-        binding.add(TriggerNodeCreationAction.KIND);
+        binding.add(SourceModelChangedAction.KIND);
+        binding.add(StartProgressAction.KIND);
         binding.add(TriggerEdgeCreationAction.KIND);
+        binding.add(TriggerNodeCreationAction.KIND);
         binding.add(UpdateModelAction.KIND);
+        binding.add(UpdateProgressAction.KIND);
     }
 
     protected bindContextActionsProviderRegistry(): BindingTarget<ContextActionsProviderRegistry> {
