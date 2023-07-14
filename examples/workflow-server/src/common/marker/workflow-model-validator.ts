@@ -13,30 +13,31 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GCompartment, GLabel, GModelElement, Marker, MarkerKind, ModelState, ModelValidator } from '@eclipse-glsp/server';
+import { AbstractModelValidator, GCompartment, GLabel, GModelElement, Marker, MarkerKind, ModelState } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 import { ActivityNode, TaskNode } from '../graph-extension';
 
 @injectable()
-export class WorkflowModelValidator implements ModelValidator {
+export class WorkflowModelValidator extends AbstractModelValidator {
     @inject(ModelState)
     protected readonly modelState: ModelState;
 
-    validate(elements: GModelElement[]): Marker[] {
+    override doLiveValidation(element: GModelElement): Marker[] {
         const markers: Marker[] = [];
-        for (const element of elements) {
-            if (element instanceof TaskNode) {
-                markers.push(...this.validateTaskNode(element));
-            } else if (element instanceof ActivityNode) {
-                if (element.nodeType === 'decisionNode') {
-                    markers.push(...this.validateDecisionNode(element));
-                } else if (element.nodeType === 'mergeNode') {
-                    markers.push(...this.validateMergeNode(element));
-                }
+        if (element instanceof ActivityNode) {
+            if (element.nodeType === 'decisionNode') {
+                markers.push(...this.validateDecisionNode(element));
+            } else if (element.nodeType === 'mergeNode') {
+                markers.push(...this.validateMergeNode(element));
             }
-            if (element.children) {
-                markers.push(...this.validate(element.children));
-            }
+        }
+        return markers;
+    }
+
+    override doBatchValidation(element: GModelElement): Marker[] {
+        const markers: Marker[] = [];
+        if (element instanceof TaskNode) {
+            markers.push(...this.validateTaskNode(element));
         }
         return markers;
     }
