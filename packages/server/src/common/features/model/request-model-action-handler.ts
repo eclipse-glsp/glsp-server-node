@@ -17,6 +17,7 @@ import { Action, RequestModelAction, ServerStatusAction } from '@eclipse-glsp/pr
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../../actions/action-dispatcher';
 import { ActionHandler } from '../../actions/action-handler';
+import { ClientOptionsUtil } from '../../utils/client-options-util';
 import { Logger } from '../../utils/logger';
 import { ProgressMonitor, ProgressService } from '../progress/progress-service';
 import { ModelState } from './model-state';
@@ -49,8 +50,24 @@ export class RequestModelActionHandler implements ActionHandler {
         this.logger.debug('Execute RequestModelAction:', action);
         this.modelState.setAll(action.options ?? {});
 
+        const isReconnecting = ClientOptionsUtil.isReconnecting(action.options);
+
         const progress = this.reportModelLoading('Model loading in progress');
-        await this.sourceModelStorage.loadSourceModel(action);
+
+        if (isReconnecting) {
+            const oldModelRoot = this.modelState.root;
+            if (oldModelRoot) {
+                // use current modelRoot of modelState and submit
+                this.modelState.updateRoot(oldModelRoot);
+                // decrease revision by one, as each submit will increase it by one;
+                // the next save would produce warning that source model was changed otherwise
+                this.modelState.root.revision = (this.modelState.root.revision ?? 0) - 1;
+            } else {
+                await this.sourceModelStorage.loadSourceModel(action);
+            }
+        } else {
+            await this.sourceModelStorage.loadSourceModel(action);
+        }
         this.reportModelLoadingFinished(progress);
 
         return this.submissionHandler.submitModel();
