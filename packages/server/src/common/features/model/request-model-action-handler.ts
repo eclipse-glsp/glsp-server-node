@@ -55,22 +55,24 @@ export class RequestModelActionHandler implements ActionHandler {
         const progress = this.reportModelLoading('Model loading in progress');
 
         if (isReconnecting) {
-            const oldModelRoot = this.modelState.root;
-            if (oldModelRoot) {
-                // use current modelRoot of modelState and submit
-                this.modelState.updateRoot(oldModelRoot);
-                // decrease revision by one, as each submit will increase it by one;
-                // the next save would produce warning that source model was changed otherwise
-                this.modelState.root.revision = (this.modelState.root.revision ?? 0) - 1;
-            } else {
-                await this.sourceModelStorage.loadSourceModel(action);
-            }
+            await this.handleReconnect(action);
         } else {
             await this.sourceModelStorage.loadSourceModel(action);
         }
         this.reportModelLoadingFinished(progress);
 
         return this.submissionHandler.submitModel();
+    }
+
+    protected async handleReconnect(action: RequestModelAction): Promise<void> {
+        const oldModelRoot = this.modelState.root;
+        if (oldModelRoot) {
+            // decrease revision by one, as each submit will increase it by one;
+            // the next save would produce warning that source model was changed otherwise
+            this.modelState.root.revision = (this.modelState.root.revision ?? 0) - 1;
+        } else {
+            await this.sourceModelStorage.loadSourceModel(action);
+        }
     }
 
     protected reportModelLoading(message: string): ProgressMonitor {
