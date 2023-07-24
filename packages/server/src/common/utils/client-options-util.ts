@@ -13,10 +13,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { Args } from '@eclipse-glsp/protocol';
+import { ArgsUtil } from './args-util';
+
 export class ClientOptionsUtil {
     private static FILE_PREFIX = 'file://';
+    public static IS_RECONNECTING = 'isReconnecting';
 
     public static adaptUri(uri: string): string {
         return uri.replace(this.FILE_PREFIX, '');
+    }
+
+    public static isReconnecting(options?: Args): boolean {
+        return ArgsUtil.getBoolean(options, ClientOptionsUtil.IS_RECONNECTING);
     }
 }
