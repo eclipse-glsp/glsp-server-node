@@ -16,6 +16,7 @@
 import { MaybePromise, RequestModelAction, SaveModelAction, TypeGuard } from '@eclipse-glsp/protocol';
 import * as fs from 'fs-extra';
 import { inject, injectable } from 'inversify';
+import * as os from 'os';
 import { fileURLToPath } from 'url';
 import { ModelState, SOURCE_URI_ARG } from '../common/features/model/model-state';
 import { SourceModelStorage } from '../common/features/model/source-model-storage';
@@ -91,7 +92,12 @@ export abstract class AbstractJsonModelStorage implements SourceModelStorage {
     }
 
     protected toPath(sourceUri: string): string {
-        return sourceUri.startsWith('file://') ? fileURLToPath(sourceUri) : sourceUri;
+        let path = sourceUri.startsWith('file://') ? fileURLToPath(sourceUri) : sourceUri;
+        if (os.platform() === 'win32') {
+            // Remove the leading slash if it exists (Windows paths don't have it)
+            path = path.replace(/^\//, '');
+        }
+        return path;
     }
 
     protected getFileUri(action: SaveModelAction): string {
