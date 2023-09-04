@@ -68,7 +68,6 @@
     "ws": "^8.12.1"
   },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.13",
     "@types/ws": "^8.5.4"
   },
   "peerDependencies": {

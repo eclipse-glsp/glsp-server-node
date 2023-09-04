@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { MaybePromise, RequestModelAction, SaveModelAction, TypeGuard } from '@eclipse-glsp/protocol';
-import * as fs from 'fs-extra';
+import * as fs from 'fs';
 import { inject, injectable } from 'inversify';
 import * as os from 'os';
 import { fileURLToPath } from 'url';
