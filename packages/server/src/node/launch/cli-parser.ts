@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import * as cmd from 'commander';
-import * as fs from 'fs-extra';
+import * as fs from 'fs';
 import * as path from 'path';
 import { LogLevel, LoggerConfigOptions, asLogLevel } from '../../common/utils/logger';
 
