@@ -13,14 +13,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { MultiRegistry, Registry } from './registry';
 import { expect } from 'chai';
+import { NullLogger } from './logger';
+import { MultiRegistry, Registry } from './registry';
 
 describe('Test Registry', () => {
     let registry: Registry<string, string>;
 
     beforeEach(() => {
         registry = new Registry();
+        registry['logger'] = new NullLogger();
     });
 
     it('register - with new key-value pair', () => {

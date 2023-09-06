@@ -92,6 +92,9 @@ export class DefaultModelState implements ModelState {
     }
 
     updateRoot(newRoot: GModelRoot): void {
+        if (!newRoot.revision && this.root) {
+            newRoot.revision = this.root.revision;
+        }
         this.root = newRoot;
         this.index.indexRoot(newRoot);
     }
