@@ -41,7 +41,6 @@ import { DiagramModules, InjectionContainer } from './service-identifiers';
  * * {@link ClientSessionFactory}
  * * {@link ClientSessionManager}
  * * {@link GlobalActionProvider}
- * * {@link GLSPClientProxy}
  *
  */
 export class ServerModule extends GLSPModule {

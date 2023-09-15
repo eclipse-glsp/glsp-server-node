@@ -47,7 +47,7 @@ describe('test DefaultClientSessionFactory', () => {
     const factory = container.resolve(DefaultClientSessionFactory);
 
     it('create - new client session', () => {
-        const session = factory.create({ clientSessionId, diagramType });
+        const session = factory.create({ clientSessionId, diagramType, clientActionKinds: [] });
         expect(session.id).to.be.equal(clientSessionId);
         expect(session.diagramType).to.be.equal(diagramType);
         expect(session.container.parent).to.be.equal(container);
@@ -55,6 +55,6 @@ describe('test DefaultClientSessionFactory', () => {
     });
 
     it('create - unknown diagram type', () => {
-        expect(() => factory.create({ clientSessionId, diagramType: 'unknown-type' })).to.throw(GLSPServerError);
+        expect(() => factory.create({ clientSessionId, diagramType: 'unknown-type', clientActionKinds: [] })).to.throw(GLSPServerError);
     });
 });

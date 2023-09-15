@@ -15,12 +15,13 @@
  ********************************************************************************/
 import { Action, Disposable, flatPush, MaybeArray, RequestAction, ResponseAction, UpdateModelAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { ClientActionKinds, ClientId } from '../di/service-identifiers';
+import { ClientId } from '../di/service-identifiers';
 import { GLSPServerError } from '../utils/glsp-server-error';
 import { Logger } from '../utils/logger';
 import { PromiseQueue } from '../utils/promise-queue';
 import { ActionHandler } from './action-handler';
 import { ActionHandlerRegistry } from './action-handler-registry';
+import { ClientActionForwarder } from './client-action-handler';
 
 export const ActionDispatcher = Symbol('ActionDispatcher');
 
@@ -62,8 +63,8 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
     @inject(ActionHandlerRegistry)
     protected actionHandlerRegistry: ActionHandlerRegistry;
 
-    @inject(ClientActionKinds)
-    protected clientActionKinds: string[];
+    @inject(ClientActionForwarder)
+    protected clientActionForwarder: ClientActionForwarder;
 
     @inject(Logger)
     private logger: Logger;
@@ -76,7 +77,7 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
 
     dispatch(action: Action): Promise<void> {
         // Dont queue actions that are just delegated to the client
-        if (this.clientActionKinds.includes(action.kind)) {
+        if (this.clientActionForwarder.shouldForwardToClient(action)) {
             return this.doDispatch(action);
         }
         return this.actionQueue.enqueue(() => this.doDispatch(action));
@@ -84,8 +85,10 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
 
     protected async doDispatch(action: Action): Promise<void> {
         this.logger.debug('Dispatch action:', action.kind);
+        const handledOnClient = this.clientActionForwarder.handle(action);
+
         const actionHandlers = this.actionHandlerRegistry.get(action.kind);
-        if (actionHandlers.length === 0) {
+        if (!handledOnClient && actionHandlers.length === 0) {
             throw new GLSPServerError(`No handler registered for action kind: ${action.kind}`);
         }
 

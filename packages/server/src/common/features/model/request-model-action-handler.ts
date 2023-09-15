@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, RequestModelAction, ServerStatusAction } from '@eclipse-glsp/protocol';
+import { Action, RequestModelAction, StatusAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../../actions/action-dispatcher';
 import { ActionHandler } from '../../actions/action-handler';
@@ -61,7 +61,7 @@ export class RequestModelActionHandler implements ActionHandler {
         }
         this.reportModelLoadingFinished(progress);
 
-        return this.submissionHandler.submitModel();
+        return this.submissionHandler.submitModelDirectly();
     }
 
     protected async handleReconnect(action: RequestModelAction): Promise<void> {
@@ -76,12 +76,12 @@ export class RequestModelActionHandler implements ActionHandler {
     }
 
     protected reportModelLoading(message: string): ProgressMonitor {
-        this.actionDispatcher.dispatch(ServerStatusAction.create(message, { severity: 'INFO' }));
+        this.actionDispatcher.dispatch(StatusAction.create(message, { severity: 'INFO' }));
         return this.progressService.start(message);
     }
 
     protected reportModelLoadingFinished(monitor: ProgressMonitor): void {
-        this.actionDispatcher.dispatch(ServerStatusAction.create('', { severity: 'NONE' }));
+        this.actionDispatcher.dispatch(StatusAction.create('', { severity: 'NONE' }));
         monitor.end();
     }
 }

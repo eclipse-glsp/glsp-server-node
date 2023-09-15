@@ -13,37 +13,47 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, ActionMessage, GLSPClientProxy } from '@eclipse-glsp/protocol';
-import { inject, injectable, optional } from 'inversify';
+import { Action, ActionMessage, GLSPClientProxy, ResponseAction } from '@eclipse-glsp/protocol';
+import { inject, injectable } from 'inversify';
 import { ClientActionKinds, ClientId } from '../di/service-identifiers';
+import { ClientAction } from '../protocol/client-action';
 
 /**
- * The client action handler is responsible of handling action kinds that are intended for the
- * GLSP client, by sending them to the client over json-rpc.
+ * Component responsible for forwarding actions that are (also) handled by the
+ * client
  */
-
 @injectable()
-export class ClientActionHandler implements ClientActionHandler {
+export class ClientActionForwarder {
     @inject(GLSPClientProxy)
-    @optional()
-    protected glspClient?: GLSPClientProxy;
+    protected glspClient: GLSPClientProxy;
 
     @inject(ClientId)
     protected readonly clientId: string;
 
-    constructor(@inject(ClientActionKinds) @optional() public actionKinds: string[] = []) {}
+    constructor(@inject(ClientActionKinds) public actionKinds: Set<string>) {}
 
-    execute(action: Action): [] {
-        this.send(action);
-        return [];
+    /**
+     * Processes the given action and checks wether it is a
+     * `clientAction` i.e. an action that should be forwarded to
+     * the client to be handled there. If the check is successful
+     * the action is wrapped in an {@link ActionMessage} and sent to the client.
+     *
+     * @param action The action to check and forward
+     * @return `true` if the action was forwarded to the client, `false` otherwise
+     */
+    handle(action: Action): boolean {
+        if (this.shouldForwardToClient(action)) {
+            const message: ActionMessage = { action, clientId: this.clientId };
+            this.glspClient.process(message);
+            return true;
+        }
+        return false;
     }
 
-    protected send(action: Action): void {
-        const message: ActionMessage = { action, clientId: this.clientId };
-        if (this.glspClient) {
-            this.glspClient.process(message);
-            return;
+    shouldForwardToClient(action: Action): boolean {
+        if (ClientAction.is(action)) {
+            return false;
         }
-        throw new Error('Could not send message to client. No GLSPClientProxy is defined');
+        return this.actionKinds.has(action.kind) || ResponseAction.is(action);
     }
 }

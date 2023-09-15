@@ -13,44 +13,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import {
-    CenterAction,
-    DeleteMarkersAction,
-    EndProgressAction,
-    ExportSvgAction,
-    FitToScreenAction,
-    NavigateToExternalTargetAction,
-    NavigateToTargetAction,
-    RequestBoundsAction,
-    SelectAction,
-    SelectAllAction,
-    ServerMessageAction,
-    ServerStatusAction,
-    SetBoundsAction,
-    SetClipboardDataAction,
-    SetContextActions,
-    SetDirtyStateAction,
-    SetEditModeAction,
-    SetEditValidationResultAction,
-    SetMarkersAction,
-    SetModelAction,
-    SetNavigationTargetsAction,
-    SetPopupModelAction,
-    SetResolvedNavigationTargetAction,
-    SetTypeHintsAction,
-    SetViewportAction,
-    SourceModelChangedAction,
-    StartProgressAction,
-    TriggerEdgeCreationAction,
-    TriggerNodeCreationAction,
-    UpdateModelAction,
-    UpdateProgressAction
-} from '@eclipse-glsp/protocol';
 import { interfaces } from 'inversify';
 import { ActionDispatcher, DefaultActionDispatcher } from '../actions/action-dispatcher';
 import { ActionHandlerConstructor, ActionHandlerFactory } from '../actions/action-handler';
 import { ActionHandlerRegistry, ActionHandlerRegistryInitializer } from '../actions/action-handler-registry';
-import { ClientActionHandler } from '../actions/client-action-handler';
+import { ClientActionForwarder } from '../actions/client-action-handler';
 import { CommandStack, DefaultCommandStack } from '../command/command-stack';
 import { UndoRedoActionHandler } from '../command/undo-redo-action-handler';
 import { DiagramConfiguration } from '../diagram/diagram-configuration';
@@ -101,7 +68,6 @@ import { BindingTarget, applyBindingTarget, applyOptionalBindingTarget } from '.
 import { GLSPModule } from './glsp-module';
 import { InstanceMultiBinding, MultiBinding } from './multi-binding';
 import {
-    ClientActionKinds,
     ClientId,
     ContextActionsProviders,
     ContextEditValidators,
@@ -167,6 +133,7 @@ export abstract class DiagramModule extends GLSPModule {
         applyBindingTarget(context, DiagramType, this.bindDiagramType());
         applyBindingTarget(context, ClientId, this.bindClientId());
         applyBindingTarget(context, DiagramConfiguration, this.bindDiagramConfiguration()).inSingletonScope();
+        applyBindingTarget(context, ClientActionForwarder, this.bindClientActionForwarder()).inSingletonScope();
 
         // Model-related bindings
         applyBindingTarget(context, GModelSerializer, this.bindGModelSerializer()).inSingletonScope();
@@ -191,7 +158,6 @@ export abstract class DiagramModule extends GLSPModule {
 
         // Action & operation related bindings
         applyBindingTarget(context, ActionDispatcher, this.bindActionDispatcher()).inSingletonScope();
-        this.configureMultiBinding(new InstanceMultiBinding<string>(ClientActionKinds), binding => this.configureClientActions(binding));
         this.configureMultiBinding(new InstanceMultiBinding<ActionHandlerConstructor>(ActionHandlerConstructor), binding =>
             this.configureActionHandlers(binding)
         );
@@ -233,7 +199,6 @@ export abstract class DiagramModule extends GLSPModule {
     }
 
     protected configureActionHandlers(binding: InstanceMultiBinding<ActionHandlerConstructor>): void {
-        binding.add(ClientActionHandler);
         binding.add(RequestModelActionHandler);
         binding.add(RequestContextActionsHandler);
         binding.add(RequestTypeHintsActionHandler);
@@ -258,6 +223,10 @@ export abstract class DiagramModule extends GLSPModule {
 
     protected bindGModelSerializer(): BindingTarget<GModelSerializer> {
         return DefaultGModelSerializer;
+    }
+
+    protected bindClientActionForwarder(): BindingTarget<ClientActionForwarder> {
+        return ClientActionForwarder;
     }
 
     protected bindGModelIndex(): BindingTarget<GModelIndex> {
@@ -328,40 +297,6 @@ export abstract class DiagramModule extends GLSPModule {
 
     protected configureNavigationTargetProviders(binding: MultiBinding<NavigationTargetProvider>): void {
         // empty as default
-    }
-
-    protected configureClientActions(binding: InstanceMultiBinding<string>): void {
-        binding.add(CenterAction.KIND);
-        binding.add(DeleteMarkersAction.KIND);
-        binding.add(EndProgressAction.KIND);
-        binding.add(ExportSvgAction.KIND);
-        binding.add(FitToScreenAction.KIND);
-        binding.add(NavigateToExternalTargetAction.KIND);
-        binding.add(NavigateToTargetAction.KIND);
-        binding.add(RequestBoundsAction.KIND);
-        binding.add(SelectAction.KIND);
-        binding.add(SelectAllAction.KIND);
-        binding.add(ServerMessageAction.KIND);
-        binding.add(ServerStatusAction.KIND);
-        binding.add(SetBoundsAction.KIND);
-        binding.add(SetClipboardDataAction.KIND);
-        binding.add(SetContextActions.KIND);
-        binding.add(SetDirtyStateAction.KIND);
-        binding.add(SetEditModeAction.KIND);
-        binding.add(SetEditValidationResultAction.KIND);
-        binding.add(SetMarkersAction.KIND);
-        binding.add(SetModelAction.KIND);
-        binding.add(SetNavigationTargetsAction.KIND);
-        binding.add(SetPopupModelAction.KIND);
-        binding.add(SetResolvedNavigationTargetAction.KIND);
-        binding.add(SetTypeHintsAction.KIND);
-        binding.add(SetViewportAction.KIND);
-        binding.add(SourceModelChangedAction.KIND);
-        binding.add(StartProgressAction.KIND);
-        binding.add(TriggerEdgeCreationAction.KIND);
-        binding.add(TriggerNodeCreationAction.KIND);
-        binding.add(UpdateModelAction.KIND);
-        binding.add(UpdateProgressAction.KIND);
     }
 
     protected bindContextActionsProviderRegistry(): BindingTarget<ContextActionsProviderRegistry> {

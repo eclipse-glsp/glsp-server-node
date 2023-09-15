@@ -21,7 +21,7 @@
       "args": [
         "--config",
         "${workspaceFolder}/.mocharc",
-        "${workspaceFolder}/packages/server-node/src/**/*.spec.ts"
+        "${workspaceFolder}/packages/server/src/**/*.spec.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

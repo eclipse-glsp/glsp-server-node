@@ -20,6 +20,7 @@ import {
     InitializeClientSessionParameters,
     InitializeParameters
 } from '@eclipse-glsp/protocol';
+import * as assert from 'assert';
 import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
 import * as sinon from 'sinon';
@@ -28,7 +29,6 @@ import { ClientSessionManager } from '../session/client-session-manager';
 import * as mock from '../test/mock-util';
 import { Logger } from '../utils/logger';
 import { DefaultGLSPServer } from './glsp-server';
-import assert = require('assert');
 
 describe('test DefaultGLSPServer', () => {
     const container = new Container();
@@ -36,8 +36,8 @@ describe('test DefaultGLSPServer', () => {
     const diagramType = 'myDiagram';
     const applicationId = 'Test';
     const protocolVersion = '1.0.0';
-    const serverActionKinds = new Map<string, string[]>();
-    serverActionKinds.set(diagramType, ['A1', 'A2']);
+    const actionKinds = new Map<string, string[]>();
+    actionKinds.set(diagramType, ['A1', 'A2']);
     const sessionManager = new mock.StubClientSessionManager();
     const spy_sessionManager_getOrCreate = sinon.spy(sessionManager, 'getOrCreateClientSession');
     const spy_sessionManager_dispose = sinon.spy(sessionManager, 'disposeClientSession');
@@ -53,7 +53,7 @@ describe('test DefaultGLSPServer', () => {
             bind(Logger).toConstantValue(new mock.StubLogger());
             bind(GLSPClientProxy).toConstantValue(new mock.StubGLSPClientProxy());
             bind(ClientSessionManager).toConstantValue(sessionManager);
-            bind(GlobalActionProvider).toConstantValue({ clientActionKinds: new Map<string, string[]>(), serverActionKinds });
+            bind(GlobalActionProvider).toConstantValue(<GlobalActionProvider>{ actionKinds });
             bind(GLSPServerListener).toConstantValue(listener1);
         })
     );
@@ -70,7 +70,7 @@ describe('test DefaultGLSPServer', () => {
     });
 
     it('Test calls before server initialization (should throw errors)', async () => {
-        assert.rejects(() => glspServer.initializeClientSession({ clientSessionId: 'id', diagramType: 'type' }));
+        assert.rejects(() => glspServer.initializeClientSession({ clientSessionId: 'id', diagramType: 'type', clientActionKinds: [] }));
         assert.rejects(() => glspServer.disposeClientSession({ clientSessionId: 'id' }));
         assert.throws(() => glspServer.process({ clientId: 'id', action: { kind: 'action' } }));
     });
@@ -109,8 +109,8 @@ describe('test DefaultGLSPServer', () => {
         const initializeParameters: InitializeParameters = { applicationId, protocolVersion };
         const result = await glspServer.initialize(initializeParameters);
         expect(result.protocolVersion).to.be.equal(protocolVersion);
-        expect(result.serverActions[diagramType]).to.be.equal(serverActionKinds.get(diagramType));
-        expect(result.serverActions[diagramType]).to.be.equal(serverActionKinds.get(diagramType));
+        expect(result.serverActions[diagramType]).to.be.equal(actionKinds.get(diagramType));
+        expect(result.serverActions[diagramType]).to.be.equal(actionKinds.get(diagramType));
         expect(spy_listener1_initialize.calledWith(glspServer));
         expect(spy_listener2_initialize.notCalled);
     });
@@ -119,8 +119,8 @@ describe('test DefaultGLSPServer', () => {
         const initializeParameters: InitializeParameters = { applicationId, protocolVersion };
         const result = await glspServer.initialize(initializeParameters);
         expect(result.protocolVersion).to.be.equal(protocolVersion);
-        expect(result.serverActions[diagramType]).to.be.equal(serverActionKinds.get(diagramType));
-        expect(result.serverActions[diagramType]).to.be.equal(serverActionKinds.get(diagramType));
+        expect(result.serverActions[diagramType]).to.be.equal(actionKinds.get(diagramType));
+        expect(result.serverActions[diagramType]).to.be.equal(actionKinds.get(diagramType));
     });
 
     it('initialize -  subsequent call with other parameters', async () => {
@@ -131,7 +131,8 @@ describe('test DefaultGLSPServer', () => {
     it('initialize client session', async () => {
         const initializeClientSessionParameters: InitializeClientSessionParameters = {
             clientSessionId,
-            diagramType
+            diagramType,
+            clientActionKinds: []
         };
         await glspServer.initializeClientSession(initializeClientSessionParameters);
         expect(spy_sessionManager_getOrCreate.calledWith(initializeClientSessionParameters));

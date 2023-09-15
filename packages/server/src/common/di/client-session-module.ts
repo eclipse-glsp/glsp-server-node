@@ -13,17 +13,24 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPClientProxy } from '@eclipse-glsp/protocol';
+import { GLSPClientProxy, bindOrRebind } from '@eclipse-glsp/protocol';
 import { ContainerModule } from 'inversify';
-import { ClientId } from './service-identifiers';
+import { ClientActionKinds, ClientId } from './service-identifiers';
 
-export function createClientSessionModule(clientId: string, glspClient: GLSPClientProxy): ContainerModule {
-    return new ContainerModule((bind, _unbind, isBound, rebind) => {
-        if (isBound(ClientId)) {
-            rebind(ClientId).toConstantValue(clientId);
-        } else {
-            bind(ClientId).toConstantValue(clientId);
-        }
-        bind(GLSPClientProxy).toConstantValue(glspClient);
+export interface ClientSessionModuleOptions {
+    clientId: string;
+    glspClient: GLSPClientProxy;
+    clientActionKinds: string[];
+}
+
+/**
+ * Creates the DI module that binds client session specific configuration
+ */
+export function createClientSessionModule(options: ClientSessionModuleOptions): ContainerModule {
+    return new ContainerModule((bind, unbind, isBound, rebind) => {
+        const context = { bind, unbind, isBound, rebind };
+        bindOrRebind(context, ClientId).toConstantValue(options.clientId);
+        bind(GLSPClientProxy).toConstantValue(options.glspClient);
+        bind(ClientActionKinds).toConstantValue(new Set(options.clientActionKinds));
     });
 }

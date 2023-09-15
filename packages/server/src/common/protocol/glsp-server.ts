@@ -17,7 +17,6 @@ import {
     ActionMessage,
     Args,
     DisposeClientSessionParameters,
-    distinctAdd,
     GLSPClientProxy,
     GLSPServer,
     GLSPServerListener,
@@ -25,9 +24,10 @@ import {
     InitializeParameters,
     InitializeResult,
     MaybePromise,
-    remove,
+    MessageAction,
     ServerActions,
-    ServerMessageAction
+    distinctAdd,
+    remove
 } from '@eclipse-glsp/protocol';
 import { inject, injectable, multiInject, optional } from 'inversify';
 import { GlobalActionProvider } from '../actions/global-action-provider';
@@ -35,6 +35,7 @@ import { ClientSession } from '../session/client-session';
 import { ClientSessionManager } from '../session/client-session-manager';
 import { GLSPServerError } from '../utils/glsp-server-error';
 import { Logger } from '../utils/logger';
+import { ClientAction } from './client-action';
 
 @injectable()
 export class DefaultGLSPServer implements GLSPServer {
@@ -50,8 +51,7 @@ export class DefaultGLSPServer implements GLSPServer {
     protected actionProvider: GlobalActionProvider;
 
     @inject(GLSPClientProxy)
-    @optional()
-    protected glspClientProxy?: GLSPClientProxy;
+    protected glspClientProxy: GLSPClientProxy;
 
     protected initializeResult?: InitializeResult;
 
@@ -97,7 +97,7 @@ export class DefaultGLSPServer implements GLSPServer {
         this.applicationId = params.applicationId;
         const serverActions: ServerActions = {};
 
-        this.actionProvider.serverActionKinds.forEach((kinds, diagramType) => (serverActions[diagramType] = kinds));
+        this.actionProvider.actionKinds.forEach((kinds, diagramType) => (serverActions[diagramType] = kinds));
 
         let result = { protocolVersion: DefaultGLSPServer.PROTOCOL_VERSION, serverActions };
 
@@ -149,8 +149,9 @@ export class DefaultGLSPServer implements GLSPServer {
         if (!clientSession) {
             throw new Error(`No client session has been initialized for client id: ${clientSessionId}`);
         }
-
-        clientSession.actionDispatcher.dispatch(message.action).catch(error => this.handleProcessError(message, error));
+        const action = message.action;
+        ClientAction.mark(action);
+        clientSession.actionDispatcher.dispatch(action).catch(error => this.handleProcessError(message, error));
     }
 
     protected handleProcessError(message: ActionMessage, reason: any): void | PromiseLike<void> {
@@ -162,16 +163,12 @@ export class DefaultGLSPServer implements GLSPServer {
             details = reason.cause?.toString?.();
             errorMsg = reason.message;
         }
-        const errorAction = ServerMessageAction.create(errorMsg, { severity: 'ERROR', details });
+        const errorAction = MessageAction.create(errorMsg, { severity: 'ERROR', details });
         this.sendToClient({ clientId: message.clientId, action: errorAction });
     }
 
     protected sendToClient(message: ActionMessage): void {
-        if (this.glspClientProxy) {
-            this.glspClientProxy.process(message);
-            return;
-        }
-        throw new Error("Could not send message to client. No 'GLSPClientProxy' is connected");
+        this.glspClientProxy.process(message);
     }
 
     getClientSession(sessionId: string): ClientSession | undefined {

@@ -13,60 +13,56 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { distinctAdd } from '@eclipse-glsp/protocol';
 import { Container, ContainerModule, inject, injectable } from 'inversify';
-import { ClientActionKinds, DiagramModules, InjectionContainer } from '../di/service-identifiers';
+import { createClientSessionModule } from '../di/client-session-module';
+import { DiagramModules, InjectionContainer } from '../di/service-identifiers';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
 import { ActionHandlerRegistry } from './action-handler-registry';
-import { ClientActionHandler } from './client-action-handler';
 
 export const GlobalActionProvider = Symbol('GlobalActionProvider');
 
+/**
+ * Provides a map of handled action kinds grouped by `diagramType`
+ */
 export interface GlobalActionProvider {
-    readonly serverActionKinds: Map<string, string[]>;
-    readonly clientActionKinds: Map<string, string[]>;
+    readonly actionKinds: Map<string, string[]>;
 }
 
 @injectable()
 export class DefaultGlobalActionProvider implements GlobalActionProvider {
-    public readonly serverActionKinds: Map<string, string[]>;
-    public readonly clientActionKinds: Map<string, string[]>;
+    public readonly actionKinds: Map<string, string[]>;
 
     constructor(
         @inject(InjectionContainer) serverContainer: Container,
         @inject(DiagramModules) diagramModules: Map<string, ContainerModule[]>
     ) {
-        this.serverActionKinds = new Map();
-        this.clientActionKinds = new Map();
+        this.actionKinds = new Map();
         diagramModules.forEach((modules, diagramType) => {
             const container = this.createDiagramContainer(serverContainer, modules);
             const initializers = container.getAll<ClientSessionInitializer>(ClientSessionInitializer);
             initializers.forEach(service => service.initialize());
-            this.loadServerActionKinds(diagramType, container);
-            this.loadClientActionKinds(diagramType, container);
+            this.loadActionKinds(diagramType, container);
             container.unbindAll();
         });
     }
 
     createDiagramContainer(serverContainer: Container, modules: ContainerModule[]): Container {
         const container = serverContainer.createChild();
-        container.load(...modules);
+        const clientSessionModule = createClientSessionModule({
+            clientId: 'tempId',
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            glspClient: { process: () => {} },
+            clientActionKinds: []
+        });
+        container.load(...modules, clientSessionModule);
         return container;
     }
 
-    loadServerActionKinds(diagramType: string, diagramContainer: Container): void {
+    loadActionKinds(diagramType: string, diagramContainer: Container): void {
         const handlerRegistry = diagramContainer.get<ActionHandlerRegistry>(ActionHandlerRegistry);
-        const diagramServerActions = this.serverActionKinds.get(diagramType) ?? [];
-        handlerRegistry
-            .getAll()
-            .filter(handler => !(handler instanceof ClientActionHandler))
-            .forEach(handler => diagramServerActions.push(...handler.actionKinds));
-        this.serverActionKinds.set(diagramType, [...new Set(diagramServerActions)]);
-    }
-
-    loadClientActionKinds(diagramType: string, diagramContainer: Container): void {
-        const clientActionKinds = diagramContainer.getAll<string>(ClientActionKinds);
-        const diagramClientActions = this.clientActionKinds.get(diagramType) ?? [];
-        diagramClientActions.push(...clientActionKinds);
-        this.clientActionKinds.set(diagramType, diagramClientActions);
+        const diagramServerActions = this.actionKinds.get(diagramType) ?? [];
+        handlerRegistry.getAll().forEach(handler => distinctAdd(diagramServerActions, ...handler.actionKinds));
+        this.actionKinds.set(diagramType, diagramServerActions);
     }
 }

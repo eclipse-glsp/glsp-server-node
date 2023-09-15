@@ -13,13 +13,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GModelRootSchema } from '@eclipse-glsp/graph';
+import { GModelRoot, GModelRootSchema } from '@eclipse-glsp/graph';
 import {
     Action,
     DirtyStateChangeReason,
     MarkersReason,
     MaybePromise,
     RequestBoundsAction,
+    RequestModelAction,
     SetDirtyStateAction,
     SetMarkersAction,
     SetModelAction,
@@ -35,6 +36,15 @@ import { GModelFactory } from './gmodel-factory';
 import { GModelSerializer } from './gmodel-serializer';
 import { ModelState } from './model-state';
 
+/**
+ * Helper class that provides utility methods to handle model updates i.e.
+ * submit a new model to the client. In addition, to the core model update action this class
+ * also takes care of related behavior like dirty state handling, validation and client/server side layouting.
+ * Note that the submissions handler is only responsible for deriving the set of actions that comprise a model update
+ * but does not actually dispatch them. The returned actions should be either manually dispatched
+ * to the `ActionDispatcher`, or simply returned as the result of an
+ * `ActionHandler.execute` method.
+ */
 @injectable()
 export class ModelSubmissionHandler {
     @inject(DiagramConfiguration)
@@ -60,8 +70,34 @@ export class ModelSubmissionHandler {
     @optional()
     protected validator?: ModelValidator;
 
+    protected requestModelAction?: RequestModelAction;
+
     /**
-     * Returns a list of actions to update the client-side model, based on the specified <code>modelState</code>.
+     * Returns a list of actions to submit the initial revision of the client-side model, based on the injected
+     * {@link GModelState}. Typically this method is invoked by the {@link RequestModelActionHandler} when the diagram
+     * is (re)loaded.
+     * <p>
+     * These actions are not processed by this {@link ModelSubmissionHandler}, but should be either manually dispatched
+     * to the {@link ActionDispatcher}, or simply returned as the result of an
+     * {@link ActionHandler#execute(Action)} method.
+     * </p>
+     *
+     * @param requestAction The {@link RequestModelAction} that triggere the initial model update
+     * @return A list of actions to be processed in order to submit the intial model.
+     *
+     */
+    submitInitialModel(requestAction: RequestModelAction): MaybePromise<Action[]> {
+        /*
+         * In the default update action flow a `RequestModelAction` does not directly trigger a `SetModelAction` response
+         * (RequestModelAction (C) -> RequestBoundsAction (S) -> ComputedBoundsAction (C) -> SetModelACtion (S)
+         * Therefore we temporarily store the action later retrival
+         */
+        this.requestModelAction = requestAction;
+        return this.submitModel();
+    }
+
+    /**
+     * Returns a list of actions to update the client-side model, based on the injected {@link ModelState}
      *
      * These actions are not processed by this {@link ModelSubmissionHandler}, but should be either manually dispatched
      * to the `ActionDispatcher`, or simply returned as the result of an `ActionHandler.execute()` method.
@@ -71,13 +107,15 @@ export class ModelSubmissionHandler {
      */
     submitModel(reason?: DirtyStateChangeReason): MaybePromise<Action[]> {
         this.modelFactory.createModel();
-        this.modelState.root.revision = (this.modelState.root.revision ?? 0) + 1;
+
+        const revision = this.requestModelAction ? 0 : this.modelState.root.revision! + 1;
+        this.modelState.root.revision = revision;
         const root = this.serializeGModel();
 
         if (this.diagramConfiguration.needsClientLayout) {
             return [RequestBoundsAction.create(root), SetDirtyStateAction.create(this.commandStack.isDirty, { reason })];
         }
-        return [SetModelAction.create(root)];
+        return this.submitModelDirectly(reason);
     }
 
     /**
@@ -102,7 +140,7 @@ export class ModelSubmissionHandler {
         }
         const result: Action[] = [];
         result.push(
-            root.revision === 0
+            this.requestModelAction
                 ? SetModelAction.create(root)
                 : UpdateModelAction.create(root, { animate: this.diagramConfiguration.animatedUpdate })
         );
@@ -114,6 +152,13 @@ export class ModelSubmissionHandler {
             result.push(SetMarkersAction.create(markers, { reason: MarkersReason.LIVE }));
         }
         return result;
+    }
+
+    protected createSetModeAction(newRoot: GModelRoot): SetModelAction {
+        const responseId = this.requestModelAction?.requestId ?? '';
+        const response = SetModelAction.create(newRoot, { responseId });
+        this.requestModelAction = undefined;
+        return response;
     }
 
     protected serializeGModel(): GModelRootSchema {
