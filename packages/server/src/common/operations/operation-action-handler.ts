@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, MaybePromise, Operation, ServerMessageAction } from '@eclipse-glsp/protocol';
+import { Action, MaybePromise, MessageAction, Operation } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../actions/action-handler';
 import { Command } from '../command/command';
@@ -47,7 +47,7 @@ export class OperationActionHandler implements ActionHandler {
         }
         if (this.modelState.isReadonly) {
             return [
-                ServerMessageAction.create(`Server is in readonly-mode! Could not execute operation: ${action.kind}`, {
+                MessageAction.create(`Server is in readonly-mode! Could not execute operation: ${action.kind}`, {
                     severity: 'WARNING'
                 })
             ];

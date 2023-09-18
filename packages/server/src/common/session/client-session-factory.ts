@@ -52,18 +52,18 @@ export class DefaultClientSessionFactory implements ClientSessionFactory {
     protected glspClient: GLSPClientProxy;
 
     create(params: InitializeClientSessionParameters): ClientSession {
-        const { clientSessionId: id, diagramType, args } = params;
+        const { clientSessionId: clientId, diagramType, clientActionKinds, args } = params;
         const diagramModules = this.diagramModules.get(diagramType);
         if (!diagramModules || diagramModules.length === 0) {
             throw new GLSPServerError(`Could not retrieve diagram module configuration for diagram type: '${diagramType}''`);
         }
 
-        const sessionModule = createClientSessionModule(id, this.glspClient);
+        const sessionModule = createClientSessionModule({ clientId, glspClient: this.glspClient, clientActionKinds });
         const sessionContainer = this.serverContainer.createChild();
         sessionContainer.load(...diagramModules, sessionModule);
         const initializers = sessionContainer.getAll<ClientSessionInitializer>(ClientSessionInitializer);
         initializers.forEach(service => service.initialize(args));
         const actionDispatcher = sessionContainer.get<ActionDispatcher>(ActionDispatcher);
-        return new DefaultClientSession(id, diagramType, actionDispatcher, sessionContainer);
+        return new DefaultClientSession(clientId, diagramType, actionDispatcher, sessionContainer);
     }
 }

@@ -24,6 +24,7 @@ import { Logger } from '../utils/logger';
 import { DefaultActionDispatcher } from './action-dispatcher';
 import { ActionHandler } from './action-handler';
 import { ActionHandlerRegistry } from './action-handler-registry';
+import { ClientActionForwarder } from './client-action-handler';
 import assert = require('assert');
 
 function waitSync(timeInMillis: number): void {
@@ -48,6 +49,7 @@ describe('test DefaultActionDispatcher', () => {
             bind(ClientId).toConstantValue(clientId);
             bind(ActionHandlerRegistry).toConstantValue(actionHandlerRegistry);
             bind(ClientActionKinds).toConstantValue(['response', 'response1', 'response2']);
+            bind(ClientActionForwarder).toConstantValue(sinon.createStubInstance(ClientActionForwarder));
         })
     );
     const actionDispatcher = container.resolve(DefaultActionDispatcher);

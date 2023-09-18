@@ -13,13 +13,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
+import * as sinon from 'sinon';
 import * as mock from '../test/mock-util';
 import { Logger } from '../utils/logger';
 import { ClientSessionFactory } from './client-session-factory';
 import { DefaultClientSessionManager } from './client-session-manager';
-import { expect } from 'chai';
-import * as sinon from 'sinon';
 
 describe('test DefaultClientSessionManager', () => {
     const testSession = mock.createClientSession('myId', 'myDiagram');
@@ -47,7 +47,8 @@ describe('test DefaultClientSessionManager', () => {
         // Test execution
         const createdSession = sessionManager.getOrCreateClientSession({
             clientSessionId: testSession.id,
-            diagramType: testSession.diagramType
+            diagramType: testSession.diagramType,
+            clientActionKinds: []
         });
         expect(createdSession).to.not.be.undefined;
         expect(createdSession.id).to.be.equal(testSession.id);
