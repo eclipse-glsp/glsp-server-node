@@ -111,8 +111,8 @@ export class GModelRecordingCommand extends AbstractRecordingCommand<GModelRootS
         return this.serializer.createSchema(this.modelState.root);
     }
 
-    protected override applyPatch(rootSchema: GModelRootSchema, patch: jsonPatch.Operation[]): MaybePromise<void> {
-        super.applyPatch(rootSchema, patch);
+    protected override async applyPatch(rootSchema: GModelRootSchema, patch: jsonPatch.Operation[]): Promise<void> {
+        await super.applyPatch(rootSchema, patch);
         const newRoot = this.serializer.createRoot(rootSchema);
         this.modelState.updateRoot(newRoot);
     }

@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GModelRoot, GModelRootSchema } from '@eclipse-glsp/graph';
+import { GModelRootSchema } from '@eclipse-glsp/graph';
 import {
     Action,
     DirtyStateChangeReason,
@@ -141,7 +141,7 @@ export class ModelSubmissionHandler {
         const result: Action[] = [];
         result.push(
             this.requestModelAction
-                ? SetModelAction.create(root)
+                ? this.createSetModeAction(root)
                 : UpdateModelAction.create(root, { animate: this.diagramConfiguration.animatedUpdate })
         );
         if (!this.diagramConfiguration.needsClientLayout) {
@@ -154,7 +154,7 @@ export class ModelSubmissionHandler {
         return result;
     }
 
-    protected createSetModeAction(newRoot: GModelRoot): SetModelAction {
+    protected createSetModeAction(newRoot: GModelRootSchema): SetModelAction {
         const responseId = this.requestModelAction?.requestId ?? '';
         const response = SetModelAction.create(newRoot, { responseId });
         this.requestModelAction = undefined;
