@@ -62,14 +62,13 @@ export class PromiseQueue<T = void> {
             return false;
         }
 
-        try {
-            this.busy = true;
-            this.resolveQueuedPromise(element);
-        } catch (error) {
+        this.busy = true;
+        this.resolveQueuedPromise(element).catch(error => {
             element.reject(error);
             this.busy = false;
             this.dequeue();
-        }
+        });
+
         return true;
     }
 
