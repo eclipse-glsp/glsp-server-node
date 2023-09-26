@@ -19,6 +19,11 @@ import { Command, CompoundCommand } from '../command/command';
 import { OperationHandler } from './operation-handler';
 import { OperationHandlerRegistry } from './operation-handler-registry';
 
+/**
+ * Generic {@link OperationHandler} from {@link CompoundOperations}.
+ * Retrieves the corresponding execution commands for the list of (sub) operations
+ * and constructs a {@link CompoundCommand} for them.
+ */
 @injectable()
 export class CompoundOperationHandler extends OperationHandler {
     @inject(OperationHandlerRegistry)
@@ -27,7 +32,7 @@ export class CompoundOperationHandler extends OperationHandler {
     operationType = CompoundOperation.KIND;
 
     async createCommand(operation: CompoundOperation): Promise<Command | undefined> {
-        const maybeCommands = operation.operationList.map(op => this.operationHandlerRegistry.getExecutableCommand(op));
+        const maybeCommands = operation.operationList.map(op => this.operationHandlerRegistry.getOperationHandler(op)?.execute(op));
         const commands: Command[] = [];
 
         for await (const command of maybeCommands) {

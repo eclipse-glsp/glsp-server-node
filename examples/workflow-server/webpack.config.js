@@ -57,6 +57,6 @@ module.exports = env => {
                 }
             ]
         },
-        ignoreWarnings: [/Failed to parse source map/]
+        ignoreWarnings: [/Failed to parse source map/, /Can't resolve .* in '.*ws\/lib'/]
     };
 };

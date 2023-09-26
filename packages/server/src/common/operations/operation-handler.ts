@@ -37,7 +37,7 @@ export abstract class OperationHandler {
      *
      * @returns the operation type that can be handled.
      */
-    abstract operationType: string;
+    abstract readonly operationType: string;
 
     readonly label?: string;
 
@@ -46,7 +46,7 @@ export abstract class OperationHandler {
      * is performed on the model(s).
      *
      * @param operation The operation to process.
-     * @return The created command to be executed on the command stack or `undefined` nothing should be done.
+     * @return The created command to be executed on the command stack or `undefined` if nothing should be done.
      */
     abstract createCommand(operation: Operation): MaybePromise<Command | undefined>;
 

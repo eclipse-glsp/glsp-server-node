@@ -71,6 +71,7 @@ export * from './gmodel/index';
 export * from './launch/glsp-server-launcher';
 export * from './operations/compound-operation-handler';
 export * from './operations/create-operation-handler';
+export * from './operations/json-operation-handler';
 export * from './operations/operation-action-handler';
 export * from './operations/operation-handler';
 export * from './operations/operation-handler-registry';

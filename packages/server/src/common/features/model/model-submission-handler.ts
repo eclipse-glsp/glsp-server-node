@@ -110,9 +110,9 @@ export class ModelSubmissionHandler {
 
         const revision = this.requestModelAction ? 0 : this.modelState.root.revision! + 1;
         this.modelState.root.revision = revision;
-        const root = this.serializeGModel();
 
         if (this.diagramConfiguration.needsClientLayout) {
+            const root = this.serializeGModel();
             return [RequestBoundsAction.create(root), SetDirtyStateAction.create(this.commandStack.isDirty, { reason })];
         }
         return this.submitModelDirectly(reason);
