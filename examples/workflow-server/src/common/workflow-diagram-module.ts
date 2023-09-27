@@ -20,6 +20,7 @@ import {
     ContextEditValidator,
     ContextMenuItemProvider,
     DiagramConfiguration,
+    EdgeCreationChecker,
     GLSPServer,
     GModelDiagramModule,
     InstanceMultiBinding,
@@ -55,6 +56,7 @@ import { EditTaskOperationHandler } from './taskedit/edit-task-operation-handler
 import { TaskEditContextActionProvider } from './taskedit/task-edit-context-provider';
 import { TaskEditValidator } from './taskedit/task-edit-validator';
 import { WorkflowDiagramConfiguration } from './workflow-diagram-configuration';
+import { WorkflowEdgeCreationChecker } from './workflow-edge-creation-checker';
 import { WorkflowGLSPServer } from './workflow-glsp-server';
 import { WorkflowPopupFactory } from './workflow-popup-factory';
 
@@ -132,5 +134,9 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
     protected override configureContextEditValidators(binding: MultiBinding<ContextEditValidator>): void {
         super.configureContextEditValidators(binding);
         binding.add(TaskEditValidator);
+    }
+
+    protected override bindEdgeCreationChecker(): BindingTarget<EdgeCreationChecker> | undefined {
+        return WorkflowEdgeCreationChecker;
     }
 }
