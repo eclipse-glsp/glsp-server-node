@@ -14,8 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 /* Derived from sprotty (https://github.com/eclipse/sprotty/blob/master/packages/sprotty/src/base/model/smodel-factory.ts) */
-import { GModelElement, GModelElementConstructor, GModelElementSchema, GModelRoot, GModelRootSchema } from '@eclipse-glsp/graph';
-import { SModelElementSchema, SModelRootSchema } from '@eclipse-glsp/protocol';
+import { GModelElement, GModelElementConstructor, GModelRoot } from '@eclipse-glsp/graph';
+import { GModelElementSchema, GModelRootSchema } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { DiagramConfiguration } from '../../diagram/diagram-configuration';
 import { GLSPServerError } from '../../utils/glsp-server-error';
@@ -65,7 +65,7 @@ export class DefaultGModelSerializer implements GModelSerializer {
     @inject(DiagramConfiguration) protected diagramConfiguration: DiagramConfiguration;
 
     reservedKeys = ['children', 'parent', 'index', 'source', 'target'];
-    createRoot(schema: SModelElementSchema): GModelRoot {
+    createRoot(schema: GModelElementSchema): GModelRoot {
         const constructor = this.getConfiguredConstructor(schema);
         if (constructor) {
             const element = new constructor();
@@ -77,7 +77,7 @@ export class DefaultGModelSerializer implements GModelSerializer {
         throw new GLSPServerError(`No constructor is configured in DiagramConfiguration for type ${schema.type}`);
     }
 
-    getConfiguredConstructor(schema: SModelElementSchema): GModelElementConstructor | undefined {
+    getConfiguredConstructor(schema: GModelElementSchema): GModelElementConstructor | undefined {
         let key = schema.type;
         while (!this.diagramConfiguration.typeMapping.has(key)) {
             const i = key.lastIndexOf(':');
@@ -95,7 +95,7 @@ export class DefaultGModelSerializer implements GModelSerializer {
         return constructor;
     }
 
-    createElement(schema: SModelElementSchema, parent?: GModelElement): GModelElement {
+    createElement(schema: GModelElementSchema, parent?: GModelElement): GModelElement {
         const constructor = this.getConfiguredConstructor(schema);
         if (constructor) {
             const element = new constructor();
@@ -109,7 +109,7 @@ export class DefaultGModelSerializer implements GModelSerializer {
         throw new GLSPServerError(`No constructor is configured in DiagramConfiguration for type ${schema.type}`);
     }
 
-    createSchema(element: GModelElement): SModelElementSchema {
+    createSchema(element: GModelElement): GModelElementSchema {
         const schema = {};
         for (const key in element) {
             if (!this.isReserved(element, key)) {
@@ -121,15 +121,15 @@ export class DefaultGModelSerializer implements GModelSerializer {
         }
         (schema as any)['children'] = (element.children ?? []).map(child => this.createSchema(child));
 
-        return schema as SModelElementSchema;
+        return schema as GModelElementSchema;
     }
 
-    protected initializeRoot(root: GModelRoot, schema: SModelRootSchema): GModelRoot {
+    protected initializeRoot(root: GModelRoot, schema: GModelRootSchema): GModelRoot {
         this.initializeParent(root, schema);
         return root;
     }
 
-    protected initializeElement(element: GModelElement, schema: SModelElementSchema): GModelElement {
+    protected initializeElement(element: GModelElement, schema: GModelRootSchema): GModelElement {
         for (const key in schema) {
             if (!this.isReserved(element, key)) {
                 const value = (schema as any)[key];
@@ -141,7 +141,7 @@ export class DefaultGModelSerializer implements GModelSerializer {
         return element;
     }
 
-    protected initializeChild(child: GModelElement, schema: SModelElementSchema, parent?: GModelElement): GModelElement {
+    protected initializeChild(child: GModelElement, schema: GModelElementSchema, parent?: GModelElement): GModelElement {
         this.initializeParent(child, schema);
         if (parent) {
             child.parent = parent;
@@ -149,7 +149,7 @@ export class DefaultGModelSerializer implements GModelSerializer {
         return child;
     }
 
-    protected initializeParent(parent: GModelElement, schema: SModelElementSchema): GModelElement {
+    protected initializeParent(parent: GModelElement, schema: GModelElementSchema): GModelElement {
         this.initializeElement(parent, schema);
         if (schema.children) {
             parent.children = schema.children.map(childSchema => this.createElement(childSchema, parent));

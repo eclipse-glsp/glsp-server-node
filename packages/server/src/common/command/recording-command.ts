@@ -14,8 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { GModelRootSchema } from '@eclipse-glsp/graph';
-import { AnyObject, MaybePromise, SModelRootSchema } from '@eclipse-glsp/protocol';
+import { AnyObject, GModelElementSchema, GModelRootSchema, MaybePromise } from '@eclipse-glsp/protocol';
 import * as jsonPatch from 'fast-json-patch';
 import { GModelSerializer } from '../features/model/gmodel-serializer';
 import { ModelState } from '../features/model/model-state';
@@ -102,7 +101,7 @@ export class GModelRecordingCommand extends AbstractRecordingCommand<GModelRootS
         return this.serializer.createSchema(this.modelState.root);
     }
 
-    protected override postChange(newModel: SModelRootSchema): MaybePromise<void> {
+    protected override postChange(newModel: GModelElementSchema): MaybePromise<void> {
         const newRoot = this.serializer.createRoot(newModel);
         this.modelState.updateRoot(newRoot);
     }

@@ -18,7 +18,7 @@ import { GButton } from './gbutton';
 import { GCompartment } from './gcompartment';
 import { GEdge } from './gedge';
 import { GGraph } from './ggraph';
-import { GHtmlRoot } from './ghtmlroot';
+import { GHtmlRoot } from './ghtml-root';
 import { GIssueMarker } from './gissue-marker';
 import { GLabel } from './glabel';
 import { GModelElementConstructor } from './gmodel-element';
