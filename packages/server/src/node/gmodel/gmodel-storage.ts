@@ -13,8 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GGraph, GModelElementSchema } from '@eclipse-glsp/graph';
-import { MaybePromise, RequestModelAction, SaveModelAction } from '@eclipse-glsp/protocol';
+import { GGraph } from '@eclipse-glsp/graph';
+import { MaybePromise, RequestModelAction, SaveModelAction, isGModelElementSchema } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { GModelSerializer } from '../../common/features/model/gmodel-serializer';
 import { ModelState } from '../../common/features/model/model-state';
@@ -40,7 +40,7 @@ export class GModelStorage extends AbstractJsonModelStorage {
 
     loadSourceModel(action: RequestModelAction): MaybePromise<void> {
         const sourceUri = this.getSourceUri(action);
-        const rootSchema = this.loadFromFile(sourceUri, GModelElementSchema.is);
+        const rootSchema = this.loadFromFile(sourceUri, isGModelElementSchema);
         const root = this.modelSerializer.createRoot(rootSchema);
         this.modelState.updateRoot(root);
     }

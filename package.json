@@ -28,7 +28,7 @@
     "watch": "lerna run --parallel watch"
   },
   "devDependencies": {
-    "@eclipse-glsp/dev": "next",
+    "@eclipse-glsp/dev": "1.1.0-next.3b7f01d.144",
     "@types/node": "16.x",
     "lerna": "^6.6.2",
     "typescript": "^5.0.4"

@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GBoundsAware, GEdge, GModelElement, isGBoundsAware } from '@eclipse-glsp/graph';
-import { EditorContext, MaybePromise, PasteOperation, Point, SModelElementSchema } from '@eclipse-glsp/protocol';
+import { EditorContext, GModelElementSchema, MaybePromise, PasteOperation, Point } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import * as uuid from 'uuid';
 import { Command } from '../command/command';
@@ -38,7 +38,7 @@ export class GModelPasteOperationHandler extends GModelOperationHandler {
     }
 
     protected getCopiedElements(jsonString: string): GModelElement[] {
-        const schemas: SModelElementSchema[] = JSON.parse(jsonString);
+        const schemas: GModelElementSchema[] = JSON.parse(jsonString);
         return schemas.map(schema => this.modelSerializer.createElement(schema, this.modelState.root));
     }
 
