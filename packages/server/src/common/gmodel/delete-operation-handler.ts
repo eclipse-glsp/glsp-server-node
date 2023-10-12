@@ -72,7 +72,7 @@ export class GModelDeleteOperationHandler extends GModelOperationHandler {
         }
 
         const dependents = new Set<GModelElement>();
-        this.collectDependents(dependents, nodeToDelete);
+        this.collectDependents(dependents, nodeToDelete, false);
 
         dependents.forEach(dependant => {
             const index = this.modelState.root.children.findIndex(element => element === dependant);
@@ -85,22 +85,23 @@ export class GModelDeleteOperationHandler extends GModelOperationHandler {
         return true;
     }
 
-    protected collectDependents(dependents: Set<GModelElement>, nodeToDelete: GModelElement): void {
+    protected collectDependents(dependents: Set<GModelElement>, nodeToDelete: GModelElement, isChild: boolean): void {
         if (dependents.has(nodeToDelete)) {
             return;
         }
 
         if (nodeToDelete.children.length > 0) {
-            nodeToDelete.children.forEach(child => this.collectDependents(dependents, child));
+            nodeToDelete.children.forEach(child => this.collectDependents(dependents, child, true));
         }
 
         if (nodeToDelete instanceof GNode) {
             const index = this.modelState.index;
+
             index.getIncomingEdges(nodeToDelete).forEach(incoming => {
-                this.collectDependents(dependents, incoming);
+                dependents.add(incoming);
             });
             index.getOutgoingEdges(nodeToDelete).forEach(outgoing => {
-                this.collectDependents(dependents, outgoing);
+                dependents.add(outgoing);
             });
         }
 
