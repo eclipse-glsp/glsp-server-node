@@ -1,6 +1,6 @@
 {
   "name": "parent",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -16,7 +16,7 @@
     "lint:ci": "lerna run lint:ci",
     "prepare": "lerna run prepare",
     "publish:latest": "lerna publish from-git --no-git-reset --no-git-tag-version --no-verify-access --no-push",
-    "publish:next": "SHA=$(git rev-parse --short HEAD) && lerna publish preminor --exact --canary --preid next.${SHA} --dist-tag next --no-git-reset --no-git-tag-version --no-push --ignore-scripts --yes --no-verify-access",
+    "publish:next": "lerna publish preminor --exact --canary --preid next --dist-tag next --no-git-reset --no-git-tag-version --no-push --ignore-scripts --yes",
     "publish:prepare": "lerna version --ignore-scripts --yes --no-push",
     "start": "yarn --cwd examples/workflow-server-bundled start",
     "start:websocket": "yarn --cwd examples/workflow-server-bundled start:websocket",
@@ -28,7 +28,7 @@
     "watch": "lerna run --parallel watch"
   },
   "devDependencies": {
-    "@eclipse-glsp/dev": "1.1.0-next.3b7f01d.144",
+    "@eclipse-glsp/dev": "2.0.0",
     "@types/node": "16.x",
     "lerna": "^6.6.2",
     "typescript": "^5.0.4"
