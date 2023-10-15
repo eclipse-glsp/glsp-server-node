@@ -1,6 +1,6 @@
 # Eclipse GLSP Server Changelog
 
-## v2.0.0 - 14/10/2023
+## [v2.0.0 - 14/10/2023]((https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.0.0))
 
 ### Changes
 
@@ -45,12 +45,12 @@
     -   Server type definitions are now consumed from `@eclipse-glsp/protocol`
     -   `GLSPServer` implementation is no longer relies on json-rpc implementation details.
     -   JSON-RPC setup is now done with `JsonRpcGLSPServerLauncher`
--   Provide `CommandStack` API to support undo/redo of model changes [#38](https://github.com/eclipse-glsp/glsp-server-node/pull/38) [#39](https://github.com/eclipse-glsp/glsp-server-node/pull/39) - Contributed on behalf of STMicroelectronics
+-   [api] Provide `CommandStack` API to support undo/redo of model changes [#38](https://github.com/eclipse-glsp/glsp-server-node/pull/38) [#39](https://github.com/eclipse-glsp/glsp-server-node/pull/39) - Contributed on behalf of STMicroelectronics
     -   `ModelState` no longer has a `isDirty` property
     -   Breaking refactor of `OperationHandler` API
 -   [deps] Update to inversify 6.x and Typescript 5.x. [#48](https://github.com/eclipse-glsp/glsp-server-node/pull/48)
     -   GLSP uses a synchronous inversify context this means with inversify 6.x decorator methods (e.g. `@postConstruct`) with asynchronous results are no longer supported
--   Revise model loading and client action handling [#57](https://github.com/eclipse-glsp/glsp-server-node/pull/57) [#58](https://github.com/eclipse-glsp/glsp-server-node/pull/58)
+-   [api] Revise model loading and client action handling [#57](https://github.com/eclipse-glsp/glsp-server-node/pull/57) [#58](https://github.com/eclipse-glsp/glsp-server-node/pull/58)
     -   Refactor `ModelSubmissionHandler` to enable handling of `RequestModelAction` as proper request action
         -   Introduce a `submitInitialModel` method that is called by the `RequestModelActionHandler`
     -   Remove `configureClientActions` from `DiagramModule` as client actions are now implicitly configured via `InitializeClientSession` request

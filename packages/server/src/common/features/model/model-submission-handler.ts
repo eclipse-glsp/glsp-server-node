@@ -74,7 +74,7 @@ export class ModelSubmissionHandler {
 
     /**
      * Returns a list of actions to submit the initial revision of the client-side model, based on the injected
-     * {@link GModelState}. Typically this method is invoked by the {@link RequestModelActionHandler} when the diagram
+     * {@link ModelState}. Typically this method is invoked by the {@link RequestModelActionHandler} when the diagram
      * is (re)loaded.
      * <p>
      * These actions are not processed by this {@link ModelSubmissionHandler}, but should be either manually dispatched
