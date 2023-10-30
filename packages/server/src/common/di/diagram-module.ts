@@ -75,6 +75,8 @@ import {
     NavigationTargetProviders,
     Operations
 } from './service-identifiers';
+import { DefaultSmartConnectorItemProvider, SmartConnectorItemProvider } from '../features/contextactions/smart-connector-item-provider';
+import { OpenSmartConnectorActionHandler } from '../features/contextactions/smart-connector-action-handler';
 
 /**
  * The diagram module is the central configuration artifact for configuring a client session specific injector. For each
@@ -151,6 +153,7 @@ export abstract class DiagramModule extends GLSPModule {
         applyOptionalBindingTarget(context, ToolPaletteItemProvider, this.bindToolPaletteItemProvider());
         applyOptionalBindingTarget(context, CommandPaletteActionProvider, this.bindCommandPaletteActionProvider());
         applyOptionalBindingTarget(context, ContextMenuItemProvider, this.bindContextMenuItemProvider());
+        applyOptionalBindingTarget(context, SmartConnectorItemProvider, this.bindSmartConnectorPaletteActionProvider());
         this.configureMultiBinding(new MultiBinding<ContextActionsProvider>(ContextActionsProviders), binding =>
             this.configureContextActionProviders(binding)
         );
@@ -211,6 +214,7 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(SaveModelActionHandler);
         binding.add(UndoRedoActionHandler);
         binding.add(ComputedBoundsActionHandler);
+        binding.add(OpenSmartConnectorActionHandler);
     }
 
     protected bindDiagramType(): BindingTarget<string> {
@@ -337,6 +341,9 @@ export abstract class DiagramModule extends GLSPModule {
 
     protected bindToolPaletteItemProvider(): BindingTarget<ToolPaletteItemProvider> | undefined {
         return DefaultToolPaletteItemProvider;
+    }
+    protected bindSmartConnectorPaletteActionProvider(): BindingTarget<SmartConnectorItemProvider> | undefined {
+        return DefaultSmartConnectorItemProvider;
     }
     protected bindCommandPaletteActionProvider(): BindingTarget<CommandPaletteActionProvider> | undefined {
         return undefined;

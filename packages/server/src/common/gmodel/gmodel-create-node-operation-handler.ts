@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { GModelElement, GNode } from '@eclipse-glsp/graph';
-import { CreateNodeOperation, MaybePromise, Point, SelectAction, TriggerNodeCreationAction } from '@eclipse-glsp/protocol';
+import { CreateNodeOperation, MaybePromise, Point, SelectAction, TriggerNodeCreationAction, CreateEdgeOperation } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
 import { Command } from '../command/command';
@@ -51,6 +51,15 @@ export abstract class GModelCreateNodeOperationHandler extends GModelOperationHa
             container.children.push(element);
             element.parent = container;
             this.actionDispatcher.dispatchAfterNextUpdate(SelectAction.create({ selectedElementsIDs: [element.id] }));
+            // Creates default edge on node creation when a source ID is given in the CreateNodeOperation
+            if (operation.args?.createEdge) {
+                this.actionDispatcher.dispatchAfterNextUpdate(CreateEdgeOperation.create({
+                    //TODO: change to default edge type
+                    elementTypeId: 'edge',
+                    sourceElementId: operation.args?.source as string, 
+                    targetElementId: element.id
+                }))
+            }
         }
     }
 
