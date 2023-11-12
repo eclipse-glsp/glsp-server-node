@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { ArgsUtil, CreateNodeOperation, GNode, Point } from '@eclipse-glsp/server';
+import { ArgsUtil, CreateNodeOperation, GNode, Point, TriggerNodeCreationAction } from '@eclipse-glsp/server';
 import { Category, CategoryNodeBuilder } from '../graph-extension';
 import { ModelTypes } from '../util/model-types';
 import { CreateWorkflowNodeOperationHandler } from './create-workflow-node-operation-handler';
@@ -33,5 +33,15 @@ export class CreateCategoryHandler extends CreateWorkflowNodeOperationHandler {
             .name(this.label.replace(' ', '') + this.modelState.index.getAllByClass(Category).length)
             .addArgs(ArgsUtil.cornerRadius(5))
             .children();
+    }
+
+    override getTriggerActions(): TriggerNodeCreationAction[] {
+        return this.elementTypeIds.map(elementTypeId =>
+            TriggerNodeCreationAction.create(elementTypeId, {
+                ghostElement: {
+                    template: this.serializer.createSchema(this.builder(undefined).build()),
+                    dynamic: true
+                }
+            }));
     }
 }

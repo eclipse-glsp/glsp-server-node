@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Point } from '@eclipse-glsp/protocol';
+import { Point, TriggerNodeCreationAction } from '@eclipse-glsp/protocol';
 import { CreateNodeOperation, GNode } from '@eclipse-glsp/server';
 import { injectable } from 'inversify';
 import { TaskNode, TaskNodeBuilder } from '../graph-extension';
@@ -33,5 +33,15 @@ export abstract class CreateTaskHandler extends CreateWorkflowNodeOperationHandl
             .type(this.elementTypeIds[0])
             .taskType(ModelTypes.toNodeType(this.elementTypeIds[0]))
             .children();
+    }
+
+    override getTriggerActions(): TriggerNodeCreationAction[] {
+        return this.elementTypeIds.map(elementTypeId =>
+            TriggerNodeCreationAction.create(elementTypeId, {
+                ghostElement: {
+                    template: this.serializer.createSchema(this.builder(undefined).build()),
+                    dynamic: true
+                }
+            }));
     }
 }
