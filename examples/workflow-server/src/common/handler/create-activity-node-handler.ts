@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { CreateNodeOperation, GNode, Point, TriggerNodeCreationAction } from '@eclipse-glsp/server';
+import { CreateNodeOperation, GNode, GhostElement, Point } from '@eclipse-glsp/server';
 import { injectable } from 'inversify';
 import { ActivityNode, ActivityNodeBuilder } from '../graph-extension';
 import { ModelTypes } from '../util/model-types';
@@ -25,20 +25,14 @@ export abstract class CreateActivityNodeHandler extends CreateWorkflowNodeOperat
         return this.builder(relativeLocation).build();
     }
 
-    protected builder(point: Point | undefined): ActivityNodeBuilder {
+    protected builder(point: Point = Point.ORIGIN, elementTypeId = this.elementTypeIds[0]): ActivityNodeBuilder {
         return ActivityNode.builder()
-            .position(point ?? Point.ORIGIN)
-            .type(this.elementTypeIds[0])
-            .nodeType(ModelTypes.toNodeType(this.elementTypeIds[0]));
+            .position(point)
+            .type(elementTypeId)
+            .nodeType(ModelTypes.toNodeType(elementTypeId));
     }
 
-    override getTriggerActions(): TriggerNodeCreationAction[] {
-        return this.elementTypeIds.map(elementTypeId =>
-            TriggerNodeCreationAction.create(elementTypeId, {
-                ghostElement: {
-                    template: this.serializer.createSchema(this.builder(undefined).build()),
-                    dynamic: true
-                }
-            }));
+    override createTriggerGhostElement(elementTypeId: string): GhostElement | undefined {
+        return { template: this.serializer.createSchema(this.builder(undefined, elementTypeId).build()) };
     }
 }

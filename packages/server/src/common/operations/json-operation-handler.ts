@@ -16,8 +16,10 @@
 import { GModelElement } from '@eclipse-glsp/graph';
 import {
     AnyObject,
+    Args,
     CreateEdgeOperation,
     CreateNodeOperation,
+    GhostElement,
     MaybePromise,
     Point,
     TriggerEdgeCreationAction,
@@ -93,7 +95,20 @@ export abstract class JsonCreateNodeOperationHandler extends JsonOperationHandle
     abstract override createCommand(operation: CreateNodeOperation): MaybePromise<Command | undefined>;
 
     getTriggerActions(): TriggerNodeCreationAction[] {
-        return this.elementTypeIds.map(typeId => TriggerNodeCreationAction.create(typeId));
+        return this.elementTypeIds.map(elementTypeId => this.createTriggerNodeCreationAction(elementTypeId));
+    }
+
+    protected createTriggerNodeCreationAction(elementTypeId: string): TriggerNodeCreationAction {
+        return TriggerNodeCreationAction.create(elementTypeId,
+            { ghostElement: this.createTriggerGhostElement(elementTypeId), args: this.createTriggerArgs(elementTypeId) } );
+    }
+
+    protected createTriggerGhostElement(elementTypeId: string): GhostElement | undefined {
+        return undefined;
+    }
+
+    protected createTriggerArgs(elementTypeId: string): Args | undefined {
+        return undefined;
     }
 
     /**
