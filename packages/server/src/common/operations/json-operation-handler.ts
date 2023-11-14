@@ -38,8 +38,8 @@ import { OperationHandler } from './operation-handler';
  * Has to be implemented in order to reuse the {@link JsonOperationHandler} API.
  */
 export interface JsonModelState<JsonObject extends AnyObject = AnyObject> extends ModelState {
-    readonly sourceModel: JsonObject;
-    updateSourceModel(sourceModel: JsonObject): void;
+    readonly sourceModel: MaybePromise<JsonObject>;
+    updateSourceModel(sourceModel: JsonObject): MaybePromise<void>;
 }
 
 export namespace JsonModelState {
@@ -62,7 +62,7 @@ export class JsonRecordingCommand<JsonObject extends AnyObject = AnyObject> exte
     }
 
     protected override postChange(newModel: JsonObject): MaybePromise<void> {
-        this.modelState.updateSourceModel(newModel);
+        return this.modelState.updateSourceModel(newModel);
     }
 }
 

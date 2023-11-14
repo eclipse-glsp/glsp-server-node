@@ -33,7 +33,7 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
         const afterState = await this.getJsonObject();
         this.undoPatch = jsonPatch.compare(afterState, beforeState);
         this.redoPatch = jsonPatch.compare(beforeState, afterState);
-        this.postChange?.(afterState);
+        await this.postChange?.(afterState);
     }
 
     /**
@@ -65,14 +65,14 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
     async undo(): Promise<void> {
         if (this.undoPatch) {
             const result = this.applyPatch(await this.getJsonObject(), this.undoPatch);
-            this.postChange?.(result.newDocument);
+            await this.postChange?.(result.newDocument);
         }
     }
 
     async redo(): Promise<void> {
         if (this.redoPatch) {
             const result = this.applyPatch(await this.getJsonObject(), this.redoPatch);
-            this.postChange?.(result.newDocument);
+            await this.postChange?.(result.newDocument);
         }
     }
 
