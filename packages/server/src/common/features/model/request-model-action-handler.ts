@@ -61,7 +61,7 @@ export class RequestModelActionHandler implements ActionHandler {
         }
         this.reportModelLoadingFinished(progress);
 
-        return this.submissionHandler.submitModelDirectly();
+        return this.submissionHandler.submitInitialModel(action);
     }
 
     protected async handleReconnect(action: RequestModelAction): Promise<void> {

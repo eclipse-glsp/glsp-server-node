@@ -19,7 +19,7 @@ import { CreateNodeOperation, MaybePromise, Point, SelectAction, TriggerNodeCrea
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
 import { Command } from '../command/command';
-import { CreateOperationHandler, CreateOperationKind } from '../operations/create-operation-handler';
+import { CreateNodeOperationHandler } from '../operations/create-operation-handler';
 import { getRelativeLocation } from '../utils/layout-util';
 import { GModelOperationHandler } from './gmodel-operation-handler';
 
@@ -29,7 +29,7 @@ import { GModelOperationHandler } from './gmodel-operation-handler';
  * (i.e. all operation handlers directly modify the graphical model).
  */
 @injectable()
-export abstract class GModelCreateNodeOperationHandler extends GModelOperationHandler implements CreateOperationHandler {
+export abstract class GModelCreateNodeOperationHandler extends GModelOperationHandler implements CreateNodeOperationHandler {
     @inject(ActionDispatcher)
     protected actionDispatcher: ActionDispatcher;
 
@@ -37,7 +37,7 @@ export abstract class GModelCreateNodeOperationHandler extends GModelOperationHa
 
     abstract override label: string;
 
-    override operationType: CreateOperationKind = CreateNodeOperation.KIND;
+    override readonly operationType = CreateNodeOperation.KIND;
 
     override createCommand(operation: CreateNodeOperation): MaybePromise<Command | undefined> {
         return this.commandOf(() => this.executeCreation(operation));

@@ -14,8 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { GModelRootSchema } from '@eclipse-glsp/graph';
-import { AnyObject, MaybePromise } from '@eclipse-glsp/protocol';
+import { AnyObject, GModelElementSchema, GModelRootSchema, MaybePromise } from '@eclipse-glsp/protocol';
 import * as jsonPatch from 'fast-json-patch';
 import { GModelSerializer } from '../features/model/gmodel-serializer';
 import { ModelState } from '../features/model/model-state';
@@ -34,6 +33,7 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
         const afterState = await this.getJsonObject();
         this.undoPatch = jsonPatch.compare(afterState, beforeState);
         this.redoPatch = jsonPatch.compare(beforeState, afterState);
+        await this.postChange?.(afterState);
     }
 
     /**
@@ -48,8 +48,8 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
      */
     protected abstract doExecute(): MaybePromise<void>;
 
-    protected applyPatch(object: JsonObject, patch: jsonPatch.Operation[]): MaybePromise<void> {
-        jsonPatch.applyPatch(object, patch, false, true);
+    protected applyPatch(object: JsonObject, patch: jsonPatch.Operation[]): jsonPatch.PatchResult<JsonObject> {
+        return jsonPatch.applyPatch(object, patch, false, true);
     }
 
     /**
@@ -64,33 +64,28 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
 
     async undo(): Promise<void> {
         if (this.undoPatch) {
-            return this.applyPatch(await this.getJsonObject(), this.undoPatch);
+            const result = this.applyPatch(await this.getJsonObject(), this.undoPatch);
+            await this.postChange?.(result.newDocument);
         }
     }
 
     async redo(): Promise<void> {
         if (this.redoPatch) {
-            return this.applyPatch(await this.getJsonObject(), this.redoPatch);
+            const result = this.applyPatch(await this.getJsonObject(), this.redoPatch);
+            await this.postChange?.(result.newDocument);
         }
     }
 
     canUndo(): boolean {
         return !!this.undoPatch && !!this.redoPatch;
     }
-}
 
-/**
- * Simple base implementation of {@link AbstractRecordingCommand} that records the changes made to the given JSON object during
- * the the given `doExecute` function.
- */
-export class RecordingCommand<JsonObject extends AnyObject = AnyObject> extends AbstractRecordingCommand<JsonObject> {
-    constructor(protected jsonObject: JsonObject, protected doExecute: () => MaybePromise<void>) {
-        super();
-    }
-
-    protected getJsonObject(): MaybePromise<JsonObject> {
-        return this.jsonObject;
-    }
+    /**
+     * Optional hook that (if implemented) will be
+     * executed after every command-driven action that changed
+     * the underlying model i.e. command execute, undo and redo.
+     */
+    protected postChange?(newModel: JsonObject): MaybePromise<void>;
 }
 
 /**
@@ -102,18 +97,12 @@ export class GModelRecordingCommand extends AbstractRecordingCommand<GModelRootS
         super();
     }
 
-    override async execute(): Promise<void> {
-        await super.execute();
-        this.modelState.index.indexRoot(this.modelState.root);
-    }
-
     protected getJsonObject(): MaybePromise<GModelRootSchema> {
         return this.serializer.createSchema(this.modelState.root);
     }
 
-    protected override applyPatch(rootSchema: GModelRootSchema, patch: jsonPatch.Operation[]): MaybePromise<void> {
-        super.applyPatch(rootSchema, patch);
-        const newRoot = this.serializer.createRoot(rootSchema);
+    protected override postChange(newModel: GModelElementSchema): MaybePromise<void> {
+        const newRoot = this.serializer.createRoot(newModel);
         this.modelState.updateRoot(newRoot);
     }
 }

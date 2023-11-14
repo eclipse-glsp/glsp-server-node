@@ -21,7 +21,6 @@ import { ClientActionForwarder } from '../actions/client-action-handler';
 import { CommandStack, DefaultCommandStack } from '../command/command-stack';
 import { UndoRedoActionHandler } from '../command/undo-redo-action-handler';
 import { DiagramConfiguration } from '../diagram/diagram-configuration';
-import { RequestTypeHintsActionHandler } from '../diagram/request-type-hints-action-handler';
 import { CommandPaletteActionProvider } from '../features/contextactions/command-palette-action-provider';
 import { ContextActionsProvider } from '../features/contextactions/context-actions-provider';
 import { ContextActionsProviderRegistry } from '../features/contextactions/context-actions-provider-registry';
@@ -57,6 +56,9 @@ import { ResolveNavigationTargetsActionHandler } from '../features/navigation/re
 import { PopupModelFactory } from '../features/popup/popup-model-factory';
 import { RequestPopupModelActionHandler } from '../features/popup/request-popup-model-action-handler';
 import { DefaultProgressService, ProgressService } from '../features/progress/progress-service';
+import { EdgeCreationChecker } from '../features/type-hints/edge-creation-checker';
+import { RequestCheckEdgeActionHandler } from '../features/type-hints/request-check-edge-action-handler';
+import { RequestTypeHintsActionHandler } from '../features/type-hints/request-type-hints-action-handler';
 import { ModelValidator } from '../features/validation/model-validator';
 import { RequestMarkersHandler } from '../features/validation/request-markers-handler';
 import { CompoundOperationHandler } from '../operations/compound-operation-handler';
@@ -123,6 +125,7 @@ import { OpenSmartConnectorActionHandler } from '../features/contextactions/smar
  * - {@link ClientSessionInitializer} as {@link ClassMultiBinding<ClientSessionInitializer>}
  * - {@link PopupModelFactory}  as optional binding
  * - {@link LayoutEngine}  as optional binding
+ * - {@link EdgeCreationChecker}  as optional binding
  */
 
 export abstract class DiagramModule extends GLSPModule {
@@ -175,7 +178,7 @@ export abstract class DiagramModule extends GLSPModule {
         applyBindingTarget(context, CommandStack, this.bindCommandStack()).inSingletonScope();
 
         // Navigation
-        applyOptionalBindingTarget(context, NavigationTargetResolver, this.bindNavigationTargetResolver());
+        applyOptionalBindingTarget(context, NavigationTargetResolver, this.bindNavigationTargetResolver())?.inSingletonScope();
         this.configureMultiBinding(new MultiBinding<NavigationTargetProvider>(NavigationTargetProviders), binding =>
             this.configureNavigationTargetProviders(binding)
         );
@@ -192,8 +195,9 @@ export abstract class DiagramModule extends GLSPModule {
             this.configureClientSessionInitializers(binding)
         );
         applyBindingTarget(context, ProgressService, this.bindProgressService()).inSingletonScope();
-        applyOptionalBindingTarget(context, PopupModelFactory, this.bindPopupModelFactory());
-        applyOptionalBindingTarget(context, LayoutEngine, this.bindLayoutEngine?.());
+        applyOptionalBindingTarget(context, PopupModelFactory, this.bindPopupModelFactory())?.inSingletonScope();
+        applyOptionalBindingTarget(context, LayoutEngine, this.bindLayoutEngine())?.inSingletonScope();
+        applyOptionalBindingTarget(context, EdgeCreationChecker, this.bindEdgeCreationChecker())?.inSingletonScope();
     }
 
     configureClientSessionInitializers(binding: MultiBinding<ClientSessionInitializer>): void {
@@ -206,6 +210,7 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(RequestContextActionsHandler);
         binding.add(RequestTypeHintsActionHandler);
         binding.add(OperationActionHandler);
+        binding.add(RequestCheckEdgeActionHandler);
         binding.add(RequestMarkersHandler);
         binding.add(RequestPopupModelActionHandler);
         binding.add(RequestEditValidationHandler);
@@ -335,6 +340,7 @@ export abstract class DiagramModule extends GLSPModule {
     protected bindModelValidator(): BindingTarget<ModelValidator> | undefined {
         return undefined;
     }
+
     protected bindLabelEditValidator(): BindingTarget<LabelEditValidator> | undefined {
         return undefined;
     }
@@ -348,6 +354,7 @@ export abstract class DiagramModule extends GLSPModule {
     protected bindCommandPaletteActionProvider(): BindingTarget<CommandPaletteActionProvider> | undefined {
         return undefined;
     }
+
     protected bindContextMenuItemProvider(): BindingTarget<ContextMenuItemProvider> | undefined {
         return undefined;
     }
@@ -359,7 +366,12 @@ export abstract class DiagramModule extends GLSPModule {
     protected bindPopupModelFactory(): BindingTarget<PopupModelFactory> | undefined {
         return undefined;
     }
+
     protected bindLayoutEngine(): BindingTarget<LayoutEngine> | undefined {
+        return undefined;
+    }
+
+    protected bindEdgeCreationChecker(): BindingTarget<EdgeCreationChecker> | undefined {
         return undefined;
     }
 }

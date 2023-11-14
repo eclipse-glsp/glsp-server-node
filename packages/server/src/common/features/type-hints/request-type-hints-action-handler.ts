@@ -15,13 +15,12 @@
  ********************************************************************************/
 import { Action, MaybePromise, RequestTypeHintsAction, SetTypeHintsAction } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import { ActionHandler } from '../actions/action-handler';
-import { DiagramConfiguration } from './diagram-configuration';
+import { ActionHandler } from '../../actions/action-handler';
+import { DiagramConfiguration } from '../../diagram/diagram-configuration';
 
 @injectable()
 export class RequestTypeHintsActionHandler implements ActionHandler {
     @inject(DiagramConfiguration) protected diagramConfiguration: DiagramConfiguration;
-    static KINDS = [RequestTypeHintsAction.KIND];
 
     execute(action: RequestTypeHintsAction): MaybePromise<Action[]> {
         return [

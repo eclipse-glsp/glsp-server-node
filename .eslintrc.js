@@ -16,7 +16,10 @@ module.exports = {
                 name: 'sprotty-protocol',
                 message:
                     "The sprotty-protocol default exports are customized and reexported by GLSP. Please import from '@eclipse-glsp/protocol' instead"
-            }
+            },
+            '.',
+            '..',
+            '../..'
         ]
     }
 };

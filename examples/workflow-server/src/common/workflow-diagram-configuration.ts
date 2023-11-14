@@ -18,10 +18,10 @@ import {
     DiagramConfiguration,
     GCompartment,
     GEdge,
-    getDefaultMapping,
     GLabel,
     GModelElementConstructor,
-    ServerLayoutKind
+    ServerLayoutKind,
+    getDefaultMapping
 } from '@eclipse-glsp/server';
 import { injectable } from 'inversify';
 import { ActivityNode, Category, TaskNode } from './graph-extension';
@@ -58,15 +58,7 @@ export class WorkflowDiagramConfiguration implements DiagramConfiguration {
                 deletable: true,
                 resizable: true,
                 reparentable: true,
-                containableElementTypeIds: [
-                    types.DECISION_NODE,
-                    types.MERGE_NODE,
-                    types.FORK_NODE,
-                    types.JOIN_NODE,
-                    types.AUTOMATED_TASK,
-                    types.MANUAL_TASK,
-                    types.CATEGORY
-                ]
+                containableElementTypeIds: [types.TASK, types.ACTIVITY_NODE, types.CATEGORY]
             }
         ];
     }
@@ -79,8 +71,9 @@ export class WorkflowDiagramConfiguration implements DiagramConfiguration {
                 repositionable: true,
                 deletable: true,
                 routable: true,
-                sourceElementTypeIds: [types.DECISION_NODE],
-                targetElementTypeIds: [types.MANUAL_TASK, types.AUTOMATED_TASK, types.FORK_NODE, types.JOIN_NODE]
+                dynamic: true,
+                sourceElementTypeIds: [types.ACTIVITY_NODE],
+                targetElementTypeIds: [types.TASK, types.ACTIVITY_NODE]
             }
         ];
     }

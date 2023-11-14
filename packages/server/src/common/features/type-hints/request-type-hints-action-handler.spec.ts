@@ -16,8 +16,8 @@
 import { EdgeTypeHint, RequestTypeHintsAction, SetTypeHintsAction, ShapeTypeHint } from '@eclipse-glsp/protocol';
 import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
-import * as mock from '../test/mock-util';
-import { DiagramConfiguration } from './diagram-configuration';
+import { DiagramConfiguration } from '../../diagram/diagram-configuration';
+import * as mock from '../../test/mock-util';
 import { RequestTypeHintsActionHandler } from './request-type-hints-action-handler';
 
 describe('test RequestTypeHintsActionHandler', () => {

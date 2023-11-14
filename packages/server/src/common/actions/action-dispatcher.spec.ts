@@ -25,7 +25,6 @@ import { DefaultActionDispatcher } from './action-dispatcher';
 import { ActionHandler } from './action-handler';
 import { ActionHandlerRegistry } from './action-handler-registry';
 import { ClientActionForwarder } from './client-action-handler';
-import assert = require('assert');
 
 function waitSync(timeInMillis: number): void {
     const start = Date.now();
@@ -64,7 +63,7 @@ describe('test DefaultActionDispatcher', () => {
 
     describe('test with one-way actions (no response actions)', () => {
         it('dispatch- unhandled action', async () => {
-            assert.rejects(actionDispatcher.dispatch({ kind: 'unhandled' }));
+            mock.expectToThrowAsync(() => actionDispatcher.dispatch({ kind: 'unhandled' }));
         });
 
         it('dispatch - one action', async () => {

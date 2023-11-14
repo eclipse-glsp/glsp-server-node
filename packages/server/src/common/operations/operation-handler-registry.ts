@@ -13,9 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Args, CreateOperation, MaybePromise, Operation } from '@eclipse-glsp/protocol';
+import { Args, CreateOperation, Operation } from '@eclipse-glsp/protocol';
 import { inject, injectable, optional } from 'inversify';
-import { Command } from '../command/command';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
 import { Registry } from '../utils/registry';
 import { CreateOperationHandler } from './create-operation-handler';
@@ -34,16 +33,6 @@ export class OperationHandlerRegistry extends Registry<string, OperationHandler>
 
     getOperationHandler(operation: Operation): OperationHandler | undefined {
         return CreateOperation.is(operation) ? this.get(`${operation.kind}_${operation.elementTypeId}`) : this.get(operation.kind);
-    }
-
-    /**
-     * Returns the matching command for the given operation.
-     *
-     * @param operation operation
-     * @return the matching command for the given operation
-     */
-    getExecutableCommand(operation: Operation): MaybePromise<Command | undefined> {
-        return this.getOperationHandler(operation)?.createCommand(operation);
     }
 }
 

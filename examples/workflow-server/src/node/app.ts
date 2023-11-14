@@ -34,11 +34,11 @@ async function launch(argv?: string[]): Promise<void> {
     if (options.webSocket) {
         const launcher = appContainer.resolve(WebSocketServerLauncher);
         launcher.configure(serverModule);
-        launcher.start({ port: options.port, host: options.host, path: 'workflow' });
+        await launcher.start({ port: options.port, host: options.host, path: 'workflow' });
     } else {
         const launcher = appContainer.resolve(SocketServerLauncher);
         launcher.configure(serverModule);
-        launcher.start({ port: options.port, host: options.host });
+        await launcher.start({ port: options.port, host: options.host });
     }
 }
 

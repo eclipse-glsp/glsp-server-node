@@ -16,10 +16,10 @@
 import {
     Action,
     ClipboardData,
+    GModelElementSchema,
     MaybePromise,
     RequestClipboardDataAction,
-    SetClipboardDataAction,
-    SModelElementSchema
+    SetClipboardDataAction
 } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
@@ -37,7 +37,7 @@ export class RequestClipboardDataActionHandler implements ActionHandler {
     protected modelSerializer: GModelSerializer;
 
     execute(action: RequestClipboardDataAction): MaybePromise<Action[]> {
-        const schemas: SModelElementSchema[] = [];
+        const schemas: GModelElementSchema[] = [];
         const index = this.modelState.index;
         const selectedElements = index.getAll(action.editorContext.selectedElementIds);
         const clipboardData: ClipboardData = { format: 'application/json' };

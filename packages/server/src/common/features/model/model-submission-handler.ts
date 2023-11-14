@@ -13,10 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GModelRoot, GModelRootSchema } from '@eclipse-glsp/graph';
 import {
     Action,
     DirtyStateChangeReason,
+    GModelRootSchema,
     MarkersReason,
     MaybePromise,
     RequestBoundsAction,
@@ -74,7 +74,7 @@ export class ModelSubmissionHandler {
 
     /**
      * Returns a list of actions to submit the initial revision of the client-side model, based on the injected
-     * {@link GModelState}. Typically this method is invoked by the {@link RequestModelActionHandler} when the diagram
+     * {@link ModelState}. Typically this method is invoked by the {@link RequestModelActionHandler} when the diagram
      * is (re)loaded.
      * <p>
      * These actions are not processed by this {@link ModelSubmissionHandler}, but should be either manually dispatched
@@ -110,9 +110,9 @@ export class ModelSubmissionHandler {
 
         const revision = this.requestModelAction ? 0 : this.modelState.root.revision! + 1;
         this.modelState.root.revision = revision;
-        const root = this.serializeGModel();
 
         if (this.diagramConfiguration.needsClientLayout) {
+            const root = this.serializeGModel();
             return [RequestBoundsAction.create(root), SetDirtyStateAction.create(this.commandStack.isDirty, { reason })];
         }
         return this.submitModelDirectly(reason);
@@ -141,7 +141,7 @@ export class ModelSubmissionHandler {
         const result: Action[] = [];
         result.push(
             this.requestModelAction
-                ? SetModelAction.create(root)
+                ? this.createSetModeAction(root)
                 : UpdateModelAction.create(root, { animate: this.diagramConfiguration.animatedUpdate })
         );
         if (!this.diagramConfiguration.needsClientLayout) {
@@ -154,7 +154,7 @@ export class ModelSubmissionHandler {
         return result;
     }
 
-    protected createSetModeAction(newRoot: GModelRoot): SetModelAction {
+    protected createSetModeAction(newRoot: GModelRootSchema): SetModelAction {
         const responseId = this.requestModelAction?.requestId ?? '';
         const response = SetModelAction.create(newRoot, { responseId });
         this.requestModelAction = undefined;

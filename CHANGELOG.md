@@ -1,16 +1,25 @@
-# Eclipse GLSP Server Node Changelog
+# Eclipse GLSP Server Changelog
 
-## v1.1.0 - upcoming
+## [v2.0.0 - 14/10/2023]((https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.0.0))
 
--   [elk] Fixed a bug in the `GLSElkLayoutEngine` that skipped layouting of certain edges [#23](https://github.com/eclipse-glsp/glsp-server-node/pull/23) - Contributed on behalf of STMicroelectronics
+### Changes
+
+-   [elk] Fix a bug in the `GLSElkLayoutEngine` that skipped layouting of certain edges [#23](https://github.com/eclipse-glsp/glsp-server-node/pull/23) - Contributed on behalf of STMicroelectronics
 -   [launch] The message sent after successful startup now also contains the effective socket port [#30](https://github.com/eclipse-glsp/glsp-server-node/pull/30) - Contributed on behalf of STMicroelectronics
--   [launch] Fixed a bug that caused the server to no properly dispose all resources when `shutdown` was called [#33](https://github.com/eclipse-glsp/glsp-server-node/pull/33) - Contributed on behalf of STMicroelectronics
--   [diagram] Fixed a bug to ensure that the copy&paste feature is working properly [#35](https://github.com/eclipse-glsp/glsp-server-node/pull/35)
--   [api] Ensured that all `Promise`s and `MaybePromises` have proper rejection handling [#36](https://github.com/eclipse-glsp/glsp-server-node/pull/36)- Contributed on behalf of STMicroelectronics
+-   [launch] Fix a bug that caused the server to not properly dispose all resources when `shutdown` was called [#33](https://github.com/eclipse-glsp/glsp-server-node/pull/33) - Contributed on behalf of STMicroelectronics
+-   [diagram] Fix a bug to ensure that the copy&paste feature is working properly [#35](https://github.com/eclipse-glsp/glsp-server-node/pull/35)
+-   [api] Ensure that all `Promise`s and `MaybePromise`s have proper rejection handling [#36](https://github.com/eclipse-glsp/glsp-server-node/pull/36)- Contributed on behalf of STMicroelectronics
 -   [launch] Add a launcher component for starting WebSocket based GLSP servers [#41](https://github.com/eclipse-glsp/glsp-server-node/pull/41)
 -   [validation] Add explicit support and API for live and batch validation [#43](https://github.com/eclipse-glsp/glsp-server-node/pull/43)
 -   [launch] Launcher components now auto allocate a free port if the port argument is 0 [#42](https://github.com/eclipse-glsp/glsp-server-node/pull/42)
 -   [server] Add support for server progress reporting [#52](https://github.com/eclipse-glsp/glsp-server-node/pull/52)
+-   [diagram] Add support for handling reconnection requests to `RequestModelActionHandler` [#54](https://github.com/eclipse-glsp/glsp-server-node/pull/54/)
+-   [server] Update `AbstractJsonModelStorage` to ensure that Windows file paths are properly converted [#55](https://github.com/eclipse-glsp/glsp-server-node/pull/55)
+-   [deps] Remove unneeded dependency to `fs-extra` [#56](https://github.com/eclipse-glsp/glsp-server-node/pull/56)
+-   [diagram] Provide generic reusable base operation handlers for JSON-based source models [#59](https://github.com/eclipse-glsp/glsp-server-node/pull/59)
+-   [diagram] Add support for dynamic edge type hints
+    -   Provide `EdgeCreationChecker` API. Adopters can implement this to handle dynamic edge creation validation requests. [#60](https://github.com/eclipse-glsp/glsp-server-node/pull/60)
+-   [model] Introduce new `GForeignObjectElement` + builder class [#61](https://github.com/eclipse-glsp/glsp-server-node/pull/61)
 
 ### Breaking Changes
 
@@ -20,25 +29,33 @@
         -   `GLayoutContainer` -> `GLayouting` (affected classes: `GCompartment`, `GGraph`, `GNode`)
         -   `GShapePreRenderedElement` -> `GShapedPreRenderedElement`
 -   [deps] Update minimum requirements for Node to >=16.11.0 [#32](https://github.com/eclipse-glsp/glsp-client/pull/32)
--   [api] Restructured `@eclipse-glsp/server-node` package to provide entry points for both node and browser-only environments [#37](https://github.com/eclipse-glsp/glsp-server-node/pull/37)
+-   [api] Restructure `@eclipse-glsp/server-node` package to provide entry points for both node and browser-only environments [#37](https://github.com/eclipse-glsp/glsp-server-node/pull/37)
     -   The package has been renamed to `@eclipse-glsp/server`. This change affects all import namespaces.
     -   New namespaces for environment specific code:
         -   `@eclipse-glsp/server/node`
         -   `@eclipse-glsp/server/browser`
--   [operation] Implement Command API and rework OperationHandler to provide an optional command instead of direct execution to allow more execution control (including undo & redo support) [#38](https://github.com/eclipse-glsp/glsp-server-node/pull/38)
+-   [operation] Implement Command API and rework OperationHandler to provide an optional command instead of direct execution to allow more execution control (including undo & redo support) [#38](https://github.com/eclipse-glsp/glsp-server-node/pull/38) [#59](https://github.com/eclipse-glsp/glsp-server-node/pull/59)
     -   This includes major breaking changes across the whole API:
         -   `OperationHandler` has been refactored from an interface to a common abstract base class. The `execute` method now has to return a `MaybePromise<Command|undefined>`
-        -   Refactored `CreateOperationHandler` to an interface instead of a class
-        -   Renamed the services and handlers of the direct GModel library => consistent use of `GModel` prefix
+        -   Refactor `CreateOperationHandler` to an interface instead of a class
+        -   Rename the services and handlers of the direct GModel library => consistent use of `GModel` prefix
         -   The `ModelState` interface no longer has an `isDirty` flag. Dirty state is now handled by the `CommandStack`
 -   [server] Default port has changed from 5007 (and 8081 for websocket) to 0, which implies autoassignment by the OS [#42](https://github.com/eclipse-glsp/glsp-server-node/pull/42)
 -   [server] Refactored `GLSPServer` and `GLSPServerLauncher` API [#44](https://github.com/eclipse-glsp/glsp-server-node/pull/44) - Contributed on behalf of STMicroelectronics
     -   Server type definitions are now consumed from `@eclipse-glsp/protocol`
     -   `GLSPServer` implementation is no longer relies on json-rpc implementation details.
     -   JSON-RPC setup is now done with `JsonRpcGLSPServerLauncher`
--   Provide `CommandStack` API to support undo/redo of model changes [#38](https://github.com/eclipse-glsp/glsp-server-node/pull/38) [#39](https://github.com/eclipse-glsp/glsp-server-node/pull/39) - Contributed on behalf of STMicroelectronics
+-   [api] Provide `CommandStack` API to support undo/redo of model changes [#38](https://github.com/eclipse-glsp/glsp-server-node/pull/38) [#39](https://github.com/eclipse-glsp/glsp-server-node/pull/39) - Contributed on behalf of STMicroelectronics
     -   `ModelState` no longer has a `isDirty` property
     -   Breaking refactor of `OperationHandler` API
+-   [deps] Update to inversify 6.x and Typescript 5.x. [#48](https://github.com/eclipse-glsp/glsp-server-node/pull/48)
+    -   GLSP uses a synchronous inversify context this means with inversify 6.x decorator methods (e.g. `@postConstruct`) with asynchronous results are no longer supported
+-   [api] Revise model loading and client action handling [#57](https://github.com/eclipse-glsp/glsp-server-node/pull/57) [#58](https://github.com/eclipse-glsp/glsp-server-node/pull/58)
+    -   Refactor `ModelSubmissionHandler` to enable handling of `RequestModelAction` as proper request action
+        -   Introduce a `submitInitialModel` method that is called by the `RequestModelActionHandler`
+    -   Remove `configureClientActions` from `DiagramModule` as client actions are now implicitly configured via `InitializeClientSession` request
+    -   Remove `ClientActionHandler` and replace with `ClientActionForwarder`
+    -   Rename `ServerStatusAction` -> `StatusAction` and `ServerMessageAction` -> `MessageAction`
 
 ## [v1.0.0 - 30/06/2022](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v1.0.0)
 

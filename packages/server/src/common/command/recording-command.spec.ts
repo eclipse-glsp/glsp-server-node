@@ -14,9 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { AnyObject } from '@eclipse-glsp/protocol';
+import { AnyObject, MaybePromise } from '@eclipse-glsp/protocol';
 import { expect } from 'chai';
-import { RecordingCommand } from './recording-command';
+import { AbstractRecordingCommand } from './recording-command';
 
 interface TestModel {
     string: string;
@@ -26,6 +26,16 @@ interface TestModel {
 }
 
 let jsonObject: TestModel;
+
+class TestRecordingCommand<JsonObject extends AnyObject = AnyObject> extends AbstractRecordingCommand<JsonObject> {
+    constructor(protected jsonObject: JsonObject, protected doExecute: () => MaybePromise<void>) {
+        super();
+    }
+
+    protected getJsonObject(): MaybePromise<JsonObject> {
+        return this.jsonObject;
+    }
+}
 
 describe('RecordingCommand', () => {
     let beforeState: TestModel;
@@ -41,14 +51,14 @@ describe('RecordingCommand', () => {
 
     it('should be undoable after execution', async () => {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
-        const command = new RecordingCommand(jsonObject, () => {});
+        const command = new TestRecordingCommand(jsonObject, () => {});
         expect(command.canUndo()).to.be.false;
         await command.execute();
         expect(command.canUndo()).to.be.true;
     });
 
     it('should restore the pre execution state when undo is called', async () => {
-        const command = new RecordingCommand(jsonObject, () => {
+        const command = new TestRecordingCommand(jsonObject, () => {
             jsonObject.string = 'bar';
             jsonObject.flag = false;
             jsonObject.maybe = { hello: 'world' };
@@ -60,7 +70,7 @@ describe('RecordingCommand', () => {
     });
 
     it('should restore the post execution state when redo is called', async () => {
-        const command = new RecordingCommand(jsonObject, () => {
+        const command = new TestRecordingCommand(jsonObject, () => {
             jsonObject.string = 'bar';
             jsonObject.flag = false;
             jsonObject.maybe = { hello: 'world' };

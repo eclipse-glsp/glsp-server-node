@@ -14,7 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { remove } from '@eclipse-glsp/protocol/lib/utils/array-util';
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
+import { Logger } from './logger';
 
 /**
  * A registry manages a set of key-value pairs and provides query functionality. In GLSP this is typically used to
@@ -27,6 +28,9 @@ import { injectable } from 'inversify';
 
 @injectable()
 export class Registry<K, V> {
+    @inject(Logger)
+    protected logger: Logger;
+
     protected elements: Map<K, V> = new Map();
     /**
      * Registers a new key-value pair.
@@ -36,11 +40,12 @@ export class Registry<K, V> {
      * @returns `true` if the pair was registered successfully, `false` if another pair with the same key is already
      *         registered.
      */
-    register(key: K, instance: V): boolean {
+    register(key: K, value: V): boolean {
         if (!this.hasKey(key)) {
-            this.elements.set(key, instance);
+            this.elements.set(key, value);
             return true;
         }
+        this.logger.warn('Could not register key-value pair. Key is already registered', { key, value });
         return false;
     }
 
