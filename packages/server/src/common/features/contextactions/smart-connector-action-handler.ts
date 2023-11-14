@@ -1,6 +1,5 @@
 import { 
     Action, 
-    Bounds, 
     CloseSmartConnectorAction, 
     OpenSmartConnectorAction, 
     SelectAction, 
@@ -21,14 +20,9 @@ export class OpenSmartConnectorActionHandler implements ActionHandler {
         if (SelectAction.is(action)) {
             const selectedElement = this.modelState.index.find(action.selectedElementsIDs[0]);
             if (selectedElement && selectedElement instanceof GNode) {
-                var bounds: Bounds = {
-                    x: selectedElement.position.x,
-                    y: selectedElement.position.y,
-                    width: selectedElement.size.width,
-                    height: selectedElement.size.height
-                }
-                return [OpenSmartConnectorAction.create(action.selectedElementsIDs[0], bounds)];           
+                return [OpenSmartConnectorAction.create(action.selectedElementsIDs[0])];           
             }
+            else return []
         }
         return [CloseSmartConnectorAction.create()];
     }
