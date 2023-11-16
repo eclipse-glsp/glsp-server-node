@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GEdge, GModelElement, GNode } from '@eclipse-glsp/graph';
+import { GModelElement, GNode, GPort } from '@eclipse-glsp/graph';
 import { DeleteElementOperation, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { Command } from '../command/command';
@@ -65,19 +65,18 @@ export class GModelDeleteOperationHandler extends GModelOperationHandler {
             return false;
         }
 
-        const nodeToDelete = this.findTopLevelElement(element);
-        if (!nodeToDelete.parent) {
-            this.logger.warn("The requested node doesn't have a parent; it can't be deleted");
+        if (!element.parent) {
+            this.logger.warn("The requested element doesn't have a parent; it can't be deleted");
             return false;
         }
 
         const dependents = new Set<GModelElement>();
-        this.collectDependents(dependents, nodeToDelete, false);
+        this.collectDependents(dependents, element, false);
 
         dependents.forEach(dependant => {
-            const index = this.modelState.root.children.findIndex(element => element === dependant);
+            const index = dependant.parent.children.findIndex(element => element === dependant);
             if (index > -1) {
-                this.modelState.root.children.splice(index, 1);
+                dependant.parent.children.splice(index, 1);
             }
             this.allDependentsIds.add(dependant.id);
         });
@@ -85,38 +84,27 @@ export class GModelDeleteOperationHandler extends GModelOperationHandler {
         return true;
     }
 
-    protected collectDependents(dependents: Set<GModelElement>, nodeToDelete: GModelElement, isChild: boolean): void {
-        if (dependents.has(nodeToDelete)) {
+    protected collectDependents(dependents: Set<GModelElement>, elementToDelete: GModelElement, isChild: boolean): void {
+        if (dependents.has(elementToDelete)) {
             return;
         }
 
-        if (nodeToDelete.children.length > 0) {
-            nodeToDelete.children.forEach(child => this.collectDependents(dependents, child, true));
+        if (elementToDelete.children.length > 0) {
+            elementToDelete.children.forEach(child => this.collectDependents(dependents, child, true));
         }
 
-        if (nodeToDelete instanceof GNode) {
+        if (elementToDelete instanceof GNode || elementToDelete instanceof GPort) {
             const index = this.modelState.index;
 
-            index.getIncomingEdges(nodeToDelete).forEach(incoming => {
+            index.getIncomingEdges(elementToDelete).forEach(incoming => {
                 dependents.add(incoming);
             });
-            index.getOutgoingEdges(nodeToDelete).forEach(outgoing => {
+            index.getOutgoingEdges(elementToDelete).forEach(outgoing => {
                 dependents.add(outgoing);
             });
         }
-
-        dependents.add(nodeToDelete);
-    }
-
-    protected findTopLevelElement(element: GModelElement): GModelElement {
-        if (element instanceof GNode || element instanceof GEdge) {
-            return element;
+        if (!isChild) {
+            dependents.add(elementToDelete);
         }
-
-        const parent = element.parent;
-        if (!parent) {
-            return element;
-        }
-        return this.findTopLevelElement(parent);
     }
 }
