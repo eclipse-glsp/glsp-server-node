@@ -305,9 +305,9 @@
     prettier-plugin-packagejson "~2.4.6"
 
 "@eclipse-glsp/protocol@next":
-  version "2.1.0-alpha.290"
-  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-2.1.0-alpha.290.tgz#0b874cb344e5b741f2a4be43a824121f2913aab6"
-  integrity sha512-e49InCT4rgW33wY7Y15RA5jvC34qHdMfxIE/vmxZQApOQEdmdHw7fg8CtJ4hXDVeSXOuUN0On5InaMIpg07xKQ==
+  version "2.1.0-next.297"
+  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-2.1.0-next.297.tgz#4d178d5286c44b293b58b614fd84d0a0653052a6"
+  integrity sha512-WmV/ZAHusldwrXFof5oF68peBo0EpmVAb0N/v7LeYaTUiwnz4eFARm/p0KxL2QlcPBuKgLvi0xgGDzDGvbeNcw==
   dependencies:
     sprotty-protocol "0.15.0-next.044bba2.13"
     uuid "7.0.3"
@@ -7563,6 +7563,7 @@ workerpool@6.2.1:
   integrity sha512-ILEIE97kDZvF9Wb9f6h5aXK4swSlKGUcOEGiIYb2OOu/IrDU9iwj0fD//SsA6E5ibwJxpEvhullJY4Sl4GcpAw==
 
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+  name wrap-ansi-cjs
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
