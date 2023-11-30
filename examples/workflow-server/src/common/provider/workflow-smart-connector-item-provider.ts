@@ -14,45 +14,45 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import {
-    DefaultSmartConnectorItemProvider, SmartConnectorSettings,
+    DefaultSmartConnectorItemProvider, SmartConnectorSettings
 } from '@eclipse-glsp/server';
-import { 
+import {
     SmartConnectorPosition,
     SmartConnectorGroupUIType,
-    DefaultTypes,
-} from '@eclipse-glsp/protocol'; 
+    DefaultTypes
+} from '@eclipse-glsp/protocol';
 import { injectable } from 'inversify';
 import { ModelTypes } from '../util/model-types';
 
-
 @injectable()
 export class WorkflowSmartConnectorItemProvider extends DefaultSmartConnectorItemProvider {
-    
+
     protected override smartConnectorNodeSettings: SmartConnectorSettings = {
         position: SmartConnectorPosition.Top,
         showTitle: true,
         submenu: false,
-        showOnlyForChildren: SmartConnectorGroupUIType.Labels 
-    }
+        showOnlyForChildren: SmartConnectorGroupUIType.Labels
+    };
 
     protected override smartConnectorEdgeSettings: SmartConnectorSettings = {
         position: SmartConnectorPosition.Right,
         showTitle: true,
         submenu: true
-    }
+    };
 
     override nodeOperationFilter = {
-        [ModelTypes.AUTOMATED_TASK]: [ModelTypes.WEIGHTED_EDGE, ModelTypes.AUTOMATED_TASK, ModelTypes.MANUAL_TASK, ModelTypes.ACTIVITY_NODE],
+        [ModelTypes.AUTOMATED_TASK]: [ModelTypes.WEIGHTED_EDGE, ModelTypes.AUTOMATED_TASK, ModelTypes.MANUAL_TASK,
+            ModelTypes.ACTIVITY_NODE],
         [ModelTypes.MERGE_NODE]: [DefaultTypes.EDGE, ModelTypes.MERGE_NODE, ModelTypes.CATEGORY],
         [ModelTypes.FORK_NODE]: [DefaultTypes.EDGE, ModelTypes.FORK_NODE],
         [ModelTypes.CATEGORY]: [ModelTypes.WEIGHTED_EDGE, ModelTypes.FORK_NODE],
-        [ModelTypes.JOIN_NODE]: [ModelTypes.AUTOMATED_TASK, ModelTypes.FORK_NODE, ModelTypes.JOIN_NODE],
-    }
+        [ModelTypes.JOIN_NODE]: [ModelTypes.AUTOMATED_TASK, ModelTypes.FORK_NODE, ModelTypes.JOIN_NODE]
+    };
 
     override defaultEdge = DefaultTypes.EDGE;
 
     override edgeTypes = {
         [ModelTypes.AUTOMATED_TASK]: DefaultTypes.EDGE,
-        [ModelTypes.MERGE_NODE]: DefaultTypes.EDGE,
-    }
+        [ModelTypes.MERGE_NODE]: DefaultTypes.EDGE
+    };
 }
