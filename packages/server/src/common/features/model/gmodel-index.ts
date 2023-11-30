@@ -13,10 +13,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GEdge, GModelElement, GModelElementConstructor, GModelRoot, GNode } from '@eclipse-glsp/graph';
+import { GEdge, GModelElement, GModelElementConstructor, GModelRoot } from '@eclipse-glsp/graph';
 import { TypeGuard } from '@eclipse-glsp/protocol';
 import { injectable } from 'inversify';
-import { getOrThrow, GLSPServerError } from '../../utils/glsp-server-error';
+import { GLSPServerError, getOrThrow } from '../../utils/glsp-server-error';
 
 /**
  * Is used to index all child elements of a {@link GModelRoot} by their id. Offers a set
@@ -137,20 +137,20 @@ export class GModelIndex {
     }
 
     /**
-     * Returns all incoming edges for a node.
+     * Returns all incoming edges for a node (or port).
      *
-     * @param node The node where the edges are connected.
+     * @param node The node (or port) where the edges are connected.
      *
      * @returns All incoming edges.
      */
-    getIncomingEdges(node: GNode): GEdge[] {
+    getIncomingEdges(node: GModelElement): GEdge[] {
         return this.getAllEdges().filter(edge => edge.targetId === node.id);
     }
 
     /**
-     * Returns all outgoing edges for a node.
+     * Returns all outgoing edges for a node (or port).
      *
-     * @param node The node where the edges are connected.
+     * @param node The node (or port) where the edges are connected.
      *
      * @returns All outgoing edges.
      */
