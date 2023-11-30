@@ -156,7 +156,7 @@ export abstract class DiagramModule extends GLSPModule {
         applyOptionalBindingTarget(context, ToolPaletteItemProvider, this.bindToolPaletteItemProvider());
         applyOptionalBindingTarget(context, CommandPaletteActionProvider, this.bindCommandPaletteActionProvider());
         applyOptionalBindingTarget(context, ContextMenuItemProvider, this.bindContextMenuItemProvider());
-        applyOptionalBindingTarget(context, SmartConnectorItemProvider, this.bindSmartConnectorPaletteActionProvider());
+        applyOptionalBindingTarget(context, SmartConnectorItemProvider, this.bindSmartConnectorItemProvider());
         this.configureMultiBinding(new MultiBinding<ContextActionsProvider>(ContextActionsProviders), binding =>
             this.configureContextActionProviders(binding)
         );
@@ -348,7 +348,7 @@ export abstract class DiagramModule extends GLSPModule {
     protected bindToolPaletteItemProvider(): BindingTarget<ToolPaletteItemProvider> | undefined {
         return DefaultToolPaletteItemProvider;
     }
-    protected bindSmartConnectorPaletteActionProvider(): BindingTarget<SmartConnectorItemProvider> | undefined {
+    protected bindSmartConnectorItemProvider(): BindingTarget<SmartConnectorItemProvider> | undefined {
         return DefaultSmartConnectorItemProvider;
     }
     protected bindCommandPaletteActionProvider(): BindingTarget<CommandPaletteActionProvider> | undefined {
