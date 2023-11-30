@@ -16,8 +16,10 @@
 import { GModelElement } from '@eclipse-glsp/graph';
 import {
     AnyObject,
+    Args,
     CreateEdgeOperation,
     CreateNodeOperation,
+    GhostElement,
     MaybePromise,
     Point,
     TriggerEdgeCreationAction,
@@ -53,7 +55,10 @@ export namespace JsonModelState {
  * to the `sourceModel` of the given {@link JsonModelState} during the given `doExecute` function
  */
 export class JsonRecordingCommand<JsonObject extends AnyObject = AnyObject> extends AbstractRecordingCommand<JsonObject> {
-    constructor(protected modelState: JsonModelState<JsonObject>, protected doExecute: () => MaybePromise<void>) {
+    constructor(
+        protected modelState: JsonModelState<JsonObject>,
+        protected doExecute: () => MaybePromise<void>
+    ) {
         super();
     }
 
@@ -73,7 +78,7 @@ export class JsonRecordingCommand<JsonObject extends AnyObject = AnyObject> exte
  */
 @injectable()
 export abstract class JsonOperationHandler extends OperationHandler {
-    protected commandOf(runnable: () => void): Command {
+    protected commandOf(runnable: () => MaybePromise<void>): Command {
         if (!JsonModelState.is(this.modelState)) {
             throw new Error('Cannot create command. The underlying model state does not implement the `JsonModelState` interface');
         }
@@ -93,7 +98,22 @@ export abstract class JsonCreateNodeOperationHandler extends JsonOperationHandle
     abstract override createCommand(operation: CreateNodeOperation): MaybePromise<Command | undefined>;
 
     getTriggerActions(): TriggerNodeCreationAction[] {
-        return this.elementTypeIds.map(typeId => TriggerNodeCreationAction.create(typeId));
+        return this.elementTypeIds.map(elementTypeId => this.createTriggerNodeCreationAction(elementTypeId));
+    }
+
+    protected createTriggerNodeCreationAction(elementTypeId: string): TriggerNodeCreationAction {
+        return TriggerNodeCreationAction.create(elementTypeId, {
+            ghostElement: this.createTriggerGhostElement(elementTypeId),
+            args: this.createTriggerArgs(elementTypeId)
+        });
+    }
+
+    protected createTriggerGhostElement(elementTypeId: string): GhostElement | undefined {
+        return undefined;
+    }
+
+    protected createTriggerArgs(elementTypeId: string): Args | undefined {
+        return undefined;
     }
 
     /**

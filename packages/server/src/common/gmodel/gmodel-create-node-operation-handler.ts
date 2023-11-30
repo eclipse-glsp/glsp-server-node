@@ -15,8 +15,10 @@
  ********************************************************************************/
 
 import { GModelElement, GNode } from '@eclipse-glsp/graph';
-import { CreateNodeOperation, MaybePromise, Point, SelectAction, TriggerNodeCreationAction,
-    CreateEdgeOperation } from '@eclipse-glsp/protocol';
+import {
+    Args, CreateNodeOperation, GhostElement, MaybePromise, Point, SelectAction,
+    TriggerNodeCreationAction, CreateEdgeOperation
+} from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
 import { Command } from '../command/command';
@@ -64,7 +66,20 @@ export abstract class GModelCreateNodeOperationHandler extends GModelOperationHa
     }
 
     getTriggerActions(): TriggerNodeCreationAction[] {
-        return this.elementTypeIds.map(typeId => TriggerNodeCreationAction.create(typeId));
+        return this.elementTypeIds.map(elementTypeId => this.createTriggerNodeCreationAction(elementTypeId));
+    }
+
+    protected createTriggerNodeCreationAction(elementTypeId: string): TriggerNodeCreationAction {
+        return TriggerNodeCreationAction.create(elementTypeId,
+            { ghostElement: this.createTriggerGhostElement(elementTypeId), args: this.createTriggerArgs(elementTypeId) } );
+    }
+
+    protected createTriggerGhostElement(elementTypeId: string): GhostElement | undefined {
+        return undefined;
+    }
+
+    protected createTriggerArgs(elementTypeId: string): Args | undefined {
+        return undefined;
     }
 
     /**
