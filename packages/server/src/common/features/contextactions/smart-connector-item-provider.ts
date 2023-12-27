@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2023 Business Informatics Group (TU Wien) and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -31,6 +31,7 @@ import { inject, injectable } from 'inversify';
 import { CreateOperationHandler } from '../../operations/create-operation-handler';
 import { OperationHandlerRegistry } from '../../operations/operation-handler-registry';
 import { ContextActionsProvider } from './context-actions-provider';
+import { Logger } from '../../utils/logger';
 
 /**
  * A {@link ContextActionsProvider} for {@link PaletteItem}s in the Smart Connector which appears when a node is selected.
@@ -61,18 +62,6 @@ export abstract class SmartConnectorItemProvider implements ContextActionsProvid
      * @returns A list of {@link PaletteItem}s for a given map of string arguments.
      */
     abstract getItems(args?: Args): MaybePromise<SmartConnectorGroupItem[]>;
-
-    /** filter that excludes nodes/edges from options, given a node ID as key */
-    abstract nodeOperationFilter: Record<string, string[]>;
-
-    /** edge that is used between source and destination by default when a new node is created
-     *  (if not given, no edge will be created when creating new node) */
-    abstract defaultEdge: string;
-
-    /** list of edges where the key is a node ID and the value is a edge ID
-     *  the edge to a new node when the source node has the ID of the key
-     *  otherwise, the default edge will be used */
-    abstract edgeTypes: Record<string, string>;
 }
 
 export type SmartConnectorSettings = {
@@ -90,6 +79,8 @@ export type SmartConnectorSettings = {
 export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvider {
 
     @inject(OperationHandlerRegistry) operationHandlerRegistry: OperationHandlerRegistry;
+    @inject(Logger)
+    protected logger: Logger;
 
     protected counter: number;
 
@@ -105,9 +96,17 @@ export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvide
         showTitle: true,
         submenu: false
     };
-    override nodeOperationFilter: Record<string, string[]>;
-    override defaultEdge: string;
-    override edgeTypes: Record<string, string>;
+    /** filter that excludes nodes/edges from options, given a node ID as key */
+    protected nodeOperationFilter: Record<string, string[] | undefined> = {};
+
+    /** edge that is used between source and destination by default when a new node is created
+     *  (if not given, no edge will be created when creating new node) */
+    protected defaultEdge?: string;
+
+    /** list of edges where the key is a node ID and the value is a edge ID
+     *  the edge to a new node when the source node has the ID of the key
+     *  otherwise, the default edge will be used */
+    protected edgeTypes: Record<string, string | undefined>;
 
     getItems(args?: Args): SmartConnectorGroupItem[] {
         const handlers = this.operationHandlerRegistry.getAll().filter(CreateOperationHandler.is) as CreateOperationHandler[];
@@ -140,7 +139,7 @@ export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvide
 
     createSmartConnectorGroupItem(handlers: CreateOperationHandler[], kind: string, selectedNodeType: string,
             showOnly?: SmartConnectorGroupUIType): PaletteItem[] {
-        const includedInNodeFilter = (e: string): boolean => this.nodeOperationFilter[selectedNodeType].includes(e);
+        const includedInNodeFilter = (e: string): boolean => !!this.nodeOperationFilter[selectedNodeType]?.includes(e);
         const paletteItems = handlers
             .filter(handler => handler.operationType === kind && (selectedNodeType &&
                 this.nodeOperationFilter[selectedNodeType] ? !handler.elementTypeIds.some(includedInNodeFilter) : true))
@@ -149,12 +148,14 @@ export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvide
             .sort((a, b) => a.sortString.localeCompare(b.sortString));
         if (showOnly === SmartConnectorGroupUIType.Icons) {
             if (paletteItems.every(paletteItem => paletteItem.icon !== '')) {
-                console.warn('Not all elements have icons. Labels will be shown, check settings for smart connector.');
+                this.logger.warn('Not all elements have icons. Labels will be shown, check settings for smart connector.')
                 return paletteItems;
             }
             paletteItems.forEach(paletteItem => paletteItem.label = '');
         }
-        if (showOnly === SmartConnectorGroupUIType.Labels) {paletteItems.forEach(paletteItem => paletteItem.icon = '');}
+        else if (showOnly === SmartConnectorGroupUIType.Labels) {
+            paletteItems.forEach(paletteItem => paletteItem.icon = '');
+        }
         return paletteItems;
     }
 

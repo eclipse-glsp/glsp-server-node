@@ -348,9 +348,11 @@ export abstract class DiagramModule extends GLSPModule {
     protected bindToolPaletteItemProvider(): BindingTarget<ToolPaletteItemProvider> | undefined {
         return DefaultToolPaletteItemProvider;
     }
+    
     protected bindSmartConnectorItemProvider(): BindingTarget<SmartConnectorItemProvider> | undefined {
         return DefaultSmartConnectorItemProvider;
     }
+
     protected bindCommandPaletteActionProvider(): BindingTarget<CommandPaletteActionProvider> | undefined {
         return undefined;
     }
