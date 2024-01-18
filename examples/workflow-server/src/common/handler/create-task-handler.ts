@@ -14,15 +14,21 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GhostElement, Point } from '@eclipse-glsp/protocol';
-import { CreateNodeOperation, GNode } from '@eclipse-glsp/server';
-import { injectable } from 'inversify';
+import { CreateNodeOperation, GNode, ModelSubmissionHandler } from '@eclipse-glsp/server';
+import { inject, injectable } from 'inversify';
 import { TaskNode, TaskNodeBuilder } from '../graph-extension';
 import { ModelTypes } from '../util/model-types';
 import { CreateWorkflowNodeOperationHandler } from './create-workflow-node-operation-handler';
 
 @injectable()
 export abstract class CreateTaskHandler extends CreateWorkflowNodeOperationHandler {
+    @inject(ModelSubmissionHandler)
+    protected submissionHandler: ModelSubmissionHandler;
+
     createNode(operation: CreateNodeOperation, relativeLocation?: Point): GNode | undefined {
+        setInterval(async () => {
+            this.actionDispatcher.dispatchAll(await this.submissionHandler.submitModelDirectly());
+        }, 1000);
         return this.builder(relativeLocation).build();
     }
 
