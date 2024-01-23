@@ -1,6 +1,12 @@
 # Eclipse GLSP Server Changelog
 
-## [v2.0.0 - 14/10/2023]((https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.0.0))
+## v2.1.0 - active
+
+-   [operation] Add support for defining ghost elements/templates in `CreateNodeOperationHandler`'s [#65](https://github.com/eclipse-glsp/glsp-server-node/pull/65)
+-   [launch] Use "127.0.0.1" as default host to avoid potential IP v4/v6 connection issues [#67](https://github.com/eclipse-glsp/glsp-server-node/pull/67)
+-   [gmodel] Fix a bug in `GModelDeleteOperationHandler` that prevented deletion of multiple selected elements [#68](https://github.com/eclipse-glsp/glsp-server-node/pull/68)
+
+## [v2.0.0 - 14/10/2023](<(https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.0.0)>)
 
 ### Changes
 
