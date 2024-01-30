@@ -1,6 +1,6 @@
 {
   "name": "parent",
-  "version": "2.1.0-next",
+  "version": "2.1.0",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -30,7 +30,7 @@
   "devDependencies": {
     "@eclipse-glsp/dev": "2.0.0",
     "@types/node": "16.x",
-    "lerna": "^6.6.2",
+    "lerna": "^7.0.0",
     "typescript": "^5.0.4"
   },
   "engines": {
