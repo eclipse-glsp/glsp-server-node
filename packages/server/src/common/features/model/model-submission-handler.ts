@@ -133,11 +133,12 @@ export class ModelSubmissionHandler {
      * @returns A list of actions to be processed in order to submit the model.
      */
     async submitModelDirectly(reason?: DirtyStateChangeReason): Promise<Action[]> {
-        const root = this.serializeGModel();
-
         if (this.diagramConfiguration.layoutKind === ServerLayoutKind.AUTOMATIC && this.layoutEngine) {
             await this.layoutEngine.layout();
         }
+
+        const root = this.serializeGModel();
+
         const result: Action[] = [];
         result.push(
             this.requestModelAction
