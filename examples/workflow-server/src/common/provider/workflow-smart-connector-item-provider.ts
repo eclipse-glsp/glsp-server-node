@@ -40,7 +40,7 @@ export class WorkflowSmartConnectorItemProvider extends DefaultSmartConnectorIte
         submenu: true
     };
 
-    override nodeOperationFilter = {
+    protected override nodeOperationFilter = {
         [ModelTypes.AUTOMATED_TASK]: [ModelTypes.WEIGHTED_EDGE, ModelTypes.AUTOMATED_TASK, ModelTypes.MANUAL_TASK,
             ModelTypes.ACTIVITY_NODE],
         [ModelTypes.MERGE_NODE]: [DefaultTypes.EDGE, ModelTypes.MERGE_NODE, ModelTypes.CATEGORY],
@@ -49,9 +49,9 @@ export class WorkflowSmartConnectorItemProvider extends DefaultSmartConnectorIte
         [ModelTypes.JOIN_NODE]: [ModelTypes.AUTOMATED_TASK, ModelTypes.FORK_NODE, ModelTypes.JOIN_NODE]
     };
 
-    override defaultEdge = DefaultTypes.EDGE;
+    protected override defaultEdge = DefaultTypes.EDGE;
 
-    override edgeTypes = {
+    protected override edgeTypes = {
         [ModelTypes.AUTOMATED_TASK]: DefaultTypes.EDGE,
         [ModelTypes.MERGE_NODE]: DefaultTypes.EDGE
     };

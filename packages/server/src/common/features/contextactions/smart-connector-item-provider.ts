@@ -78,7 +78,7 @@ export type SmartConnectorSettings = {
 @injectable()
 export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvider {
 
-    @inject(OperationHandlerRegistry) operationHandlerRegistry: OperationHandlerRegistry;
+    @inject(OperationHandlerRegistry) protected operationHandlerRegistry: OperationHandlerRegistry;
     @inject(Logger)
     protected logger: Logger;
 
@@ -137,18 +137,19 @@ export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvide
         ];
     }
 
-    createSmartConnectorGroupItem(handlers: CreateOperationHandler[], kind: string, selectedNodeType: string,
+    protected createSmartConnectorGroupItem(handlers: CreateOperationHandler[], kind: string, selectedNodeType: string,
             showOnly?: SmartConnectorGroupUIType): PaletteItem[] {
         const includedInNodeFilter = (e: string): boolean => !!this.nodeOperationFilter[selectedNodeType]?.includes(e);
         const paletteItems = handlers
             .filter(handler => handler.operationType === kind && (selectedNodeType &&
                 this.nodeOperationFilter[selectedNodeType] ? !handler.elementTypeIds.some(includedInNodeFilter) : true))
-            .map(handler => handler.getTriggerActions().map(action => this.create(action, handler.label, selectedNodeType)))
+            .map(handler => handler.getTriggerActions().map(
+                action => this.createSmartConnectorItems(action, handler.label, selectedNodeType)))
             .reduce((accumulator, value) => accumulator.concat(value), [])
             .sort((a, b) => a.sortString.localeCompare(b.sortString));
         if (showOnly === SmartConnectorGroupUIType.Icons) {
             if (paletteItems.every(paletteItem => paletteItem.icon !== '')) {
-                this.logger.warn('Not all elements have icons. Labels will be shown, check settings for smart connector.')
+                this.logger.warn('Not all elements have icons. Labels will be shown, check settings for smart connector.');
                 return paletteItems;
             }
             paletteItems.forEach(paletteItem => paletteItem.label = '');
@@ -159,7 +160,8 @@ export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvide
         return paletteItems;
     }
 
-    create(action: PaletteItem.TriggerElementCreationAction, label: string, nodeType: string): PaletteItem | SmartConnectorNodeItem {
+    protected createSmartConnectorItems(action: PaletteItem.TriggerElementCreationAction,
+        label: string, nodeType: string): PaletteItem | SmartConnectorNodeItem {
         if (TriggerNodeCreationAction.is(action)) {
             let edgeType = this.edgeTypes[nodeType];
             if (!edgeType) {edgeType = this.defaultEdge;}
