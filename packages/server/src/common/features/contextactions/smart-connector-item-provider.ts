@@ -64,20 +64,21 @@ export abstract class SmartConnectorItemProvider implements ContextActionsProvid
     abstract getItems(args?: Args): MaybePromise<SmartConnectorGroupItem[]>;
 }
 
-export type SmartConnectorSettings = {
-    position: SmartConnectorPosition
-    showTitle: true;
-    submenu: boolean;
-    showOnlyForChildren?: SmartConnectorGroupUIType
-  } | {
-    position: SmartConnectorPosition
-    showTitle: false;
-    showOnlyForChildren?: SmartConnectorGroupUIType
-  };
+export type SmartConnectorSettings =
+    | {
+          position: SmartConnectorPosition;
+          showTitle: true;
+          submenu: boolean;
+          showOnlyForChildren?: SmartConnectorGroupUIType;
+      }
+    | {
+          position: SmartConnectorPosition;
+          showTitle: false;
+          showOnlyForChildren?: SmartConnectorGroupUIType;
+      };
 
 @injectable()
 export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvider {
-
     @inject(OperationHandlerRegistry) protected operationHandlerRegistry: OperationHandlerRegistry;
     @inject(Logger)
     protected logger: Logger;
@@ -111,10 +112,18 @@ export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvide
     getItems(args?: Args): SmartConnectorGroupItem[] {
         const handlers = this.operationHandlerRegistry.getAll().filter(CreateOperationHandler.is) as CreateOperationHandler[];
         this.counter = 0;
-        const nodes = this.createSmartConnectorGroupItem(handlers, CreateNodeOperation.KIND, args?.nodeType as string,
-            this.smartConnectorNodeSettings.showOnlyForChildren);
-        const edges = this.createSmartConnectorGroupItem(handlers, CreateEdgeOperation.KIND, args?.nodeType as string,
-            this.smartConnectorEdgeSettings.showOnlyForChildren);
+        const nodes = this.createSmartConnectorGroupItem(
+            handlers,
+            CreateNodeOperation.KIND,
+            args?.nodeType as string,
+            this.smartConnectorNodeSettings.showOnlyForChildren
+        );
+        const edges = this.createSmartConnectorGroupItem(
+            handlers,
+            CreateEdgeOperation.KIND,
+            args?.nodeType as string,
+            this.smartConnectorEdgeSettings.showOnlyForChildren
+        );
         return [
             {
                 id: 'smart-connector-node-group',
@@ -137,14 +146,24 @@ export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvide
         ];
     }
 
-    protected createSmartConnectorGroupItem(handlers: CreateOperationHandler[], kind: string, selectedNodeType: string,
-            showOnly?: SmartConnectorGroupUIType): PaletteItem[] {
+    protected createSmartConnectorGroupItem(
+        handlers: CreateOperationHandler[],
+        kind: string,
+        selectedNodeType: string,
+        showOnly?: SmartConnectorGroupUIType
+    ): PaletteItem[] {
         const includedInNodeFilter = (e: string): boolean => !!this.nodeOperationFilter[selectedNodeType]?.includes(e);
         const paletteItems = handlers
-            .filter(handler => handler.operationType === kind && (selectedNodeType &&
-                this.nodeOperationFilter[selectedNodeType] ? !handler.elementTypeIds.some(includedInNodeFilter) : true))
-            .map(handler => handler.getTriggerActions().map(
-                action => this.createSmartConnectorItems(action, handler.label, selectedNodeType)))
+            .filter(
+                handler =>
+                    handler.operationType === kind &&
+                    (selectedNodeType && this.nodeOperationFilter[selectedNodeType]
+                        ? !handler.elementTypeIds.some(includedInNodeFilter)
+                        : true)
+            )
+            .map(handler =>
+                handler.getTriggerActions().map(action => this.createSmartConnectorItems(action, handler.label, selectedNodeType))
+            )
             .reduce((accumulator, value) => accumulator.concat(value), [])
             .sort((a, b) => a.sortString.localeCompare(b.sortString));
         if (showOnly === SmartConnectorGroupUIType.Icons) {
@@ -152,19 +171,23 @@ export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvide
                 this.logger.warn('Not all elements have icons. Labels will be shown, check settings for smart connector.');
                 return paletteItems;
             }
-            paletteItems.forEach(paletteItem => paletteItem.label = '');
-        }
-        else if (showOnly === SmartConnectorGroupUIType.Labels) {
-            paletteItems.forEach(paletteItem => paletteItem.icon = '');
+            paletteItems.forEach(paletteItem => (paletteItem.label = ''));
+        } else if (showOnly === SmartConnectorGroupUIType.Labels) {
+            paletteItems.forEach(paletteItem => (paletteItem.icon = ''));
         }
         return paletteItems;
     }
 
-    protected createSmartConnectorItems(action: PaletteItem.TriggerElementCreationAction,
-        label: string, nodeType: string): PaletteItem | SmartConnectorNodeItem {
+    protected createSmartConnectorItems(
+        action: PaletteItem.TriggerElementCreationAction,
+        label: string,
+        nodeType: string
+    ): PaletteItem | SmartConnectorNodeItem {
         if (TriggerNodeCreationAction.is(action)) {
             let edgeType = this.edgeTypes[nodeType];
-            if (!edgeType) {edgeType = this.defaultEdge;}
+            if (!edgeType) {
+                edgeType = this.defaultEdge;
+            }
             return {
                 id: `smart-connector-palette-item${this.counter++}`,
                 sortString: label.charAt(0),
@@ -180,5 +203,4 @@ export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvide
             actions: [action]
         };
     }
-
 }

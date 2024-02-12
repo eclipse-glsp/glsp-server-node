@@ -13,12 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import {
-    Action,
-    CloseSmartConnectorAction,
-    OpenSmartConnectorAction,
-    SelectAction,
-    MaybePromise} from '@eclipse-glsp/protocol';
+import { Action, CloseSmartConnectorAction, OpenSmartConnectorAction, SelectAction, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
 import { ModelState } from '../model/model-state';
@@ -36,8 +31,9 @@ export class OpenSmartConnectorActionHandler implements ActionHandler {
             const selectedElement = this.modelState.index.find(action.selectedElementsIDs[0]);
             if (selectedElement && selectedElement instanceof GNode) {
                 return [OpenSmartConnectorAction.create(action.selectedElementsIDs[0])];
+            } else {
+                return [];
             }
-            else {return [];}
         }
         return [CloseSmartConnectorAction.create()];
     }
