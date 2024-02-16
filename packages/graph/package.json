@@ -50,7 +50,7 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@eclipse-glsp/protocol": "2.1.0"
+    "@eclipse-glsp/protocol": "~2.1.1"
   },
   "devDependencies": {
     "@types/uuid": "8.3.1"

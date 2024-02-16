@@ -1,6 +1,8 @@
 # Eclipse GLSP Server Changelog
 
-## v2.1.0 - active
+## [v2.1.0 - 14/01/2024](<(https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.1.0)>)
+
+### Changes
 
 -   [operation] Add support for defining ghost elements/templates in `CreateNodeOperationHandler`'s [#65](https://github.com/eclipse-glsp/glsp-server-node/pull/65)
 -   [launch] Use "127.0.0.1" as default host to avoid potential IP v4/v6 connection issues [#67](https://github.com/eclipse-glsp/glsp-server-node/pull/67)
