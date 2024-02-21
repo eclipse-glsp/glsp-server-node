@@ -35,8 +35,14 @@ export namespace GBoundsAwareBuilder {
         const proxy = builder['proxy'];
         if (typeof pointOrX === 'object') {
             proxy.position = pointOrX;
-        } else if (y) {
+        } else if (y !== undefined) {
             proxy.position = { x: pointOrX, y };
+        } else {
+            // Optionally handle cases where y is not provided
+            proxy.position = { x: pointOrX, y: 0 };
+            console.warn(
+                `Incomplete parameters for GBoundsAwareBuilder.position function. Setting position to ${JSON.stringify(proxy.position)}`
+            );
         }
         return builder;
     }
@@ -45,8 +51,12 @@ export namespace GBoundsAwareBuilder {
         const proxy = builder['proxy'];
         if (typeof sizeOrWidth === 'object') {
             proxy.size = sizeOrWidth;
-        } else if (height) {
+        } else if (height !== undefined) {
             proxy.size = { width: sizeOrWidth, height };
+        } else {
+            // Optionally handle cases where height is not provided
+            proxy.size = { width: sizeOrWidth, height: 0 };
+            console.warn(`Incomplete parameters for GBoundsAwareBuilder.size function. Setting size to ${JSON.stringify(proxy.size)}`);
         }
         return builder;
     }

@@ -34,8 +34,14 @@ export namespace GAlignableBuilder {
         const proxy = builder['proxy'];
         if (typeof pointOrX === 'object') {
             proxy.alignment = pointOrX;
-        } else if (y) {
+        } else if (y !== undefined) {
             proxy.alignment = { x: pointOrX, y };
+        } else {
+            // Optionally handle cases where y is not provided
+            proxy.alignment = { x: pointOrX, y: 0 };
+            console.warn(
+                `Incomplete parameters for GAlignableBuilder.alignment function. Setting alignment to ${JSON.stringify(proxy.alignment)}`
+            );
         }
         return builder;
     }
