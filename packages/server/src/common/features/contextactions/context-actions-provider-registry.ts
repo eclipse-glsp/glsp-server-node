@@ -20,6 +20,7 @@ import { CommandPaletteActionProvider } from './command-palette-action-provider'
 import { ContextActionsProvider } from './context-actions-provider';
 import { ContextMenuItemProvider } from './context-menu-item-provider';
 import { ToolPaletteItemProvider } from './tool-palette-item-provider';
+import { SmartConnectorItemProvider } from './smart-connector-item-provider';
 
 /**
  * A registry that keeps track of all registered {@link ContextActionsProvider}s.
@@ -30,7 +31,8 @@ export class ContextActionsProviderRegistry extends Registry<string, ContextActi
         @multiInject(ContextActionsProviders) @optional() contextActionsProvider: ContextActionsProvider[] = [],
         @inject(ContextMenuItemProvider) @optional() contextMenuItemProvider?: ContextMenuItemProvider,
         @inject(CommandPaletteActionProvider) @optional() commandPaletteActionProvider?: CommandPaletteActionProvider,
-        @inject(ToolPaletteItemProvider) @optional() toolPaletteItemProvider?: ToolPaletteItemProvider
+        @inject(ToolPaletteItemProvider) @optional() toolPaletteItemProvider?: ToolPaletteItemProvider,
+        @inject(SmartConnectorItemProvider) @optional() smartConnectorItemProvider?: SmartConnectorItemProvider
     ) {
         super();
         contextActionsProvider.forEach(provider => this.register(provider.contextId, provider));
@@ -42,6 +44,9 @@ export class ContextActionsProviderRegistry extends Registry<string, ContextActi
         }
         if (toolPaletteItemProvider) {
             this.register(toolPaletteItemProvider.contextId, toolPaletteItemProvider);
+        }
+        if (smartConnectorItemProvider) {
+            this.register(smartConnectorItemProvider.contextId, smartConnectorItemProvider);
         }
     }
 }
