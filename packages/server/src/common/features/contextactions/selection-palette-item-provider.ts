@@ -162,7 +162,7 @@ export class DefaultSelectionPaletteItemProvider extends SelectionPaletteItemPro
                         : true)
             )
             .map(handler =>
-                handler.getTriggerActions().map(action => this.createSelectionPaletteItems(action, handler.label, selectedNodeType))
+                handler.getTriggerActions().map(action => this.createSelectionPaletteItem(action, handler.label, selectedNodeType))
             )
             .reduce((accumulator, value) => accumulator.concat(value), [])
             .sort((a, b) => a.sortString.localeCompare(b.sortString));
@@ -178,7 +178,7 @@ export class DefaultSelectionPaletteItemProvider extends SelectionPaletteItemPro
         return paletteItems;
     }
 
-    protected createSelectionPaletteItems(
+    protected createSelectionPaletteItem(
         action: PaletteItem.TriggerElementCreationAction,
         label: string,
         nodeType: string
