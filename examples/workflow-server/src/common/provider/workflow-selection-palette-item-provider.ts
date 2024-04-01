@@ -14,28 +14,28 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import {
-    DefaultSmartConnectorItemProvider, SmartConnectorSettings
+    DefaultSelectionPaletteItemProvider, SelectionPaletteSettings
 } from '@eclipse-glsp/server';
 import {
-    SmartConnectorPosition,
-    SmartConnectorGroupUIType,
+    SelectionPalettePosition,
+    SelectionPaletteGroupUIType,
     DefaultTypes
 } from '@eclipse-glsp/protocol';
 import { injectable } from 'inversify';
 import { ModelTypes } from '../util/model-types';
 
 @injectable()
-export class WorkflowSmartConnectorItemProvider extends DefaultSmartConnectorItemProvider {
+export class WorkflowSelectionPaletteItemProvider extends DefaultSelectionPaletteItemProvider {
 
-    protected override smartConnectorNodeSettings: SmartConnectorSettings = {
-        position: SmartConnectorPosition.Top,
+    protected override selectionPaletteNodeSettings: SelectionPaletteSettings = {
+        position: SelectionPalettePosition.Top,
         showTitle: true,
         submenu: false,
-        showOnlyForChildren: SmartConnectorGroupUIType.Labels
+        showOnlyForChildren: SelectionPaletteGroupUIType.Labels
     };
 
-    protected override smartConnectorEdgeSettings: SmartConnectorSettings = {
-        position: SmartConnectorPosition.Right,
+    protected override selectionPaletteEdgeSettings: SelectionPaletteSettings = {
+        position: SelectionPalettePosition.Right,
         showTitle: true,
         submenu: true
     };

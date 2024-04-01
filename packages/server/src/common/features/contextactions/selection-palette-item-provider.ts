@@ -18,13 +18,13 @@ import {
     CreateEdgeOperation,
     CreateNodeOperation,
     PaletteItem,
-    SmartConnectorGroupItem,
+    SelectionPaletteGroupItem,
     EditorContext,
     LabeledAction,
     MaybePromise,
-    SmartConnectorPosition,
-    SmartConnectorGroupUIType,
-    SmartConnectorNodeItem,
+    SelectionPalettePosition,
+    SelectionPaletteGroupUIType,
+    SelectionPaletteNodeItem,
     TriggerNodeCreationAction
 } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
@@ -34,15 +34,15 @@ import { ContextActionsProvider } from './context-actions-provider';
 import { Logger } from '../../utils/logger';
 
 /**
- * A {@link ContextActionsProvider} for {@link PaletteItem}s in the Smart Connector which appears when a node is selected.
+ * A {@link ContextActionsProvider} for {@link PaletteItem}s in the Selection palette which appears when a node is selected.
  */
 @injectable()
-export abstract class SmartConnectorItemProvider implements ContextActionsProvider {
+export abstract class SelectionPaletteItemProvider implements ContextActionsProvider {
     /**
      * Returns the context id of the provider.
      */
     get contextId(): string {
-        return 'smart-connector';
+        return 'selection-palette';
     }
 
     /**
@@ -61,39 +61,39 @@ export abstract class SmartConnectorItemProvider implements ContextActionsProvid
      * @param args A map of string arguments.
      * @returns A list of {@link PaletteItem}s for a given map of string arguments.
      */
-    abstract getItems(args?: Args): MaybePromise<SmartConnectorGroupItem[]>;
+    abstract getItems(args?: Args): MaybePromise<SelectionPaletteGroupItem[]>;
 }
 
-export type SmartConnectorSettings =
+export type SelectionPaletteSettings =
     | {
-          position: SmartConnectorPosition;
+          position: SelectionPalettePosition;
           showTitle: true;
           submenu: boolean;
-          showOnlyForChildren?: SmartConnectorGroupUIType;
+          showOnlyForChildren?: SelectionPaletteGroupUIType;
       }
     | {
-          position: SmartConnectorPosition;
+          position: SelectionPalettePosition;
           showTitle: false;
-          showOnlyForChildren?: SmartConnectorGroupUIType;
+          showOnlyForChildren?: SelectionPaletteGroupUIType;
       };
 
 @injectable()
-export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvider {
+export class DefaultSelectionPaletteItemProvider extends SelectionPaletteItemProvider {
     @inject(OperationHandlerRegistry) protected operationHandlerRegistry: OperationHandlerRegistry;
     @inject(Logger)
     protected logger: Logger;
 
     protected counter: number;
 
-    protected smartConnectorNodeSettings: SmartConnectorSettings = {
-        position: SmartConnectorPosition.Right,
+    protected selectionPaletteNodeSettings: SelectionPaletteSettings = {
+        position: SelectionPalettePosition.Right,
         showTitle: true,
         submenu: true,
-        showOnlyForChildren: SmartConnectorGroupUIType.Icons
+        showOnlyForChildren: SelectionPaletteGroupUIType.Icons
     };
 
-    protected smartConnectorEdgeSettings: SmartConnectorSettings = {
-        position: SmartConnectorPosition.Right,
+    protected selectionPaletteEdgeSettings: SelectionPaletteSettings = {
+        position: SelectionPalettePosition.Right,
         showTitle: true,
         submenu: false
     };
@@ -109,48 +109,48 @@ export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvide
      *  otherwise, the default edge will be used */
     protected edgeTypes: Record<string, string | undefined>;
 
-    getItems(args?: Args): SmartConnectorGroupItem[] {
+    getItems(args?: Args): SelectionPaletteGroupItem[] {
         const handlers = this.operationHandlerRegistry.getAll().filter(CreateOperationHandler.is) as CreateOperationHandler[];
         this.counter = 0;
-        const nodes = this.createSmartConnectorGroupItem(
+        const nodes = this.createSelectionPaletteGroupItem(
             handlers,
             CreateNodeOperation.KIND,
             args?.nodeType as string,
-            this.smartConnectorNodeSettings.showOnlyForChildren
+            this.selectionPaletteNodeSettings.showOnlyForChildren
         );
-        const edges = this.createSmartConnectorGroupItem(
+        const edges = this.createSelectionPaletteGroupItem(
             handlers,
             CreateEdgeOperation.KIND,
             args?.nodeType as string,
-            this.smartConnectorEdgeSettings.showOnlyForChildren
+            this.selectionPaletteEdgeSettings.showOnlyForChildren
         );
         return [
             {
-                id: 'smart-connector-node-group',
+                id: 'selection-palette-node-group',
                 label: 'Nodes',
                 actions: [],
                 children: nodes,
                 icon: 'symbol-property',
                 sortString: 'A',
-                ...this.smartConnectorNodeSettings
+                ...this.selectionPaletteNodeSettings
             },
             {
-                id: 'smart-connector-edge-group',
+                id: 'selection-palette-edge-group',
                 label: 'Edges',
                 actions: [],
                 children: edges,
                 icon: 'symbol-property',
                 sortString: 'B',
-                ...this.smartConnectorEdgeSettings
+                ...this.selectionPaletteEdgeSettings
             }
         ];
     }
 
-    protected createSmartConnectorGroupItem(
+    protected createSelectionPaletteGroupItem(
         handlers: CreateOperationHandler[],
         kind: string,
         selectedNodeType: string,
-        showOnly?: SmartConnectorGroupUIType
+        showOnly?: SelectionPaletteGroupUIType
     ): PaletteItem[] {
         const includedInNodeFilter = (e: string): boolean => !!this.nodeOperationFilter[selectedNodeType]?.includes(e);
         const paletteItems = handlers
@@ -162,34 +162,34 @@ export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvide
                         : true)
             )
             .map(handler =>
-                handler.getTriggerActions().map(action => this.createSmartConnectorItems(action, handler.label, selectedNodeType))
+                handler.getTriggerActions().map(action => this.createSelectionPaletteItems(action, handler.label, selectedNodeType))
             )
             .reduce((accumulator, value) => accumulator.concat(value), [])
             .sort((a, b) => a.sortString.localeCompare(b.sortString));
-        if (showOnly === SmartConnectorGroupUIType.Icons) {
+        if (showOnly === SelectionPaletteGroupUIType.Icons) {
             if (paletteItems.every(paletteItem => paletteItem.icon !== '')) {
-                this.logger.warn('Not all elements have icons. Labels will be shown, check settings for smart connector.');
+                this.logger.warn('Not all elements have icons. Labels will be shown, check settings for selection palette.');
                 return paletteItems;
             }
             paletteItems.forEach(paletteItem => (paletteItem.label = ''));
-        } else if (showOnly === SmartConnectorGroupUIType.Labels) {
+        } else if (showOnly === SelectionPaletteGroupUIType.Labels) {
             paletteItems.forEach(paletteItem => (paletteItem.icon = ''));
         }
         return paletteItems;
     }
 
-    protected createSmartConnectorItems(
+    protected createSelectionPaletteItems(
         action: PaletteItem.TriggerElementCreationAction,
         label: string,
         nodeType: string
-    ): PaletteItem | SmartConnectorNodeItem {
+    ): PaletteItem | SelectionPaletteNodeItem {
         if (TriggerNodeCreationAction.is(action)) {
             let edgeType = this.edgeTypes[nodeType];
             if (!edgeType) {
                 edgeType = this.defaultEdge;
             }
             return {
-                id: `smart-connector-palette-item${this.counter++}`,
+                id: `selection-palette-palette-item${this.counter++}`,
                 sortString: label.charAt(0),
                 label,
                 actions: [action],
@@ -197,7 +197,7 @@ export class DefaultSmartConnectorItemProvider extends SmartConnectorItemProvide
             };
         }
         return {
-            id: `smart-connector-palette-item${this.counter++}`,
+            id: `selection-palette-palette-item${this.counter++}`,
             sortString: label.charAt(0),
             label,
             actions: [action]

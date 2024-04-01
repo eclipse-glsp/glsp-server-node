@@ -77,8 +77,10 @@ import {
     NavigationTargetProviders,
     Operations
 } from './service-identifiers';
-import { DefaultSmartConnectorItemProvider, SmartConnectorItemProvider } from '../features/contextactions/smart-connector-item-provider';
-import { OpenSmartConnectorActionHandler } from '../features/contextactions/smart-connector-action-handler';
+import {
+    DefaultSelectionPaletteItemProvider,
+    SelectionPaletteItemProvider
+} from '../features/contextactions/selection-palette-item-provider';
 
 /**
  * The diagram module is the central configuration artifact for configuring a client session specific injector. For each
@@ -156,7 +158,7 @@ export abstract class DiagramModule extends GLSPModule {
         applyOptionalBindingTarget(context, ToolPaletteItemProvider, this.bindToolPaletteItemProvider());
         applyOptionalBindingTarget(context, CommandPaletteActionProvider, this.bindCommandPaletteActionProvider());
         applyOptionalBindingTarget(context, ContextMenuItemProvider, this.bindContextMenuItemProvider());
-        applyOptionalBindingTarget(context, SmartConnectorItemProvider, this.bindSmartConnectorItemProvider());
+        applyOptionalBindingTarget(context, SelectionPaletteItemProvider, this.bindSelectionPaletteItemProvider());
         this.configureMultiBinding(new MultiBinding<ContextActionsProvider>(ContextActionsProviders), binding =>
             this.configureContextActionProviders(binding)
         );
@@ -219,7 +221,6 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(SaveModelActionHandler);
         binding.add(UndoRedoActionHandler);
         binding.add(ComputedBoundsActionHandler);
-        binding.add(OpenSmartConnectorActionHandler);
     }
 
     protected bindDiagramType(): BindingTarget<string> {
@@ -349,8 +350,8 @@ export abstract class DiagramModule extends GLSPModule {
         return DefaultToolPaletteItemProvider;
     }
 
-    protected bindSmartConnectorItemProvider(): BindingTarget<SmartConnectorItemProvider> | undefined {
-        return DefaultSmartConnectorItemProvider;
+    protected bindSelectionPaletteItemProvider(): BindingTarget<SelectionPaletteItemProvider> | undefined {
+        return DefaultSelectionPaletteItemProvider;
     }
 
     protected bindCommandPaletteActionProvider(): BindingTarget<CommandPaletteActionProvider> | undefined {

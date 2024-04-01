@@ -33,7 +33,7 @@ import {
     PopupModelFactory,
     ServerModule,
     SourceModelStorage,
-    SmartConnectorItemProvider
+    SelectionPaletteItemProvider
 } from '@eclipse-glsp/server';
 import { injectable } from 'inversify';
 import { CreateAutomatedTaskHandler } from './handler/create-automated-task-handler';
@@ -53,7 +53,7 @@ import { NodeDocumentationNavigationTargetProvider } from './provider/node-docum
 import { PreviousNodeNavigationTargetProvider } from './provider/previous-node-navigation-target-provider';
 import { WorkflowCommandPaletteActionProvider } from './provider/workflow-command-palette-action-provider';
 import { WorkflowContextMenuItemProvider } from './provider/workflow-context-menu-item-provider';
-import { WorkflowSmartConnectorItemProvider } from './provider/workflow-smart-connector-item-provider';
+import { WorkflowSelectionPaletteItemProvider } from './provider/workflow-selection-palette-item-provider';
 import { EditTaskOperationHandler } from './taskedit/edit-task-operation-handler';
 import { TaskEditContextActionProvider } from './taskedit/task-edit-context-provider';
 import { TaskEditValidator } from './taskedit/task-edit-validator';
@@ -109,8 +109,8 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
         return WorkflowCommandPaletteActionProvider;
     }
 
-    protected override bindSmartConnectorItemProvider(): BindingTarget<SmartConnectorItemProvider> | undefined {
-        return WorkflowSmartConnectorItemProvider;
+    protected override bindSelectionPaletteItemProvider(): BindingTarget<SelectionPaletteItemProvider> | undefined {
+        return WorkflowSelectionPaletteItemProvider;
     }
 
     protected override bindLabelEditValidator(): BindingTarget<LabelEditValidator> | undefined {
