@@ -42,7 +42,7 @@ export class WorkflowModelFactory implements GModelFactory {
      * after every change.
      */
     createModel(): void {
-        if (this.modelState.root == null) {
+        if (!this.modelState.root) {
             const root = this.modelSerializer.createRoot(this.modelState.model);
             this.modelState.updateRoot(root);
         }
