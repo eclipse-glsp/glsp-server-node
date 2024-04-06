@@ -23,6 +23,7 @@ import {
 } from '@eclipse-glsp/server';
 import * as fs from 'fs';
 import { inject, injectable } from 'inversify';
+import * as os from 'os';
 import { WorkflowModelState } from './workflow-model-state';
 
 /**
@@ -56,6 +57,9 @@ export class WorkflowSourceModelStorage implements SourceModelStorage {
     }
 
     protected loadJsonFile(path: string): GModelElementSchema {
+        if (os.platform() === 'win32') {
+            path = path.replace(/^\//, '');
+        }
         const data = fs.readFileSync(path, { encoding: 'utf8' });
         return JSON.parse(data);
     }
