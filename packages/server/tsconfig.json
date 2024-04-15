@@ -2,8 +2,14 @@
   "extends": "@eclipse-glsp/ts-config/mocha",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "lib"
+    "outDir": "lib",
+    "composite": true
   },
   "exclude": ["**/*.spec.ts", "src/common/test/mock-util.ts"],
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    {
+      "path": "../graph"
+    }
+  ]
 }

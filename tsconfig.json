@@ -1,0 +1,22 @@
+{
+  "extends": "@eclipse-glsp/ts-config/mocha",
+  "include": [],
+  "compilerOptions": {
+    "composite": true,
+    "resolveJsonModule": true
+  },
+  "references": [
+    {
+      "path": "./packages/graph"
+    },
+    {
+      "path": "./packages/layout-elk"
+    },
+    {
+      "path": "./packages/server"
+    },
+    {
+      "path": "./examples/workflow-server"
+    }
+  ]
+}
