@@ -1,7 +1,7 @@
 # Eclipse GLSP - Workflow Example Server (bundled)
 
 Provides a bundled version of the Workflow example server for node. This example server is used as dev example in GLSP projects.
-Note that this package provides the bundled file. If you are looking for the unbundled source code with type definitons check out
+Note that this package provides the bundled file. If you are looking for the unbundled source code with type definitions check out
 [`@eclipse-glsp-examples/workflow-server`](https://www.npmjs.com/package/@eclipse-glsp-examples/workflow-server).
 
 ## Workflow Diagram Example

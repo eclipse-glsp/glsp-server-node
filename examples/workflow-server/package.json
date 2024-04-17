@@ -49,11 +49,10 @@
     "build": "tsc -b && yarn bundle",
     "bundle": "webpack",
     "bundle:browser": "webpack --env target=webworker ",
-    "clean": "rimraf lib tsconfig.tsbuildinfo bundle",
+    "clean": "rimraf lib *.tsbuildinfo",
     "lint": "eslint --ext .ts,.tsx ./src",
-    "lint:ci": "yarn lint -o eslint.xml -f checkstyle",
-    "prepare": "yarn clean && yarn build",
-    "watch": "tsc -w"
+    "watch": "tsc -w",
+    "watch:bundle": "webpack -w"
   },
   "dependencies": {
     "@eclipse-glsp/layout-elk": "2.2.0-next",
