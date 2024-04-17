@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2024 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -17,7 +17,10 @@ import * as winston from 'winston';
 import { asLogLevel, Logger, LogLevel } from '../../common/utils/logger';
 
 export class WinstonLogger extends Logger {
-    constructor(protected baseLogger: winston.Logger, public caller?: string) {
+    constructor(
+        protected baseLogger: winston.Logger,
+        public caller?: string
+    ) {
         super();
     }
 

@@ -1,0 +1,4 @@
+# The app.ts is the entrypoint when the workflow server is used bundled in an external node process
+# It launches the server when imported so it has to be excluded from the default export to avoid unintended
+# autostarts when the server package is directly integrated into a node backed (e.g. Theia)
+app.ts

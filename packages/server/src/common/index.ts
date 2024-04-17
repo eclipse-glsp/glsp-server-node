@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2024 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,8 +14,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-export * from '@eclipse-glsp/graph';
-export * from '@eclipse-glsp/protocol';
 export * from './actions/action-dispatcher';
 export * from './actions/action-handler';
 export * from './actions/action-handler-registry';
@@ -64,19 +62,34 @@ export * from './features/navigation/request-navigation-targets-action-handler';
 export * from './features/navigation/resolve-navigation-targets-action-handler';
 export * from './features/popup/popup-model-factory';
 export * from './features/popup/request-popup-model-action-handler';
+export * from './features/progress/progress-service';
 export * from './features/type-hints/edge-creation-checker';
+export * from './features/type-hints/request-check-edge-action-handler';
 export * from './features/type-hints/request-type-hints-action-handler';
 export * from './features/validation/model-validator';
 export * from './features/validation/request-markers-handler';
-export * from './gmodel/index';
+export * from './gmodel/apply-label-edit-operation-handler';
+export * from './gmodel/change-bounds-operation-handler';
+export * from './gmodel/change-routing-points-operation-handler';
+export * from './gmodel/cut-operation-handler';
+export * from './gmodel/delete-operation-handler';
+export * from './gmodel/gmodel-create-edge-operation-handler';
+export * from './gmodel/gmodel-create-node-operation-handler';
+export * from './gmodel/gmodel-diagram-module';
+export * from './gmodel/gmodel-operation-handler';
+export * from './gmodel/paste-operation-handler';
+export * from './gmodel/reconnect-edge-operation-handler';
 export * from './launch/glsp-server-launcher';
+export * from './launch/jsonrpc-server-launcher';
 export * from './operations/compound-operation-handler';
 export * from './operations/create-operation-handler';
 export * from './operations/json-operation-handler';
 export * from './operations/operation-action-handler';
 export * from './operations/operation-handler';
 export * from './operations/operation-handler-registry';
+export * from './protocol/client-action';
 export * from './protocol/glsp-server';
+export * from './reexport';
 export * from './session/client-session';
 export * from './session/client-session-factory';
 export * from './session/client-session-initializer';

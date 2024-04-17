@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 EclipseSource and others.
+ * Copyright (c) 2023-2024 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -28,7 +28,10 @@ interface TestModel {
 let jsonObject: TestModel;
 
 class TestRecordingCommand<JsonObject extends AnyObject = AnyObject> extends AbstractRecordingCommand<JsonObject> {
-    constructor(protected jsonObject: JsonObject, protected doExecute: () => MaybePromise<void>) {
+    constructor(
+        protected jsonObject: JsonObject,
+        protected doExecute: () => MaybePromise<void>
+    ) {
         super();
     }
 

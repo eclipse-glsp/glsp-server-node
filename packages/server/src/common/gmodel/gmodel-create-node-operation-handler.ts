@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 EclipseSource and others.
+ * Copyright (c) 2022-2024 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -16,7 +16,12 @@
 
 import { GModelElement, GNode } from '@eclipse-glsp/graph';
 import {
-    Args, CreateNodeOperation, GhostElement, MaybePromise, Point, SelectAction,
+    Args,
+    CreateNodeOperation,
+    GhostElement,
+    MaybePromise,
+    Point,
+    SelectAction,
     TriggerNodeCreationAction
 } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
@@ -62,8 +67,10 @@ export abstract class GModelCreateNodeOperationHandler extends GModelOperationHa
     }
 
     protected createTriggerNodeCreationAction(elementTypeId: string): TriggerNodeCreationAction {
-        return TriggerNodeCreationAction.create(elementTypeId,
-            { ghostElement: this.createTriggerGhostElement(elementTypeId), args: this.createTriggerArgs(elementTypeId) } );
+        return TriggerNodeCreationAction.create(elementTypeId, {
+            ghostElement: this.createTriggerGhostElement(elementTypeId),
+            args: this.createTriggerArgs(elementTypeId)
+        });
     }
 
     protected createTriggerGhostElement(elementTypeId: string): GhostElement | undefined {

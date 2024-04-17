@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2024 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -43,7 +43,8 @@ import { Command } from '../command/command';
 import { DiagramConfiguration, ServerLayoutKind } from '../diagram/diagram-configuration';
 import { ContextEditValidator } from '../features/directediting/context-edit-validator';
 import { LabelEditValidator } from '../features/directediting/label-edit-validator';
-import { GModelCreateEdgeOperationHandler, GModelCreateNodeOperationHandler } from '../gmodel/index';
+import { GModelCreateEdgeOperationHandler } from '../gmodel/gmodel-create-edge-operation-handler';
+import { GModelCreateNodeOperationHandler } from '../gmodel/gmodel-create-node-operation-handler';
 import { ClientSession } from '../session/client-session';
 import { ClientSessionFactory } from '../session/client-session-factory';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
