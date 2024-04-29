@@ -82,11 +82,7 @@ export function configureELKLayoutModule(options: ElkModuleOptions): ContainerMo
         const elkFactory: ElkFactory = () =>
             new ElkConstructor({
                 algorithms: options.algorithms,
-                defaultLayoutOptions: options.defaultLayoutOptions,
-                // The node implementation relied on elkjs' `FakeWorker` to set the `workerFactory`.
-                // However, since the required file is dynamically loaded and not available in a web-worker context,
-                // it needs to be mocked manually.
-                workerFactory: () => ({ postMessage: () => {} }) as unknown as Worker
+                defaultLayoutOptions: options.defaultLayoutOptions
             });
 
         bind(ElkFactory).toConstantValue(elkFactory);

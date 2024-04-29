@@ -41,7 +41,7 @@
     "wf-glsp-server-node.js.map"
   ],
   "scripts": {
-    "clean": "rimraf wf-glsp-server-node.js wf-glsp-server-node.js.map wf-glsp-server-webworker.js wf-glsp-server-webworker.js.map",
+    "clean": "rimraf wf-glsp-server-node.js wf-glsp-server-node.js.map",
     "start": "node --enable-source-maps ./wf-glsp-server-node.js --port 5007",
     "start:websocket": "node --enable-source-maps ./wf-glsp-server-node.js -w --port 8081",
     "watch": "tsc -w"
