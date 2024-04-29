@@ -39,6 +39,7 @@ export * from './features/contextactions/context-actions-provider';
 export * from './features/contextactions/context-actions-provider-registry';
 export * from './features/contextactions/context-menu-item-provider';
 export * from './features/contextactions/request-context-actions-handler';
+export * from './features/contextactions/selection-palette-item-provider';
 export * from './features/contextactions/tool-palette-item-provider';
 export * from './features/directediting/context-edit-validator';
 export * from './features/directediting/context-edit-validator-registry';

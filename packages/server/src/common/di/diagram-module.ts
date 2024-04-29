@@ -77,6 +77,10 @@ import {
     NavigationTargetProviders,
     Operations
 } from './service-identifiers';
+import {
+    DefaultSelectionPaletteItemProvider,
+    SelectionPaletteItemProvider
+} from '../features/contextactions/selection-palette-item-provider';
 
 /**
  * The diagram module is the central configuration artifact for configuring a client session specific injector. For each
@@ -154,6 +158,7 @@ export abstract class DiagramModule extends GLSPModule {
         applyOptionalBindingTarget(context, ToolPaletteItemProvider, this.bindToolPaletteItemProvider());
         applyOptionalBindingTarget(context, CommandPaletteActionProvider, this.bindCommandPaletteActionProvider());
         applyOptionalBindingTarget(context, ContextMenuItemProvider, this.bindContextMenuItemProvider());
+        applyOptionalBindingTarget(context, SelectionPaletteItemProvider, this.bindSelectionPaletteItemProvider());
         this.configureMultiBinding(new MultiBinding<ContextActionsProvider>(ContextActionsProviders), binding =>
             this.configureContextActionProviders(binding)
         );
@@ -343,6 +348,10 @@ export abstract class DiagramModule extends GLSPModule {
 
     protected bindToolPaletteItemProvider(): BindingTarget<ToolPaletteItemProvider> | undefined {
         return DefaultToolPaletteItemProvider;
+    }
+
+    protected bindSelectionPaletteItemProvider(): BindingTarget<SelectionPaletteItemProvider> | undefined {
+        return DefaultSelectionPaletteItemProvider;
     }
 
     protected bindCommandPaletteActionProvider(): BindingTarget<CommandPaletteActionProvider> | undefined {
