@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 EclipseSource and others.
+ * Copyright (c) 2022-2024 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -16,13 +16,12 @@
 
 import { injectable } from 'inversify';
 import * as jsonrpc from 'vscode-jsonrpc/browser';
-import { MaybePromise } from '../../common/index';
-import { JsonRpcGLSPServerLauncher, JsonRpcServerInstance } from '../../common/launch/jsonrpc-server-launcher';
+import { JsonRpcGLSPServerLauncher, JsonRpcServerInstance, MaybePromise } from '../../common';
 export interface WorkerLaunchOptions {
     context?: Worker;
 }
 
-export const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed.';
+export const WORKER_START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed.';
 
 @injectable()
 export class WorkerServerLauncher extends JsonRpcGLSPServerLauncher<WorkerLaunchOptions> {
@@ -35,7 +34,7 @@ export class WorkerServerLauncher extends JsonRpcGLSPServerLauncher<WorkerLaunch
         this.connection = this.createConnection(options);
         this.createServerInstance(this.connection);
         this.logger.info('GLSP server worker connection established');
-        postMessage(START_UP_COMPLETE_MSG);
+        postMessage(WORKER_START_UP_COMPLETE_MSG);
         return new Promise((resolve, rejects) => {
             this.connection?.onClose(() => resolve(undefined));
             this.connection?.onError(error => rejects(error));

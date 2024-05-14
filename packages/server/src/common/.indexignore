@@ -1,0 +1,2 @@
+# Don't export test resources to avoid an implicit dependency on chai/sinon
+test

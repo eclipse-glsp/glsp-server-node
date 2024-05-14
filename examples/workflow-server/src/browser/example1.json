@@ -5,10 +5,7 @@
       "name": "Push",
       "taskType": "manual",
       "id": "task0",
-      "cssClasses": [
-        "task",
-        "manual"
-      ],
+      "cssClasses": ["task", "manual"],
       "children": [
         {
           "id": "task0_icon",
@@ -66,10 +63,7 @@
       "name": "ChkWt",
       "taskType": "automated",
       "id": "task0_automated",
-      "cssClasses": [
-        "task",
-        "automated"
-      ],
+      "cssClasses": ["task", "automated"],
       "children": [
         {
           "id": "task0_automated_icon",
@@ -194,9 +188,7 @@
     {
       "nodeType": "forkNode",
       "id": "bb2709f5-0ff0-4438-8853-b7e934b506d7",
-      "cssClasses": [
-        "forkOrJoin"
-      ],
+      "cssClasses": ["forkOrJoin"],
       "type": "activityNode:fork",
       "position": {
         "x": 170.0,
@@ -216,9 +208,7 @@
     {
       "nodeType": "joinNode",
       "id": "bd94e44e-19f9-446e-89d4-97ca1a63c17b",
-      "cssClasses": [
-        "forkOrJoin"
-      ],
+      "cssClasses": ["forkOrJoin"],
       "type": "activityNode:join",
       "position": {
         "x": 560.0,
@@ -245,10 +235,7 @@
       "name": "WtOK",
       "taskType": "automated",
       "id": "e47d5eba-612d-4c43-9aba-2c5502ff4f04",
-      "cssClasses": [
-        "task",
-        "automated"
-      ],
+      "cssClasses": ["task", "automated"],
       "children": [
         {
           "id": "e47d5eba-612d-4c43-9aba-2c5502ff4f04_icon",
@@ -304,9 +291,7 @@
     },
     {
       "id": "2317f24a-034e-4352-8857-d361dc8f5ed7",
-      "cssClasses": [
-        "medium"
-      ],
+      "cssClasses": ["medium"],
       "type": "edge:weighted",
       "sourceId": "b00fc494-0fa4-4448-8bf9-162c2c0865e4",
       "targetId": "e47d5eba-612d-4c43-9aba-2c5502ff4f04"
@@ -333,10 +318,7 @@
       "name": "RflWt",
       "taskType": "manual",
       "id": "a63cfd87-da7c-4846-912b-29040b776bfb",
-      "cssClasses": [
-        "task",
-        "manual"
-      ],
+      "cssClasses": ["task", "manual"],
       "children": [
         {
           "id": "54f08126-6041-44ce-9d8b-e7a549e48f91",
@@ -392,9 +374,7 @@
     },
     {
       "id": "9bb443d7-44f3-4192-8dd8-1a2782593373",
-      "cssClasses": [
-        "medium"
-      ],
+      "cssClasses": ["medium"],
       "type": "edge:weighted",
       "sourceId": "b00fc494-0fa4-4448-8bf9-162c2c0865e4",
       "targetId": "a63cfd87-da7c-4846-912b-29040b776bfb"
@@ -421,10 +401,7 @@
       "name": "Brew",
       "taskType": "automated",
       "id": "7afd430b-5031-4082-8190-7e755c57cde9",
-      "cssClasses": [
-        "task",
-        "automated"
-      ],
+      "cssClasses": ["task", "automated"],
       "children": [
         {
           "id": "7afd430b-5031-4082-8190-7e755c57cde9_icon",
@@ -491,10 +468,7 @@
       "name": "ChkTp",
       "taskType": "automated",
       "id": "6c26f0a4-4354-45fa-9d9f-bc2b48adee17",
-      "cssClasses": [
-        "task",
-        "automated"
-      ],
+      "cssClasses": ["task", "automated"],
       "children": [
         {
           "id": "6c26f0a4-4354-45fa-9d9f-bc2b48adee17_icon",
@@ -570,10 +544,7 @@
       "name": "KeepTp",
       "taskType": "automated",
       "id": "4b06ed95-c9be-47df-9941-98099259be4a",
-      "cssClasses": [
-        "task",
-        "automated"
-      ],
+      "cssClasses": ["task", "automated"],
       "children": [
         {
           "id": "4b06ed95-c9be-47df-9941-98099259be4a_icon",
@@ -631,10 +602,7 @@
       "name": "PreHeat",
       "taskType": "automated",
       "id": "80d1792f-9c7e-41c0-8eca-eeb0509397b6",
-      "cssClasses": [
-        "task",
-        "automated"
-      ],
+      "cssClasses": ["task", "automated"],
       "children": [
         {
           "id": "80d1792f-9c7e-41c0-8eca-eeb0509397b6_icon",
@@ -690,18 +658,14 @@
     },
     {
       "id": "d04afaf8-0894-4284-b844-22b255893107",
-      "cssClasses": [
-        "medium"
-      ],
+      "cssClasses": ["medium"],
       "type": "edge:weighted",
       "sourceId": "activityNode2",
       "targetId": "4b06ed95-c9be-47df-9941-98099259be4a"
     },
     {
       "id": "b9ef468f-2aaf-41b9-b408-29e2d08e490e",
-      "cssClasses": [
-        "medium"
-      ],
+      "cssClasses": ["medium"],
       "type": "edge:weighted",
       "sourceId": "activityNode2",
       "targetId": "80d1792f-9c7e-41c0-8eca-eeb0509397b6"

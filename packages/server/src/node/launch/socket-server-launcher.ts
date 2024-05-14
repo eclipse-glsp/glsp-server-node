@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2024 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -19,8 +19,6 @@ import * as net from 'net';
 import * as jsonrpc from 'vscode-jsonrpc/node';
 import { JsonRpcGLSPServerLauncher } from '../../common/launch/jsonrpc-server-launcher';
 import { Logger } from '../../common/utils/logger';
-
-export const START_UP_COMPLETE_MSG = '[GLSP-Server]:Startup completed. Accepting requests on port:';
 
 @injectable()
 export class SocketServerLauncher extends JsonRpcGLSPServerLauncher<net.TcpSocketConnectOpts> {

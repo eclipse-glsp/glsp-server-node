@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 EclipseSource and others.
+ * Copyright (c) 2023-2024 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -93,7 +93,11 @@ export abstract class AbstractRecordingCommand<JsonObject extends AnyObject> imp
  * to the `GModelRoot` ({@link ModelState.root}) during the given `doExecute` function
  */
 export class GModelRecordingCommand extends AbstractRecordingCommand<GModelRootSchema> {
-    constructor(protected modelState: ModelState, protected serializer: GModelSerializer, protected doExecute: () => MaybePromise<void>) {
+    constructor(
+        protected modelState: ModelState,
+        protected serializer: GModelSerializer,
+        protected doExecute: () => MaybePromise<void>
+    ) {
         super();
     }
 
