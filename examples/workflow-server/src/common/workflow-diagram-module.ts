@@ -23,8 +23,10 @@ import {
     EdgeCreationChecker,
     GLSPServer,
     GModelDiagramModule,
+    GModelFactory,
     InstanceMultiBinding,
     LabelEditValidator,
+    ModelState,
     ModelValidator,
     MultiBinding,
     NavigationTargetProvider,
@@ -59,6 +61,8 @@ import { WorkflowDiagramConfiguration } from './workflow-diagram-configuration';
 import { WorkflowEdgeCreationChecker } from './workflow-edge-creation-checker';
 import { WorkflowGLSPServer } from './workflow-glsp-server';
 import { WorkflowPopupFactory } from './workflow-popup-factory';
+import { WorkflowModelFactory } from './workflow-gmodel-factory';
+import { WorkflowModelState } from './workflow-model-state';
 
 @injectable()
 export class WorkflowServerModule extends ServerModule {
@@ -89,6 +93,14 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
         binding.add(CreateDecisionNodeHandler);
         binding.add(CreateCategoryHandler);
         binding.add(EditTaskOperationHandler);
+    }
+
+    protected override bindModelState(): BindingTarget<ModelState> {
+        return { service: WorkflowModelState };
+    }
+
+    protected override bindGModelFactory(): BindingTarget<GModelFactory> {
+        return WorkflowModelFactory;
     }
 
     protected bindDiagramConfiguration(): BindingTarget<DiagramConfiguration> {
