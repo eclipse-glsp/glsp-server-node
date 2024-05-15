@@ -16,3 +16,5 @@ report.xml
 
 wf-glsp-server-node.js
 wf-glsp-server-node.js.map
+wf-glsp-server-webworker.js
+wf-glsp-server-webworker.js.map

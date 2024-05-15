@@ -27,7 +27,11 @@ export async function launch(argv?: string[]): Promise<void> {
     appContainer.load(createAppModule({ logLevel: LogLevel.info }));
 
     const launcher = appContainer.resolve(WorkerServerLauncher);
-    const elkLayoutModule = configureELKLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator });
+    const elkLayoutModule = configureELKLayoutModule({
+        algorithms: ['layered'],
+        layoutConfigurator: WorkflowLayoutConfigurator,
+        isWebWorker: true
+    });
 
     const serverModule = new WorkflowServerModule().configureDiagramModule(
         new WorkflowDiagramModule(() => WorkflowMockModelStorage),
