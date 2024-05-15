@@ -16,7 +16,7 @@
 import 'reflect-metadata';
 
 import { configureELKLayoutModule } from '@eclipse-glsp/layout-elk';
-import { createAppModule, GModelStorage, SocketServerLauncher, WebSocketServerLauncher } from '@eclipse-glsp/server/node';
+import { createAppModule, GModelStorage, Logger, SocketServerLauncher, WebSocketServerLauncher } from '@eclipse-glsp/server/node';
 import { Container } from 'inversify';
 
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
@@ -27,6 +27,16 @@ async function launch(argv?: string[]): Promise<void> {
     const options = createWorkflowCliParser().parse(argv);
     const appContainer = new Container();
     appContainer.load(createAppModule(options));
+    const logger = appContainer.get(Logger);
+
+    // Add fallback hooks to catch unhandled exceptions & promise rejections and prevent the node process from crashing
+    process.on('unhandledRejection', (reason, p) => {
+        logger.error('Unhandled Rejection:', p, reason);
+    });
+
+    process.on('uncaughtException', error => {
+        logger.error('Uncaught exception:', error);
+    });
 
     const elkLayoutModule = configureELKLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator });
     const serverModule = new WorkflowServerModule().configureDiagramModule(new WorkflowDiagramModule(() => GModelStorage), elkLayoutModule);
