@@ -74,6 +74,10 @@ export class WinstonLogger extends Logger {
             return `${param.message}
             ${param.stack || ''}`;
         }
-        return JSON.stringify(param, undefined, 4);
+        try {
+            return JSON.stringify(param, undefined, 4);
+        } catch (_) {
+            return '';
+        }
     }
 }
