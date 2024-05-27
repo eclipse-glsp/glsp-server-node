@@ -32,5 +32,6 @@ export * from './gmodel-util';
 export * from './gnode';
 export * from './gport';
 export * from './gpre-rendered-element';
+export * from './gresizable';
 export * from './gshape-element';
 export * from './gshaped-prerendered-element';

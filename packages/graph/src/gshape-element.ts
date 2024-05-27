@@ -17,13 +17,16 @@ import { Args, Dimension, JsonPrimitive, Point } from '@eclipse-glsp/protocol';
 import { GBoundsAware, GBoundsAwareBuilder } from './gbounds-aware';
 import { GLayoutable, GLayoutableBuilder } from './glayoutable';
 import { GModelElement, GModelElementBuilder } from './gmodel-element';
+import { GResizable, GResizableBuilder, GResizeLocation } from './gresizable';
 
-export abstract class GShapeElement extends GModelElement implements GBoundsAware, GLayoutable {
+export abstract class GShapeElement extends GModelElement implements GBoundsAware, GLayoutable, GResizable {
     layoutOptions?: Args;
     position: Point;
     size: Dimension;
+    resizeLocations?: GResizeLocation[];
     [GBoundsAware] = true;
     [GLayoutable] = true;
+    [GResizable] = true;
 }
 
 export class GShapeElementBuilder<G extends GShapeElement> extends GModelElementBuilder<G> {
@@ -47,5 +50,9 @@ export class GShapeElementBuilder<G extends GShapeElement> extends GModelElement
     addLayoutOptions(layoutOptions: Map<string, JsonPrimitive>): this;
     addLayoutOptions(layoutOptions: Args | Map<string, JsonPrimitive>): this {
         return GLayoutableBuilder.addLayoutOptions(this, layoutOptions);
+    }
+
+    resizeLocations(resizeLocations?: GResizeLocation[]): this {
+        return GResizableBuilder.resizeLocations(this, resizeLocations);
     }
 }
