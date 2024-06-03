@@ -14,23 +14,29 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { Logger, MaybePromise, RequestModelAction, SaveModelAction, SourceModelStorage } from '@eclipse-glsp/server/browser';
+import { AbstractJsonModelStorage } from '@eclipse-glsp/server/node';
 import { inject, injectable } from 'inversify';
-import { WorkflowModelState } from '../common/model/workflow-model-state';
-import wf from './example1.json';
+import { WorkflowSerializer } from '../util/workflow-serializer';
+import { WorkflowModel } from './workflow-model';
+import { WorkflowModelState } from './workflow-model-state';
 
 @injectable()
-export class WorkflowMockModelStorage implements SourceModelStorage {
+export class WorkflowModelStorage extends AbstractJsonModelStorage implements SourceModelStorage {
     @inject(Logger)
     protected logger: Logger;
 
     @inject(WorkflowModelState)
-    protected modelState: WorkflowModelState;
+    protected override modelState: WorkflowModelState;
 
     loadSourceModel(action: RequestModelAction): MaybePromise<void> {
-        this.modelState.updateSourceModel(wf);
+        const sourceUri = this.getSourceUri(action);
+        const rootSchema = this.loadFromFile(sourceUri);
+        this.modelState.updateSourceModel(rootSchema as WorkflowModel);
     }
 
     saveSourceModel(action: SaveModelAction): MaybePromise<void> {
-        this.logger.warn('Saving is not supported by this mock implementation');
+        const fileUri = this.getFileUri(action);
+        const schema = WorkflowSerializer.transformModel(this.modelState);
+        this.writeFile(fileUri, schema);
     }
 }

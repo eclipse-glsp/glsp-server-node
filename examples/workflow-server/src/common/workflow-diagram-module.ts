@@ -23,8 +23,10 @@ import {
     EdgeCreationChecker,
     GLSPServer,
     GModelDiagramModule,
+    GModelFactory,
     InstanceMultiBinding,
     LabelEditValidator,
+    ModelState,
     ModelValidator,
     MultiBinding,
     NavigationTargetProvider,
@@ -46,6 +48,8 @@ import { CreateMergeNodeHandler } from './handler/create-merge-node-handler';
 import { CreateWeightedEdgeHandler } from './handler/create-weighted-edge-handler';
 import { WorkflowLabelEditValidator } from './labeledit/workflow-label-edit-validator';
 import { WorkflowModelValidator } from './marker/workflow-model-validator';
+import { WorkflowGModelFactory } from './model/workflow-gmodel-factory';
+import { WorkflowModelState } from './model/workflow-model-state';
 import { WorkflowNavigationTargetResolver } from './model/workflow-navigation-target-resolver';
 import { NextNodeNavigationTargetProvider } from './provider/next-node-navigation-target-provider';
 import { NodeDocumentationNavigationTargetProvider } from './provider/node-documentation-navigation-target-provider';
@@ -89,6 +93,14 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
         binding.add(CreateDecisionNodeHandler);
         binding.add(CreateCategoryHandler);
         binding.add(EditTaskOperationHandler);
+    }
+
+    protected override bindModelState(): BindingTarget<ModelState> {
+        return { service: WorkflowModelState };
+    }
+
+    protected override bindGModelFactory(): BindingTarget<GModelFactory> {
+        return WorkflowGModelFactory;
     }
 
     protected bindDiagramConfiguration(): BindingTarget<DiagramConfiguration> {
