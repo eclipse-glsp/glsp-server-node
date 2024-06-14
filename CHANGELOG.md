@@ -1,6 +1,14 @@
 # Eclipse GLSP Server Changelog
 
-## v2.1.0 - active
+## v2.2.0- active
+
+-   [layout] Ensure that model is updated correctly when using `automatic` server layout [#74](https://github.com/eclipse-glsp/glsp-server-node/pull/74)
+-   [gmodel] Add proper undefined/null handling in GModel builder functions [#76](https://github.com/eclipse-glsp/glsp-server-node/pull/76)
+-   [launch] Improve Winston-Logger implementation to properly handle non-serializable objects [#82](https://github.com/eclipse-glsp/glsp-server-node/pull/82)
+-   [layout] Ensure that including `ElkLayoutEngine` engine does not error in browser-only server implementations [#83](https://github.com/eclipse-glsp/glsp-server-node/pull/83)
+-   [gmodel] Introduce new `Resizable` interface that is implemented by all `GShapeElements` and allows per-element definition of resize handle locations [#84](https://github.com/eclipse-glsp/glsp-server-node/pull/84)
+
+## [v2.1.0 - 25/01/2024](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.1.0)
 
 -   [operation] Add support for defining ghost elements/templates in `CreateNodeOperationHandler`'s [#65](https://github.com/eclipse-glsp/glsp-server-node/pull/65)
 -   [launch] Use "127.0.0.1" as default host to avoid potential IP v4/v6 connection issues [#67](https://github.com/eclipse-glsp/glsp-server-node/pull/67)
