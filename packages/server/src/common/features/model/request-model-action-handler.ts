@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2024 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -29,7 +29,7 @@ export class RequestModelActionHandler implements ActionHandler {
     actionKinds = [RequestModelAction.KIND];
 
     @inject(Logger)
-    private logger: Logger;
+    protected logger: Logger;
 
     @inject(SourceModelStorage)
     protected sourceModelStorage: SourceModelStorage;

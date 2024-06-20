@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2024 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -17,7 +17,7 @@ import { Args } from '@eclipse-glsp/protocol';
 import { ArgsUtil } from './args-util';
 
 export class ClientOptionsUtil {
-    private static FILE_PREFIX = 'file://';
+    public static FILE_PREFIX = 'file://';
     public static IS_RECONNECTING = 'isReconnecting';
 
     public static adaptUri(uri: string): string {
