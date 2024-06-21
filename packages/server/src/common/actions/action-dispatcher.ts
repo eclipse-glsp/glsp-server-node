@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2024 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,7 +13,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, Disposable, flatPush, MaybeArray, RequestAction, ResponseAction, UpdateModelAction } from '@eclipse-glsp/protocol';
+import {
+    Action,
+    Disposable,
+    MaybeArray,
+    RequestAction,
+    ResponseAction,
+    SetModelAction,
+    UpdateModelAction,
+    flatPush
+} from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ClientId } from '../di/service-identifiers';
 import { GLSPServerError } from '../utils/glsp-server-error';
@@ -67,7 +76,7 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
     protected clientActionForwarder: ClientActionForwarder;
 
     @inject(Logger)
-    private logger: Logger;
+    protected logger: Logger;
 
     @inject(ClientId)
     protected clientId: string;
@@ -98,7 +107,7 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
             responses.push(...response);
         }
 
-        if (UpdateModelAction.is(action) && this.postUpdateQueue.length > 0) {
+        if (this.postUpdateQueue.length > 0 && (UpdateModelAction.is(action) || SetModelAction.is(action))) {
             responses.push(...this.postUpdateQueue);
             this.postUpdateQueue = [];
         }

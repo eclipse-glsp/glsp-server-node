@@ -7,6 +7,12 @@
 -   [launch] Improve Winston-Logger implementation to properly handle non-serializable objects [#82](https://github.com/eclipse-glsp/glsp-server-node/pull/82)
 -   [layout] Ensure that including `ElkLayoutEngine` engine does not error in browser-only server implementations [#83](https://github.com/eclipse-glsp/glsp-server-node/pull/83)
 -   [gmodel] Introduce new `Resizable` interface that is implemented by all `GShapeElements` and allows per-element definition of resize handle locations [#84](https://github.com/eclipse-glsp/glsp-server-node/pull/84)
+-   [action] Ensure that actions queued with `dispatchAfterNextUpdate` are also dispatched after the initial `SetModelAction` [#88](https://github.com/eclipse-glsp/glsp-server-node/pull/88)
+
+### Potentially Breaking Changes
+
+-   [protocol] Removed local definition of `GIssueMarker` and reuse it from `@eclipse-glsp/protocol` instead [#88](https://github.com/eclipse-glsp/glsp-server-node/pull/88)
+    -   => `GIssueMarker` is now an interface instead of a class
 
 ## [v2.1.0 - 25/01/2024](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.1.0)
 
