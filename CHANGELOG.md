@@ -1,6 +1,6 @@
 # Eclipse GLSP Server Changelog
 
-## v2.2.0- active
+## [v2.2.0- 04/07/2024](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.2.0)
 
 -   [layout] Ensure that model is updated correctly when using `automatic` server layout [#74](https://github.com/eclipse-glsp/glsp-server-node/pull/74)
 -   [gmodel] Add proper undefined/null handling in GModel builder functions [#76](https://github.com/eclipse-glsp/glsp-server-node/pull/76)
