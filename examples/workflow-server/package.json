@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-glsp-examples/workflow-server",
-  "version": "2.2.0",
+  "version": "2.2.0-next",
   "description": "GLSP node server for the workflow example",
   "keywords": [
     "eclipse",
@@ -56,9 +56,9 @@
     "watch:bundle": "webpack -w"
   },
   "dependencies": {
-    "@eclipse-glsp/layout-elk": "2.2.0",
-    "@eclipse-glsp/server": "2.2.0",
-    "inversify": "^6.0.2"
+    "@eclipse-glsp/layout-elk": "2.2.0-next",
+    "@eclipse-glsp/server": "2.2.0-next",
+    "inversify": "^6.0.1"
   },
   "devDependencies": {
     "source-map-loader": "^4.0.1",

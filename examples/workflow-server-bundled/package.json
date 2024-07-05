@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-glsp-examples/workflow-server-bundled",
-  "version": "2.2.0",
+  "version": "2.2.0-next",
   "description": "GLSP node server for the workflow example (bundled)",
   "keywords": [
     "eclipse",
