@@ -63,7 +63,7 @@ export class WorkflowDiagramConfiguration implements DiagramConfiguration {
         return [
             createDefaultEdgeTypeHint(DefaultTypes.EDGE),
             createDefaultEdgeTypeHint({
-                elementTypeId: DefaultTypes.EDGE,
+                elementTypeId: types.WEIGHTED_EDGE,
                 dynamic: true,
                 sourceElementTypeIds: [types.ACTIVITY_NODE],
                 targetElementTypeIds: [types.TASK, types.ACTIVITY_NODE]
