@@ -93,7 +93,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         } else if (model instanceof GEdge) {
             return this.transformEdge(model);
         } else if (model instanceof GLabel) {
-            return this.transformPort(model);
+            return this.transformLabel(model);
         } else if (model instanceof GPort) {
             return this.transformPort(model);
         }
