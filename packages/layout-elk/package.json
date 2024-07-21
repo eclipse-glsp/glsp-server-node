@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-glsp/layout-elk",
-  "version": "2.2.0-next",
+  "version": "2.2.1",
   "description": "Integration of ELK graph layout algorithms in GLSP Node Server",
   "keywords": [
     "eclipse",
@@ -49,11 +49,11 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@eclipse-glsp/server": "2.2.0-next",
+    "@eclipse-glsp/server": "2.2.1",
     "elkjs": "^0.7.1"
   },
   "peerDependencies": {
-    "inversify": "^6.0.0"
+    "inversify": "~6.0.2"
   },
   "publishConfig": {
     "access": "public"
