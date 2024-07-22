@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-glsp/server",
-  "version": "2.2.1",
+  "version": "2.3.0-next",
   "description": "A js server framework for Eclipse GLSP",
   "keywords": [
     "eclipse",
@@ -58,8 +58,8 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@eclipse-glsp/graph": "2.2.1",
-    "@eclipse-glsp/protocol": "2.2.1",
+    "@eclipse-glsp/graph": "2.3.0-next",
+    "@eclipse-glsp/protocol": "next",
     "@types/uuid": "8.3.1",
     "commander": "^8.3.0",
     "fast-json-patch": "^3.1.0",
