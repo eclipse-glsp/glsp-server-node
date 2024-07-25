@@ -14,6 +14,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+import { JsonrpcClientProxy } from '@eclipse-glsp/protocol';
+import { decorate, injectable } from 'inversify';
+
 export * from '@eclipse-glsp/graph';
 export * from '@eclipse-glsp/protocol';
 export * from '@eclipse-glsp/protocol/lib/di';
+decorate(injectable(), JsonrpcClientProxy);
