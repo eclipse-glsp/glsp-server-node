@@ -17,6 +17,7 @@ import { DefaultTypes as types } from '@eclipse-glsp/protocol';
 import { GButton } from './gbutton';
 import { GCompartment } from './gcompartment';
 import { GEdge } from './gedge';
+import { GForeignObjectElement } from './gforeign-object-element';
 import { GGraph } from './ggraph';
 import { GHtmlRoot } from './ghtml-root';
 import { GIssueMarker } from './gissue-marker';
@@ -43,6 +44,7 @@ export function getDefaultMapping(): Map<string, GModelElementConstructor> {
 
     mapping.set(types.HTML, GHtmlRoot);
     mapping.set(types.PRE_RENDERED, GPreRenderedElement);
-    mapping.set(types.FOREIGN_OBJECT, GShapedPreRenderedElement);
+    mapping.set(types.SHAPE_PRE_RENDERED, GShapedPreRenderedElement);
+    mapping.set(types.FOREIGN_OBJECT, GForeignObjectElement);
     return mapping;
 }
