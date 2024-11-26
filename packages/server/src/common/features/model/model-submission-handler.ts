@@ -24,10 +24,13 @@ import {
     SetDirtyStateAction,
     SetMarkersAction,
     SetModelAction,
+    StatusAction,
     UpdateModelAction
 } from '@eclipse-glsp/protocol';
+import { DebouncedFunc, debounce } from 'lodash';
 
 import { inject, injectable, optional } from 'inversify';
+import { ActionDispatcher } from '../../actions/action-dispatcher';
 import { CommandStack } from '../../command/command-stack';
 import { DiagramConfiguration, ServerLayoutKind } from '../../diagram/diagram-configuration';
 import { LayoutEngine } from '../layout/layout-engine';
@@ -70,7 +73,13 @@ export class ModelSubmissionHandler {
     @optional()
     protected validator?: ModelValidator;
 
+    @inject(ActionDispatcher)
+    protected actionDispatcher: ActionDispatcher;
+
     protected requestModelAction?: RequestModelAction;
+
+    liveValidationDelay = 100;
+    protected debouncedLiveValidation?: DebouncedFunc<(validator: ModelValidator) => void>;
 
     /**
      * Returns a list of actions to submit the initial revision of the client-side model, based on the injected
@@ -149,10 +158,31 @@ export class ModelSubmissionHandler {
             result.push(SetDirtyStateAction.create(this.commandStack.isDirty, { reason }));
         }
         if (this.validator) {
-            const markers = await this.validator.validate([this.modelState.root], MarkersReason.LIVE);
-            result.push(SetMarkersAction.create(markers, { reason: MarkersReason.LIVE }));
+            const validationActions = await this.validateModel(this.validator);
+            result.push(...validationActions);
         }
         return result;
+    }
+
+    protected validateModel(validator: ModelValidator): MaybePromise<Action[]> {
+        this.scheduleLiveValidation(validator);
+        // we are using async, debounced live validation so there are no actions to return for the model submission
+        return [];
+    }
+
+    protected scheduleLiveValidation(validator: ModelValidator): void {
+        this.debouncedLiveValidation?.cancel();
+        this.debouncedLiveValidation = debounce(validator => this.performLiveValidation(validator), this.liveValidationDelay);
+        this.debouncedLiveValidation(validator);
+    }
+
+    protected async performLiveValidation(validator: ModelValidator): Promise<void> {
+        this.actionDispatcher.dispatch(StatusAction.create('Validate Model...'));
+        const markers = await validator.validate([this.modelState.root], MarkersReason.LIVE);
+        return this.actionDispatcher.dispatchAll(
+            SetMarkersAction.create(markers, { reason: MarkersReason.LIVE }),
+            StatusAction.create('', { severity: 'NONE' })
+        );
     }
 
     protected createSetModeAction(newRoot: GModelRootSchema): SetModelAction {
