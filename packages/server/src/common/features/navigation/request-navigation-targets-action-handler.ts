@@ -14,8 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { Action, MaybePromise, NavigationTarget, RequestNavigationTargetsAction, SetNavigationTargetsAction } from '@eclipse-glsp/protocol';
-import { injectable } from 'inversify';
-import { inject } from 'inversify/lib/annotation/inject';
+import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
 import { NavigationTargetProviderRegistry } from './navigation-target-provider-registry';
 

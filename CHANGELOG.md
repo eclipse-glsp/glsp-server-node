@@ -1,8 +1,12 @@
 # Eclipse GLSP Server Changelog
 
-## 2.3.0 - active
+## [v2.3.0 - 19/12/2024](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.3.0)
 
 ### Changes
+
+-   [api] Update align default type mappings with the client-side types [#97](https://github.com/eclipse-glsp/glsp-server-node/pull/97)
+-   [workflow] Fix a but in the `WorkflowEdgeCreationChecker` that prevented creation of weighted edges [#98](https://github.com/eclipse-glsp/glsp-server-node/pull/98)
+-   [model] Refactor `ModelSubmissionHandler` to use async live validation by default [#99](https://github.com/eclipse-glsp/glsp-server-node/pull/99/)
 
 ### Potentially breaking changes
 
