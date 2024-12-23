@@ -1,6 +1,6 @@
 # Eclipse GLSP Server Changelog
 
-## [v2.3.0 - 19/12/2024](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.3.0)
+## [v2.3.0 - 23/12/2024](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.3.0)
 
 ### Changes
 
