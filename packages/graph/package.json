@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-glsp/graph",
-  "version": "2.3.0",
+  "version": "2.4.0-next",
   "description": "The typescript implementation of the GLSP graphical model (GModel)",
   "keywords": [
     "eclipse",
@@ -49,7 +49,7 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@eclipse-glsp/protocol": "2.3.0"
+    "@eclipse-glsp/protocol": "next"
   },
   "devDependencies": {
     "@types/uuid": "8.3.1"
