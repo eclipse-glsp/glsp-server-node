@@ -34,7 +34,7 @@ import {
     ServerModule,
     SourceModelStorage
 } from '@eclipse-glsp/server';
-import { injectable } from 'inversify';
+import { injectable, interfaces } from 'inversify';
 import { CreateAutomatedTaskHandler } from './handler/create-automated-task-handler';
 import { CreateCategoryHandler } from './handler/create-category-handler';
 import { CreateDecisionNodeHandler } from './handler/create-decision-node-handler';
@@ -56,12 +56,17 @@ import { EditTaskOperationHandler } from './taskedit/edit-task-operation-handler
 import { TaskEditContextActionProvider } from './taskedit/task-edit-context-provider';
 import { TaskEditValidator } from './taskedit/task-edit-validator';
 import { WorkflowDiagramConfiguration } from './workflow-diagram-configuration';
+import { WorkflowDiffProvider } from './workflow-diff-provider';
 import { WorkflowEdgeCreationChecker } from './workflow-edge-creation-checker';
 import { WorkflowGLSPServer } from './workflow-glsp-server';
 import { WorkflowPopupFactory } from './workflow-popup-factory';
 
 @injectable()
 export class WorkflowServerModule extends ServerModule {
+    override configure(bind: interfaces.Bind, unbind: interfaces.Unbind, isBound: interfaces.IsBound, rebind: interfaces.Rebind): void {
+        super.configure(bind, unbind, isBound, rebind);
+        bind(WorkflowDiffProvider).toSelf().inSingletonScope();
+    }
     protected override bindGLSPServer(): BindingTarget<GLSPServer> {
         return WorkflowGLSPServer;
     }
