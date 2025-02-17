@@ -18,7 +18,7 @@ import { GAlignable, GBoundsAware, GEdge, GGraph, GModelElement, GModelRoot, isG
 import { ElementAndAlignment, ElementAndBounds, ElementAndRoutingPoints, Point } from '@eclipse-glsp/protocol';
 import { GModelIndex } from '../features/model/gmodel-index';
 import { ArgsUtil } from './args-util';
-import { getOrThrow, GLSPServerError } from './glsp-server-error';
+import { GLSPServerError, getOrThrow } from './glsp-server-error';
 
 /**
  * Applies the new bounds to the model.
@@ -78,6 +78,9 @@ export function applyRoute(route: ElementAndRoutingPoints, index: GModelIndex): 
     args[ArgsUtil.KEY_EDGE_SOURCE_POINT_Y] = source.y;
     args[ArgsUtil.KEY_EDGE_TARGET_POINT_X] = target.x;
     args[ArgsUtil.KEY_EDGE_TARGET_POINT_Y] = target.y;
+    if (!edge.args) {
+        edge.args = args;
+    }
     return edge;
 }
 

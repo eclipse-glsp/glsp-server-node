@@ -14,6 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import {
+    ActionHandlerConstructor,
     BindingTarget,
     CommandPaletteActionProvider,
     ContextActionsProvider,
@@ -35,6 +36,7 @@ import {
     SourceModelStorage
 } from '@eclipse-glsp/server';
 import { injectable, interfaces } from 'inversify';
+import { ComputeDiffActionHandler } from './compute-diff-action-handler';
 import { CreateAutomatedTaskHandler } from './handler/create-automated-task-handler';
 import { CreateCategoryHandler } from './handler/create-category-handler';
 import { CreateDecisionNodeHandler } from './handler/create-decision-node-handler';
@@ -80,6 +82,11 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
 
     get diagramType(): string {
         return 'workflow-diagram';
+    }
+
+    protected override configureActionHandlers(binding: InstanceMultiBinding<ActionHandlerConstructor>): void {
+        super.configureActionHandlers(binding);
+        binding.add(ComputeDiffActionHandler);
     }
 
     protected override configureOperationHandlers(binding: InstanceMultiBinding<OperationHandlerConstructor>): void {

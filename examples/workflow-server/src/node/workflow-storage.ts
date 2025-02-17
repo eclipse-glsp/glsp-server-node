@@ -14,19 +14,29 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import {
-    ActionDispatcher,
+    Args,
     ClientId,
     ClientSessionManager,
+    GModelRootSchema,
     GModelStorage,
-    GNode,
-    ModelState,
     RequestModelAction,
-    SetEditModeAction,
     isGModelElementSchema
 } from '@eclipse-glsp/server/node';
 import { inject, injectable } from 'inversify';
-import { DiffResult, WorkflowDiff, WorkflowDiffProvider } from '../common/workflow-diff-provider';
-import { getQueryParams } from './query-util';
+import { ComputeDiffAction } from '../common/compute-diff-action-handler';
+import { WorkflowDiffProvider } from '../common/workflow-diff-provider';
+
+export interface DiffArgs extends Args {
+    diffId: string;
+    diffSide: 'left' | 'right';
+    diffContent: string;
+}
+
+export namespace DiffArgs {
+    export function is(value?: Args): value is DiffArgs {
+        return value?.diffId !== undefined && value?.diffSide !== undefined && value?.diffContent !== undefined;
+    }
+}
 
 @injectable()
 export class WorkflowStorage extends GModelStorage {
@@ -38,73 +48,48 @@ export class WorkflowStorage extends GModelStorage {
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
-    @inject(ActionDispatcher)
-    protected readonly actionDispatcher: ActionDispatcher;
-
     override async loadSourceModel(action: RequestModelAction): Promise<void> {
-        const sourceUri = this.getSourceUri(action);
-        const rootSchema = this.loadFromFile(sourceUri, isGModelElementSchema);
-        const root = this.modelSerializer.createRoot(rootSchema);
-        this.modelState.updateRoot(root);
-        const diffParams = getQueryParams<DiffParams>(sourceUri, DiffParams.is);
-        if (diffParams) {
-            this.modelState.editMode = 'readonly';
-            this.actionDispatcher.dispatch(SetEditModeAction.create('readonly'));
-            const diff = this.diffProvider.createDiff(diffParams.diffId, {
-                side: diffParams.side,
-                data: { clientId: this.clientId, modelSchema: rootSchema }
-            });
-            if (diff?.left && diff?.right) {
-                const diff = this.diffProvider.computeDiff(diffParams.diffId);
-                if (diff) {
-                    this.applyDiffResult(diff);
-                }
-                this.modelState.index.indexRoot(this.modelState.root);
-            }
+        const options = action.options;
+        if (!DiffArgs.is(options)) {
+            return super.loadSourceModel(action);
         }
+
+        const result = this.loadDiffModel(options);
+
+        return result;
     }
 
-    protected applyDiffResult(diff: Required<WorkflowDiff>): void {
-        const leftModelState = this.clientSessionManager.getSession(diff.left.clientId)?.container.get<ModelState>(ModelState);
-        const rightModelState = this.clientSessionManager.getSession(diff.right.clientId)?.container.get<ModelState>(ModelState);
-        if (!leftModelState || !rightModelState) {
+    protected async loadDiffModel(args: DiffArgs): Promise<void> {
+        const rootSchema = this.loadFromString(args.diffContent);
+        if (!rootSchema) {
             return;
         }
-        leftModelState.root.cssClasses.push('diff');
-        rightModelState.root.cssClasses.push('diff');
-
-        diff.result.forEach(result => {
-            const modelState = result.change === 'remove' ? leftModelState : rightModelState;
-
-            const element = modelState.index.find(result.id, element => element.type === result.type);
-
-            if (element instanceof GNode) {
-                modelState.root.children.push(this.createNodeDiff(element, result));
-            }
+        const root = this.modelSerializer.createRoot(rootSchema);
+        this.modelState.editMode = 'readonly';
+        this.modelState.updateRoot(root);
+        this.modelState.root.cssClasses.push('diff');
+        const diff = this.diffProvider.createDiff(args.diffId, {
+            side: args.diffSide,
+            data: { clientId: this.clientId, modelSchema: rootSchema }
         });
+        if (diff?.left && diff?.right) {
+            this.clientSessionManager
+                .getSession(diff?.right?.clientId)
+                ?.actionDispatcher.dispatchAfterNextUpdate(ComputeDiffAction.create(diff.diffId));
+        }
     }
 
-    protected createNodeDiff(node: GNode, result: DiffResult): GNode {
-        return GNode.builder()
-            .type('node:compare')
-            .position(node.position)
-            .size(node.size)
-            .addArgs(node.args ?? {})
-            .addCssClass(toCssClass(result))
-            .build();
-    }
-}
+    protected loadFromString(content?: string): GModelRootSchema | undefined {
+        if (!content) {
+            return undefined;
+        }
 
-function toCssClass(diff: DiffResult): string {
-    switch (diff.change) {
-        case 'add':
-            return 'diff-add';
-        case 'remove':
-            return 'diff-remove';
-        case 'update':
-            return 'diff-update';
-        default:
-            return '';
+        const model = JSON.parse(content);
+        if (!isGModelElementSchema(model)) {
+            throw new Error('The loaded root object is not of the expected type!');
+        }
+
+        return model;
     }
 }
 
