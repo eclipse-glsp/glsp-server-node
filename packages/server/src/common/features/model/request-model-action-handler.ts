@@ -54,11 +54,16 @@ export class RequestModelActionHandler implements ActionHandler {
 
         const progress = this.reportModelLoading('Model loading in progress');
 
-        if (isReconnecting) {
-            await this.handleReconnect(action);
-        } else {
-            await this.sourceModelStorage.loadSourceModel(action);
+        try {
+            if (isReconnecting) {
+                await this.handleReconnect(action);
+            } else {
+                await this.sourceModelStorage.loadSourceModel(action);
+            }
+        } catch (err) {
+            this.handleModelLoadingError(err, progress);
         }
+
         this.reportModelLoadingFinished(progress);
 
         return this.submissionHandler.submitInitialModel(action);
@@ -75,13 +80,20 @@ export class RequestModelActionHandler implements ActionHandler {
         }
     }
 
-    protected reportModelLoading(message: string): ProgressMonitor {
+    protected reportModelLoading(message: string): ProgressMonitor | undefined {
         this.actionDispatcher.dispatch(StatusAction.create(message, { severity: 'INFO' }));
         return this.progressService.start(message);
     }
 
-    protected reportModelLoadingFinished(monitor: ProgressMonitor): void {
+    protected reportModelLoadingFinished(monitor?: ProgressMonitor): void {
         this.actionDispatcher.dispatch(StatusAction.create('', { severity: 'NONE' }));
-        monitor.end();
+        monitor?.end();
+    }
+
+    protected handleModelLoadingError(error: unknown, monitor?: ProgressMonitor): void {
+        // In case of an error we end progress reporting and rethrow the error so
+        // that it can be handled by the default error handler
+        monitor?.end();
+        throw error;
     }
 }
