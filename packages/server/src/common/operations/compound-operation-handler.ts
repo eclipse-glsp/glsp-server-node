@@ -40,6 +40,6 @@ export class CompoundOperationHandler extends OperationHandler {
                 commands.push(command);
             }
         }
-        return new CompoundCommand(commands);
+        return commands.length > 0 ? new CompoundCommand(commands) : undefined;
     }
 }

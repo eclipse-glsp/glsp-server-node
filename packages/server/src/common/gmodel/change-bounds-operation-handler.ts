@@ -13,8 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GModelRoot, GNode } from '@eclipse-glsp/graph';
-import { ChangeBoundsOperation, Dimension, MaybePromise, Point } from '@eclipse-glsp/protocol';
+import { GModelRoot, GNode, isGBoundsAware } from '@eclipse-glsp/graph';
+import { ChangeBoundsOperation, Dimension, ElementAndBounds, MaybePromise, Point } from '@eclipse-glsp/protocol';
 import { injectable } from 'inversify';
 import { Command } from '../command/command';
 import { GModelOperationHandler } from './gmodel-operation-handler';
@@ -27,7 +27,23 @@ export class GModelChangeBoundsOperationHandler extends GModelOperationHandler {
     operationType = ChangeBoundsOperation.KIND;
 
     createCommand(operation: ChangeBoundsOperation): MaybePromise<Command | undefined> {
-        return this.commandOf(() => this.executeChangeBounds(operation));
+        const newBounds = operation.newBounds.filter(element => this.hasChanged(element));
+        if (newBounds.length === 0) {
+            return undefined;
+        }
+        return this.commandOf(() => this.executeChangeBounds({ ...operation, newBounds }));
+    }
+
+    protected hasChanged(element: ElementAndBounds): boolean {
+        const knownElement = this.modelState.index.find(element.elementId);
+        if (!knownElement || !isGBoundsAware(knownElement)) {
+            return true;
+        }
+        const sizeChanged = knownElement.size ? !Dimension.equals(knownElement.size, element.newSize) : true;
+        if (sizeChanged) {
+            return true;
+        }
+        return knownElement.position && element.newPosition ? !Point.equals(knownElement.position, element.newPosition) : true;
     }
 
     protected executeChangeBounds(operation: ChangeBoundsOperation): void {
