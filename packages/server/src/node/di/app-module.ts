@@ -74,6 +74,14 @@ export function configureWinstonLogger<T extends LaunchOptions>(
     rebind = true,
     baseLoggerCreator: (launchOptions: T) => winston.Logger = createWinstonInstance
 ): void {
+    if (rebind) {
+        if (context.isBound(Logger)) {
+            context.unbind(Logger);
+        }
+        if (context.isBound(LoggerFactory)) {
+            context.unbind(LoggerFactory);
+        }
+    }
     context.bind(LoggerFactory).toFactory(dynamicContext => (caller: string) => {
         const logger = dynamicContext.container.get(Logger);
         logger.caller = caller;
@@ -87,14 +95,6 @@ export function configureWinstonLogger<T extends LaunchOptions>(
     }
 
     const baseLogger = baseLoggerCreator(options);
-    if (rebind) {
-        if (context.isBound(Logger)) {
-            context.unbind(Logger);
-        }
-        if (context.isBound(LoggerFactory)) {
-            context.unbind(LoggerFactory);
-        }
-    }
 
     context.bind(Logger).toDynamicValue(dynamicContext => new WinstonLogger(baseLogger, getRequestParentName(dynamicContext)));
 }
