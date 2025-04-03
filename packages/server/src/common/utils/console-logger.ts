@@ -16,7 +16,7 @@
 
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { injectable } from 'inversify';
-import { LogLevel, Logger, LoggerConfigOptions, LoggerFactory, NullLogger, getRequestParentName } from './logger';
+import { LogLevel, Logger, LoggerConfigOptions, LoggerFactory, NullLogger, asLogLevel, getRequestParentName } from './logger';
 
 /**
  *  Simple logger implementation that forwards logging calls to the `console` and
@@ -33,48 +33,55 @@ export class ConsoleLogger extends Logger {
 
     info(message: string, ...params: any[]): void {
         if (LogLevel.info <= this.logLevel) {
-            console.info(this.logMessage(message, params));
+            console.info(this.logMessage(LogLevel.info, message, ...params));
         }
     }
 
     warn(message: string, ...params: any[]): void {
         if (LogLevel.warn <= this.logLevel) {
-            console.warn(this.logMessage(message, params));
+            console.warn(this.logMessage(LogLevel.warn, message, ...params));
         }
     }
 
     error(message: string, ...params: any[]): void {
         if (LogLevel.error <= this.logLevel) {
-            console.error(this.logMessage(message, params));
+            console.error(this.logMessage(LogLevel.error, message, ...params));
         }
     }
 
     debug(message: string, ...params: any[]): void {
         if (LogLevel.debug <= this.logLevel) {
-            console.debug(this.logMessage(message, params));
+            console.debug(this.logMessage(LogLevel.debug, message, ...params));
         }
     }
 
-    logMessage(message: string, ...params: any[]): string {
-        const timestamp = new Date().toLocaleTimeString();
-        const caller = this.caller ? `[${this.caller}]` : '';
-        const additional = this.logAdditionals(...params);
-        return `${timestamp} ${this.logLevel} - ${caller} ${message} ${additional}`;
+    logMessage(level: LogLevel, message: string, ...params: any[]): string {
+        return `${this.logTimestamp()} ${asLogLevel(level)} - ${this.logCaller()} ${message} ${this.logAdditionals(...params)}`;
+    }
+
+    protected logCaller(): string {
+        return this.caller ? `[${this.caller}]` : '';
+    }
+
+    protected logTimestamp(): string {
+        return new Date().toLocaleTimeString();
     }
 
     logAdditionals(...params: any[]): string {
-        if (!params || params.length === 0) {
-            return '';
-        }
-        return params.map(param => this.stringify(param)).join(',\n');
+        return !params || params.length === 0 ? '' : params.map(param => this.stringify(param)).join(this.logAdditionalsSeparator());
+    }
+
+    protected logAdditionalsSeparator(): string {
+        return ',\n';
     }
 
     stringify(param: unknown): string {
-        if (param instanceof Error) {
-            return `${param.message}
-            ${param.stack || ''}`;
-        }
-        return JSON.stringify(param, undefined, 4);
+        return param instanceof Error ? this.stringifyError(param) : JSON.stringify(param, undefined, 4);
+    }
+
+    protected stringifyError(error: Error): string {
+        return `${error.message}
+        ${error.stack || ''}`;
     }
 }
 
