@@ -16,7 +16,7 @@
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ContainerModule } from 'inversify';
 import * as winston from 'winston';
-import { InjectionContainer, LogLevel, Logger, LoggerFactory, getRequestParentName } from '../../common';
+import { InjectionContainer, LogLevel, Logger, LoggerFactory, NullLogger, getRequestParentName } from '../../common';
 import { LaunchOptions } from '../launch/cli-parser';
 import { WinstonLogger } from './winston-logger';
 
@@ -74,6 +74,18 @@ export function configureWinstonLogger<T extends LaunchOptions>(
     rebind = true,
     baseLoggerCreator: (launchOptions: T) => winston.Logger = createWinstonInstance
 ): void {
+    context.bind(LoggerFactory).toFactory(dynamicContext => (caller: string) => {
+        const logger = dynamicContext.container.get(Logger);
+        logger.caller = caller;
+        return logger;
+    });
+
+    // if no logging is enabled, bind the NullLogger
+    if (!options.consoleLog && !options.fileLog) {
+        context.bind(Logger).to(NullLogger).inSingletonScope();
+        return;
+    }
+
     const baseLogger = baseLoggerCreator(options);
     if (rebind) {
         if (context.isBound(Logger)) {
@@ -85,9 +97,4 @@ export function configureWinstonLogger<T extends LaunchOptions>(
     }
 
     context.bind(Logger).toDynamicValue(dynamicContext => new WinstonLogger(baseLogger, getRequestParentName(dynamicContext)));
-    context.bind(LoggerFactory).toFactory(dynamicContext => (caller: string) => {
-        const logger = dynamicContext.container.get(Logger);
-        logger.caller = caller;
-        return logger;
-    });
 }
