@@ -1,8 +1,14 @@
 # Eclipse GLSP Server Changelog
 
-## v2.4.0 - active
+## [v2.4.0 - 04/04/2025](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.4.0)
 
 ### Changes
+
+-   [layout] Fix a bug regarding the application of routing point information in `ComputedBoundsActionHandler` [#103](https://github.com/eclipse-glsp/glsp-server-node/pull/103)
+-   [gmodel] Cancel pending progress reporters in `RequestModelActionHandler` if an error occurred [#104](https://github.com/eclipse-glsp/glsp-server-node/pull/104)
+-   [operation] Improve `OperationActionHandler` to ensure that a new model is only submitted after actual changes [#105](https://github.com/eclipse-glsp/glsp-server-node/pull/105)
+-   [server] Ensure correct log level logging for `ConsoleLogger` [#106](https://github.com/eclipse-glsp/glsp-server-node/pull/106)
+-   [server] Avoid configuration of winston logger if logging is disabled via options [#107](https://github.com/eclipse-glsp/glsp-server-node/pull/107)
 
 ### Potentially breaking changes
 
