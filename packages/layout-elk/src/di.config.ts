@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { LayoutEngine, ModelState } from '@eclipse-glsp/server';
+import { LayoutEngine, Logger, LoggerFactory, ModelState, NullLogger } from '@eclipse-glsp/server';
 import ElkConstructor, { LayoutOptions } from 'elkjs/lib/elk.bundled';
 import { ContainerModule } from 'inversify';
 import { DefaultElementFilter, ElementFilter } from './element-filter';
@@ -69,7 +69,7 @@ export interface ElkModuleOptions {
  * @returns A DI module that can be loaded as additional module when configuring a diagram module for a GLSP server.
  */
 export function configureELKLayoutModule(options: ElkModuleOptions): ContainerModule {
-    return new ContainerModule(bind => {
+    return new ContainerModule((bind, unbind, isBound, rebind) => {
         if (options.elementFilter) {
             bind(ElementFilter).to(options.elementFilter).inSingletonScope();
         } else {
@@ -107,5 +107,17 @@ export function configureELKLayoutModule(options: ElkModuleOptions): ContainerMo
             })
             .inSingletonScope();
         bind(LayoutEngine).toService(GlspElkLayoutEngine);
+
+        if (!isBound(Logger)) {
+            bind(Logger).to(NullLogger).inSingletonScope();
+        }
+
+        if (!isBound(LoggerFactory)) {
+            bind(LoggerFactory).toFactory(dynamicContext => (caller: string) => {
+                const logger = dynamicContext.container.get(Logger);
+                logger.caller = caller;
+                return logger;
+            });
+        }
     });
 }
