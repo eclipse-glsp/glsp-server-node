@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@eclipse-glsp/server": "2.5.0-next",
-    "elkjs": "^0.7.1"
+    "elkjs": "^0.10.1"
   },
   "peerDependencies": {
     "inversify": "^6.1.3"

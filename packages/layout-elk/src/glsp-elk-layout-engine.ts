@@ -14,7 +14,6 @@
  ********************************************************************************/
 import {
     findParent,
-    findParentByClass,
     GCompartment,
     GEdge,
     GGraph,
@@ -26,12 +25,13 @@ import {
     GPort,
     GShapeElement,
     LayoutEngine,
+    Logger,
     MaybePromise,
     ModelState,
     Point
 } from '@eclipse-glsp/server';
-import { ELK, ElkEdge, ElkExtendedEdge, ElkGraphElement, ElkLabel, ElkNode, ElkPort, ElkPrimitiveEdge, ElkShape } from 'elkjs/lib/elk-api';
-import { injectable } from 'inversify';
+import { ELK, ElkEdge, ElkExtendedEdge, ElkGraphElement, ElkLabel, ElkNode, ElkPort, ElkShape } from 'elkjs/lib/elk-api';
+import { inject, injectable } from 'inversify';
 import { ElementFilter } from './element-filter';
 import { LayoutConfigurator } from './layout-configurator';
 
@@ -50,9 +50,12 @@ export const ElkFactory = Symbol('ElkFactory');
  */
 @injectable()
 export class GlspElkLayoutEngine implements LayoutEngine {
+    @inject(Logger)
+    protected readonly logger: Logger;
+
     protected readonly elk: ELK;
 
-    protected elkEdges: ElkEdge[];
+    protected elkEdges: ElkExtendedEdge[];
     protected idToElkElement: Map<string, ElkGraphElement>;
 
     constructor(
@@ -82,7 +85,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         if (model instanceof GGraph) {
             const graph = this.transformGraph(model);
             this.elkEdges.forEach(elkEdge => {
-                const parent = this.findCommonAncestor(elkEdge as ElkPrimitiveEdge);
+                const parent = this.findCommonAncestor(elkEdge);
                 if (parent) {
                     parent.edges!.push(elkEdge);
                 }
@@ -121,9 +124,13 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         return result;
     }
 
-    protected findCommonAncestor(elkEdge: ElkPrimitiveEdge): ElkNode | undefined {
-        const source = this.modelState.index.get(elkEdge.source);
-        const target = this.modelState.index.get(elkEdge.target);
+    protected findCommonAncestor(elkEdge: ElkExtendedEdge): ElkNode | undefined {
+        if (elkEdge.sources.length === 0 || elkEdge.targets.length === 0) {
+            this.logger.warn('Edges with multiple sources or targets are not supported by the GLSPElkLayoutEngine', elkEdge);
+            return undefined;
+        }
+        const source = this.modelState.index.get(elkEdge.sources[0]);
+        const target = this.modelState.index.get(elkEdge.targets[0]);
         if (!source || !target) {
             return undefined;
         }
@@ -135,14 +142,15 @@ export class GlspElkLayoutEngine implements LayoutEngine {
             return undefined;
         }
 
+        let ancestor: ElkGraphElement | undefined;
         if (sourceParent === targetParent) {
-            return this.idToElkElement.get(sourceParent.id);
+            ancestor = this.idToElkElement.get(sourceParent.id);
         } else if (source === targetParent) {
-            return this.idToElkElement.get(source.id);
+            ancestor = this.idToElkElement.get(source.id);
         } else if (target === sourceParent) {
-            return this.idToElkElement.get(target.id);
+            ancestor = this.idToElkElement.get(target.id);
         }
-        return undefined;
+        return ancestor as ElkNode | undefined;
     }
 
     protected transformGraph(graph: GGraph): ElkGraphElement {
@@ -153,7 +161,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         if (graph.children) {
             elkGraph.children = this.findChildren(graph, GNode).map(child => this.transformToElk(child)) as ElkNode[];
             elkGraph.edges = [];
-            this.elkEdges.push(...(this.findChildren(graph, GEdge).map(child => this.transformToElk(child)) as ElkEdge[]));
+            this.elkEdges.push(...(this.findChildren(graph, GEdge).map(child => this.transformToElk(child)) as ElkExtendedEdge[]));
         }
 
         this.idToElkElement.set(graph.id, elkGraph);
@@ -169,7 +177,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         if (node.children) {
             elkNode.children = this.findChildren(node, GNode).map(child => this.transformToElk(child)) as ElkNode[];
             elkNode.edges = [];
-            this.elkEdges.push(...(this.findChildren(node, GEdge).map(child => this.transformToElk(child)) as ElkEdge[]));
+            this.elkEdges.push(...(this.findChildren(node, GEdge).map(child => this.transformToElk(child)) as ElkExtendedEdge[]));
 
             elkNode.labels = this.findChildren(node, GLabel).map(child => this.transformToElk(child)) as ElkLabel[];
             elkNode.ports = this.findChildren(node, GPort).map(child => this.transformToElk(child)) as ElkPort[];
@@ -193,38 +201,26 @@ export class GlspElkLayoutEngine implements LayoutEngine {
     }
 
     protected transformEdge(edge: GEdge): ElkEdge {
-        const elkEdge: ElkPrimitiveEdge = {
+        const elkEdge: ElkExtendedEdge = {
             id: edge.id,
-            source: edge.sourceId,
-            target: edge.targetId,
+            sources: [edge.sourceId],
+            targets: [edge.targetId],
             layoutOptions: this.configurator.apply(edge)
         };
-        const sourceElement = this.modelState.index.get(edge.sourceId);
-        if (sourceElement instanceof GPort) {
-            const parentNode = findParentByClass(sourceElement, GNode);
-            if (parentNode) {
-                elkEdge.source = parentNode.id;
-                elkEdge.sourcePort = sourceElement.id;
-            }
-        }
-
-        const targetElement = this.modelState.index.get(edge.targetId);
-        if (sourceElement instanceof GPort) {
-            const parentNode = findParentByClass(targetElement, GNode);
-            if (parentNode) {
-                elkEdge.target = parentNode.id;
-                elkEdge.targetPort = targetElement.id;
-            }
-        }
 
         if (edge.children) {
             elkEdge.labels = this.findChildren(edge, GLabel).map(child => this.transformToElk(child)) as ElkLabel[];
         }
         const points = edge.routingPoints;
         if (points && points.length >= 2) {
-            elkEdge.sourcePoint = points[0];
-            elkEdge.bendPoints = points.slice(1, points.length - 1);
-            elkEdge.targetPoint = points[points.length - 1];
+            elkEdge.sections = [
+                {
+                    id: edge.id + ':section',
+                    startPoint: points[0],
+                    bendPoints: points.slice(1, points.length - 1),
+                    endPoint: points[points.length - 1]
+                }
+            ];
         }
         this.idToElkElement.set(edge.id, elkEdge);
         return elkEdge;
@@ -248,7 +244,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         };
         if (port.children) {
             elkPort.labels = this.findChildren(port, GLabel).map(child => this.transformToElk(child)) as ElkLabel[];
-            this.elkEdges.push(...(this.findChildren(port, GEdge).map(child => this.transformToElk(child)) as ElkEdge[]));
+            this.elkEdges.push(...(this.findChildren(port, GEdge).map(child => this.transformToElk(child)) as ElkExtendedEdge[]));
         }
         this.transformShape(elkPort, port);
         this.idToElkElement.set(port.id, elkPort);
@@ -294,7 +290,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
 
         if (elkShape.labels) {
             for (const elkLabel of elkShape.labels) {
-                const label = this.modelState.index.findByClass(elkLabel.id, GLabel);
+                const label = elkLabel.id ? this.modelState.index.findByClass(elkLabel.id, GLabel) : undefined;
                 if (label) {
                     this.applyShape(label, elkLabel);
                 }
@@ -302,10 +298,10 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         }
     }
 
-    protected applyEdge(edge: GEdge, elkEdge: ElkEdge): void {
+    protected applyEdge(edge: GEdge, elkEdge: ElkExtendedEdge): void {
         const points: Point[] = [];
-        if ((elkEdge as any).sections && (elkEdge as any).sections.length > 0) {
-            const section = (elkEdge as ElkExtendedEdge).sections[0];
+        if (elkEdge.sections && elkEdge.sections.length > 0) {
+            const section = elkEdge.sections[0];
             if (section.startPoint) {
                 points.push(section.startPoint);
             }
@@ -315,23 +311,12 @@ export class GlspElkLayoutEngine implements LayoutEngine {
             if (section.endPoint) {
                 points.push(section.endPoint);
             }
-        } else {
-            const section = elkEdge as ElkPrimitiveEdge;
-            if (section.sourcePoint) {
-                points.push(section.sourcePoint);
-            }
-            if (section.bendPoints) {
-                points.push(...section.bendPoints);
-            }
-            if (section.targetPoint) {
-                points.push(section.targetPoint);
-            }
         }
         edge.routingPoints = points;
 
         if (elkEdge.labels) {
             elkEdge.labels.forEach(elkLabel => {
-                const label = this.modelState.index.findByClass(elkLabel.id, GLabel);
+                const label = elkLabel.id ? this.modelState.index.findByClass(elkLabel.id, GLabel) : undefined;
                 if (label) {
                     this.applyShape(label, elkLabel);
                 }

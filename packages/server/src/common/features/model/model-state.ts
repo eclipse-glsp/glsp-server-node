@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GModelRoot } from '@eclipse-glsp/graph';
-import { EditMode } from '@eclipse-glsp/protocol';
+import { EditMode, ProposalString } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ClientId } from '../../di/service-identifiers';
 import { GModelIndex } from './gmodel-index';
@@ -29,7 +29,7 @@ export interface ModelState {
     clear(key: string): void;
     readonly root: GModelRoot;
     updateRoot(newRoot: GModelRoot): void;
-    editMode: string;
+    editMode: ProposalString<EditMode>;
     sourceUri?: string;
     clientId: string;
     readonly isReadonly: boolean;
@@ -53,7 +53,7 @@ export class DefaultModelState implements ModelState {
 
     protected _root: GModelRoot;
 
-    editMode = EditMode.EDITABLE;
+    editMode: ProposalString<EditMode> = EditMode.EDITABLE;
 
     set<P>(key: string, property: P): void {
         this.properties.set(key, property);
