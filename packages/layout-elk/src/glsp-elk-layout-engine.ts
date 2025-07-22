@@ -30,7 +30,7 @@ import {
     ModelState,
     Point
 } from '@eclipse-glsp/server';
-import { ELK, ElkEdge, ElkExtendedEdge, ElkGraphElement, ElkLabel, ElkNode, ElkPort, ElkShape } from 'elkjs/lib/elk-api';
+import { ELK, ElkExtendedEdge, ElkGraphElement, ElkLabel, ElkNode, ElkPort, ElkShape } from 'elkjs/lib/elk-api';
 import { inject, injectable } from 'inversify';
 import { ElementFilter } from './element-filter';
 import { LayoutConfigurator } from './layout-configurator';
@@ -74,13 +74,18 @@ export class GlspElkLayoutEngine implements LayoutEngine {
 
         this.elkEdges = [];
         this.idToElkElement = new Map();
-        const elkGraph = this.transformToElk(root) as ElkNode;
+        const elkGraph = this.transformToElk(root);
         return this.elk.layout(elkGraph).then(result => {
             this.applyLayout(result);
             return root;
         });
     }
 
+    protected transformToElk(model: GGraph): ElkNode;
+    protected transformToElk(model: GNode): ElkNode;
+    protected transformToElk(model: GEdge): ElkExtendedEdge;
+    protected transformToElk(model: GLabel): ElkLabel;
+    protected transformToElk(model: GPort): ElkPort;
     protected transformToElk(model: GModelElement): ElkGraphElement {
         if (model instanceof GGraph) {
             const graph = this.transformGraph(model);
@@ -159,9 +164,9 @@ export class GlspElkLayoutEngine implements LayoutEngine {
             layoutOptions: this.configurator.apply(graph)
         };
         if (graph.children) {
-            elkGraph.children = this.findChildren(graph, GNode).map(child => this.transformToElk(child)) as ElkNode[];
+            elkGraph.children = this.findChildren(graph, GNode).map(child => this.transformToElk(child));
             elkGraph.edges = [];
-            this.elkEdges.push(...(this.findChildren(graph, GEdge).map(child => this.transformToElk(child)) as ElkExtendedEdge[]));
+            this.elkEdges.push(...this.findChildren(graph, GEdge).map(child => this.transformToElk(child)));
         }
 
         this.idToElkElement.set(graph.id, elkGraph);
@@ -175,12 +180,12 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         };
 
         if (node.children) {
-            elkNode.children = this.findChildren(node, GNode).map(child => this.transformToElk(child)) as ElkNode[];
+            elkNode.children = this.findChildren(node, GNode).map(child => this.transformToElk(child));
             elkNode.edges = [];
-            this.elkEdges.push(...(this.findChildren(node, GEdge).map(child => this.transformToElk(child)) as ElkExtendedEdge[]));
+            this.elkEdges.push(...this.findChildren(node, GEdge).map(child => this.transformToElk(child)));
 
-            elkNode.labels = this.findChildren(node, GLabel).map(child => this.transformToElk(child)) as ElkLabel[];
-            elkNode.ports = this.findChildren(node, GPort).map(child => this.transformToElk(child)) as ElkPort[];
+            elkNode.labels = this.findChildren(node, GLabel).map(child => this.transformToElk(child));
+            elkNode.ports = this.findChildren(node, GPort).map(child => this.transformToElk(child));
         }
 
         this.transformShape(elkNode, node);
@@ -200,7 +205,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         }
     }
 
-    protected transformEdge(edge: GEdge): ElkEdge {
+    protected transformEdge(edge: GEdge): ElkExtendedEdge {
         const elkEdge: ElkExtendedEdge = {
             id: edge.id,
             sources: [edge.sourceId],
@@ -209,7 +214,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
         };
 
         if (edge.children) {
-            elkEdge.labels = this.findChildren(edge, GLabel).map(child => this.transformToElk(child)) as ElkLabel[];
+            elkEdge.labels = this.findChildren(edge, GLabel).map(child => this.transformToElk(child));
         }
         const points = edge.routingPoints;
         if (points && points.length >= 2) {
@@ -243,8 +248,8 @@ export class GlspElkLayoutEngine implements LayoutEngine {
             layoutOptions: this.configurator.apply(port)
         };
         if (port.children) {
-            elkPort.labels = this.findChildren(port, GLabel).map(child => this.transformToElk(child)) as ElkLabel[];
-            this.elkEdges.push(...(this.findChildren(port, GEdge).map(child => this.transformToElk(child)) as ElkExtendedEdge[]));
+            elkPort.labels = this.findChildren(port, GLabel).map(child => this.transformToElk(child));
+            this.elkEdges.push(...this.findChildren(port, GEdge).map(child => this.transformToElk(child)));
         }
         this.transformShape(elkPort, port);
         this.idToElkElement.set(port.id, elkPort);
