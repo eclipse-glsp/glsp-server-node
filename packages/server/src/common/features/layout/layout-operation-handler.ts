@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { LayoutOperation, MaybePromise, Operation } from '@eclipse-glsp/protocol';
+import { LayoutOperation, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable, optional } from 'inversify';
 import { Command } from '../../command/command';
 import { GModelRecordingCommand } from '../../command/recording-command';
@@ -56,7 +56,7 @@ export class LayoutOperationHandler extends OperationHandler {
         return new GModelRecordingCommand(this.modelState, this.serializer, () => this.executeOperation(operation));
     }
 
-    protected async executeOperation(_operation: Operation): Promise<void> {
-        await this.layoutEngine?.layout();
+    protected async executeOperation(operation: LayoutOperation): Promise<void> {
+        await this.layoutEngine?.layout(operation);
     }
 }

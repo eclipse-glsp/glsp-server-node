@@ -23,10 +23,10 @@ import { LayoutOperation, MaybePromise } from '@eclipse-glsp/protocol';
 export interface LayoutEngine {
     /**
      * Computes a layout for the model state and modify the model accordingly.
-     * @param layoutOperation, optional layoutOperation param to allow passing in of enriched layout information.
+     * @param operation the operation that triggered this layout
      * @returns the layouted {@link GModelRoot}.
      */
-    layout(layoutOperation?: LayoutOperation): MaybePromise<GModelRoot>;
+    layout(operation?: LayoutOperation): MaybePromise<GModelRoot>;
 }
 
 export const LayoutEngine = Symbol('LayoutEngine');

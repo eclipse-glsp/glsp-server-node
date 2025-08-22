@@ -67,7 +67,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
     ) {
         this.elk = elkFactory();
     }
-    layout(layoutOperation: LayoutOperation): MaybePromise<GModelRoot> {
+    layout(operation?: LayoutOperation): MaybePromise<GModelRoot> {
         const root = this.modelState.root;
         if (!(root instanceof GGraph)) {
             return root;
