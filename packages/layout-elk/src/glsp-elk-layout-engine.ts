@@ -25,6 +25,7 @@ import {
     GPort,
     GShapeElement,
     LayoutEngine,
+    LayoutOperation,
     Logger,
     MaybePromise,
     ModelState,
@@ -66,7 +67,7 @@ export class GlspElkLayoutEngine implements LayoutEngine {
     ) {
         this.elk = elkFactory();
     }
-    layout(): MaybePromise<GModelRoot> {
+    layout(operation?: LayoutOperation): MaybePromise<GModelRoot> {
         const root = this.modelState.root;
         if (!(root instanceof GGraph)) {
             return root;
