@@ -4,7 +4,13 @@
 
 ### Changes
 
+-   [api] Add layout operation as optional parameter to `LayoutEngine.layout` [#111](https://github.com/eclipse-glsp/glsp-server-node/pull/111)
+
 ### Potentially breaking changes
+
+-   [layout] Updated GLSPElkLayoutEngine for elkjs > 0.10.1 [#109](https://github.com/eclipse-glsp/glsp-server-node/pull/109)
+    -   `GLSPElkLayoutEngine`: Replace usages of the deprecated and no longer supported `ELKPrimitiveEdge`. This might affect adopters that use a customization of this class
+-   [node] Update minimum requirements for Node to >=20 [#113](https://github.com/eclipse-glsp/glsp-server-node/pull/113)
 
 ## [v2.4.0 - 04/04/2025](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.4.0)
 
