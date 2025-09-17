@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-glsp/graph",
-  "version": "2.5.0",
+  "version": "2.6.0-next",
   "description": "The typescript implementation of the GLSP graphical model (GModel)",
   "keywords": [
     "eclipse",
@@ -44,12 +44,12 @@
     "generate:index": "glsp generateIndex src -f -s",
     "lint": "eslint --ext .ts,.tsx ./src",
     "test": "mocha --config ../../.mocharc \"./src/**/*.spec.?(ts|tsx)\"",
-    "test:ci": "export JUNIT_REPORT_PATH=./report.xml && yarn test --reporter mocha-jenkins-reporter",
+    "test:ci": "yarn test --reporter mocha-ctrf-json-reporter",
     "test:coverage": "nyc yarn test",
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@eclipse-glsp/protocol": "2.5.0"
+    "@eclipse-glsp/protocol": "next"
   },
   "devDependencies": {
     "@types/uuid": "8.3.1"
