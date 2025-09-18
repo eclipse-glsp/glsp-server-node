@@ -13,6 +13,7 @@ yarn-error.log
 tsconfig.tsbuildinfo
 eslint.xml
 report.xml
+**/ctrf
 
 wf-glsp-server-node.js
 wf-glsp-server-node.js.map
