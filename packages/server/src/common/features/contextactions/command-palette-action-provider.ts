@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2025 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -64,11 +64,6 @@ export abstract class CommandPaletteActionProvider implements ContextActionsProv
      * @returns A list of {@link LabeledAction}s for a given {@link EditorContext}.
      */
     getActions(editorContext: EditorContext): LabeledAction[] {
-        const actions: LabeledAction[] = [];
-        if (this.modelState.isReadonly) {
-            return actions;
-        }
-
         const selectedIds = editorContext.selectedElementIds;
         const position = editorContext.lastMousePosition ? editorContext.lastMousePosition : { x: 0, y: 0 };
         const selectedElements = this.modelState.index.getAll(selectedIds);
