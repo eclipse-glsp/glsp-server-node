@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2025 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -44,6 +44,7 @@ import { ModelState } from '../features/model/model-state';
 import { ModelSubmissionHandler } from '../features/model/model-submission-handler';
 import { RequestModelActionHandler } from '../features/model/request-model-action-handler';
 import { SaveModelActionHandler } from '../features/model/save-model-action-handler';
+import { SetEditModeActionHandler } from '../features/model/set-edit-mode-action-handler';
 import { SourceModelStorage } from '../features/model/source-model-storage';
 import { NavigationTargetProvider } from '../features/navigation/navigation-target-provider';
 import {
@@ -214,6 +215,7 @@ export abstract class DiagramModule extends GLSPModule {
         binding.add(RequestNavigationTargetsActionHandler);
         binding.add(ResolveNavigationTargetsActionHandler);
         binding.add(SaveModelActionHandler);
+        binding.add(SetEditModeActionHandler);
         binding.add(UndoRedoActionHandler);
         binding.add(ComputedBoundsActionHandler);
     }
