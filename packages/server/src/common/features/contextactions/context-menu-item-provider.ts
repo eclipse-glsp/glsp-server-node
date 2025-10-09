@@ -18,7 +18,7 @@ import { injectable } from 'inversify';
 import { ContextActionsProvider } from './context-actions-provider';
 
 /**
- * A {@link ContextActionsProvider} for {@link ServerMenuItem}s.
+ * A {@link ContextActionsProvider} for {@link MenuItem}s.
  */
 @injectable()
 export abstract class ContextMenuItemProvider implements ContextActionsProvider {
@@ -30,14 +30,13 @@ export abstract class ContextMenuItemProvider implements ContextActionsProvider 
     }
 
     /**
-     * Returns a list of {@link ServerMenuItem}s for a given list of selected elements at a certain mouse position.
+     * Returns a list of {@link MenuItem}s for a given list of selected elements at a certain mouse position.
      *
      * @param selectedElementIds The list of currently selected elementIds.
      * @param position           The current mouse position.
      * @param args               Additional arguments.
-     * @returns A list of {@link ServerMenuItem}s for a given list of selected elements at a certain mouse position.
+     * @returns A list of {@link MenuItem}s for a given list of selected elements at a certain mouse position.
      */
-
     abstract getItems(selectedElementIds: string[], position: Point, args?: Args): MenuItem[];
 
     /**
