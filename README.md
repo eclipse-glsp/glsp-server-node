@@ -1,4 +1,4 @@
-# GLSP Server [![Build Status](https://ci.eclipse.org/glsp/job/eclipse-glsp/job/glsp-server-node/job/main/badge/icon)](https://ci.eclipse.org/glsp/job/eclipse-glsp/job/glsp-server-node/job/main/)
+# GLSP Server [![CI](https://github.com/eclipse-glsp/glsp-server-node/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/eclipse-glsp/glsp-server-node/actions/workflows/ci.yml)
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/eclipse-glsp/glsp-server-node/ci.yml?branch=main&label=build)](https://github.com/eclipse-glsp/glsp-server-node/actions/workflows/ci.yml)
 Contains the code for the Typescript-based framework to create [GLSP](https://github.com/eclipse-glsp/glsp) server components.
