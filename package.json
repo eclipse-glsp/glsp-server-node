@@ -21,6 +21,7 @@
     "lint:ci": "yarn lint --output-file eslint_report.json --format json",
     "lint:fix": "yarn lint --fix",
     "prepare": " yarn compile && yarn bundle",
+    "publish:latest": "lerna publish from-package --no-git-reset -y",
     "publish:next": "lerna publish preminor --exact --canary --preid next --dist-tag next --no-git-reset --no-git-tag-version --no-push --ignore-scripts --yes",
     "start": "yarn --cwd examples/workflow-server-bundled start",
     "start:websocket": "yarn --cwd examples/workflow-server-bundled start:websocket",
@@ -36,7 +37,7 @@
     "@eclipse-glsp/dev": "next",
     "@types/node": "20.x",
     "concurrently": "^8.2.2",
-    "lerna": "^7.0.0",
+    "lerna": "^9.0.0",
     "mocha-ctrf-json-reporter": "0.0.9",
     "typescript": "^5.9.2"
   },
