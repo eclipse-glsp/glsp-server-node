@@ -13,25 +13,32 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Args, ArgsUtil, DefaultGLSPServer, InitializeResult, Logger, MaybePromise } from '@eclipse-glsp/server';
+import {
+    ArgsUtil,
+    GLSPServer,
+    GLSPServerInitContribution,
+    InitializeParameters,
+    InitializeResult,
+    Logger,
+    MaybePromise
+} from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 
 @injectable()
-export class WorkflowGLSPServer extends DefaultGLSPServer {
+export class CustomArgsInitContribution implements GLSPServerInitContribution {
     MESSAGE_KEY = 'message';
     TIMESTAMP_KEY = 'timestamp';
 
-    @inject(Logger)
-    protected override logger: Logger;
+    @inject(Logger) protected logger: Logger;
 
-    protected override handleInitializeArgs(result: InitializeResult, args: Args | undefined): MaybePromise<InitializeResult> {
-        if (!args) {
+    initializeServer(server: GLSPServer, params: InitializeParameters, result: InitializeResult): MaybePromise<InitializeResult> {
+        if (!params.args) {
             return result;
         }
-        const timestamp = ArgsUtil.get(args, this.TIMESTAMP_KEY);
-        const message = ArgsUtil.get(args, this.MESSAGE_KEY);
+        const timestamp = ArgsUtil.get(params.args, this.TIMESTAMP_KEY);
+        const message = ArgsUtil.get(params.args, this.MESSAGE_KEY);
 
-        this.logger.debug(`${timestamp}: ${message}`);
+        this.logger.info(`${timestamp}: ${message}`);
         return result;
     }
 }
