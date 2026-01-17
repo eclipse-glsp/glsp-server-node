@@ -19,6 +19,7 @@ import {
     DisposeClientSessionParameters,
     GLSPClientProxy,
     GLSPServer,
+    GLSPServerInitContribution,
     GLSPServerListener,
     InitializeClientSessionParameters,
     InitializeParameters,
@@ -60,7 +61,10 @@ export class DefaultGLSPServer implements GLSPServer {
     protected clientSessions: Map<string, ClientSession>;
     protected serverListeners: GLSPServerListener[] = [];
 
-    constructor(@multiInject(GLSPServerListener) @optional() serverListeners: GLSPServerListener[] = []) {
+    constructor(
+        @multiInject(GLSPServerListener) @optional() serverListeners: GLSPServerListener[] = [],
+        @multiInject(GLSPServerInitContribution) @optional() protected initContributions: GLSPServerInitContribution[] = []
+    ) {
         this.clientSessions = new Map<string, ClientSession>();
         serverListeners.forEach(listener => this.addListener(listener));
     }
@@ -101,12 +105,29 @@ export class DefaultGLSPServer implements GLSPServer {
 
         let result = { protocolVersion: DefaultGLSPServer.PROTOCOL_VERSION, serverActions };
 
+        result = await this.initializeServer(params, result);
+        // keep for backwards compatibility
+        // eslint-disable-next-line deprecation/deprecation
         result = await this.handleInitializeArgs(result, params.args);
         this.getListenersToNotify('serverInitialized').forEach((listener: GLSPServerListener) => listener.serverInitialized!(this));
         this.initializeResult = result;
         return result;
     }
 
+    protected async initializeServer(params: InitializeParameters, result: InitializeResult): Promise<InitializeResult> {
+        for (const contribution of this.initContributions) {
+            try {
+                result = await contribution.initializeServer(this, params, result);
+            } catch (error) {
+                this.logger.error(`Error during server initialization contribution from ${contribution.constructor.name}:`, error);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * @deprecated Register a `GLSPServerInitContribution` instead.
+     */
     protected handleInitializeArgs(result: InitializeResult, args: Args | undefined): MaybePromise<InitializeResult> {
         return result;
     }

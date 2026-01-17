@@ -16,9 +16,10 @@
 import 'reflect-metadata';
 
 import { configureELKLayoutModule } from '@eclipse-glsp/layout-elk';
-import { createAppModule, GModelStorage, Logger, SocketServerLauncher, WebSocketServerLauncher } from '@eclipse-glsp/server/node';
+import { GModelStorage, Logger, SocketServerLauncher, WebSocketServerLauncher, createAppModule } from '@eclipse-glsp/server/node';
 import { Container } from 'inversify';
 
+import { configureMcpModule } from '@eclipse-glsp/server-mcp';
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
 import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-diagram-module';
 import { createWorkflowCliParser } from './workflow-cli-parser';
@@ -40,14 +41,14 @@ async function launch(argv?: string[]): Promise<void> {
 
     const elkLayoutModule = configureELKLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator });
     const serverModule = new WorkflowServerModule().configureDiagramModule(new WorkflowDiagramModule(() => GModelStorage), elkLayoutModule);
-
+    const mcpModule = configureMcpModule();
     if (options.webSocket) {
         const launcher = appContainer.resolve(WebSocketServerLauncher);
-        launcher.configure(serverModule);
+        launcher.configure(serverModule, mcpModule);
         await launcher.start({ port: options.port, host: options.host, path: 'workflow' });
     } else {
         const launcher = appContainer.resolve(SocketServerLauncher);
-        launcher.configure(serverModule);
+        launcher.configure(serverModule, mcpModule);
         await launcher.start({ port: options.port, host: options.host });
     }
 }

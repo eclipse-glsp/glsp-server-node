@@ -58,6 +58,7 @@
   "dependencies": {
     "@eclipse-glsp/layout-elk": "2.6.0-next",
     "@eclipse-glsp/server": "2.6.0-next",
+    "@eclipse-glsp/server-mcp": "2.6.0-next",
     "inversify": "^6.1.3"
   },
   "devDependencies": {

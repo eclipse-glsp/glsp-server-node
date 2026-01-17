@@ -21,7 +21,7 @@ import {
     ContextMenuItemProvider,
     DiagramConfiguration,
     EdgeCreationChecker,
-    GLSPServer,
+    GLSPServerInitContribution,
     GModelDiagramModule,
     InstanceMultiBinding,
     LabelEditValidator,
@@ -57,13 +57,13 @@ import { TaskEditContextActionProvider } from './taskedit/task-edit-context-prov
 import { TaskEditValidator } from './taskedit/task-edit-validator';
 import { WorkflowDiagramConfiguration } from './workflow-diagram-configuration';
 import { WorkflowEdgeCreationChecker } from './workflow-edge-creation-checker';
-import { WorkflowGLSPServer } from './workflow-glsp-server';
+import { CustomArgsInitContribution } from './workflow-glsp-server';
 import { WorkflowPopupFactory } from './workflow-popup-factory';
 
 @injectable()
 export class WorkflowServerModule extends ServerModule {
-    protected override bindGLSPServer(): BindingTarget<GLSPServer> {
-        return WorkflowGLSPServer;
+    protected override configureGLSPServerInitContributions(binding: MultiBinding<GLSPServerInitContribution>): void {
+        binding.add(CustomArgsInitContribution);
     }
 }
 

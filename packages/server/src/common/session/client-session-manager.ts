@@ -48,6 +48,13 @@ export interface ClientSessionManager {
     getSession(clientSessionId: string): ClientSession | undefined;
 
     /**
+     * Return all currently active {@link ClientSession}s.
+     *
+     * @returns An array of all currently active {@link ClientSession}s.
+     */
+    getSessions(): Array<ClientSession>;
+
+    /**
      * Return all currently active {@link ClientSession}s for the given diagram type.
      *
      * @param diagramType The diagram type.
@@ -127,6 +134,10 @@ export class DefaultClientSessionManager implements ClientSessionManager, GLSPSe
 
     getSession(clientSessionId: string): ClientSession | undefined {
         return this.clientSessions.get(clientSessionId);
+    }
+
+    getSessions(): ClientSession[] {
+        return Array.from(this.clientSessions.values());
     }
 
     getSessionsByType(diagramType: string): ClientSession[] {
