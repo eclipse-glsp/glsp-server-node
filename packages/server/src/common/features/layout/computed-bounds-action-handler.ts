@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GModelRoot } from '@eclipse-glsp/graph';
-import { Action, ComputedBoundsAction, MaybePromise } from '@eclipse-glsp/protocol';
+import { Action, ComputedBoundsAction, LayoutOperation, MaybePromise } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
 import { applyAlignment, applyElementAndBounds, applyRoute } from '../../utils/layout-util';
@@ -39,7 +39,10 @@ export class ComputedBoundsActionHandler implements ActionHandler {
         const model = this.modelState.root;
         if (action.revision === model.revision) {
             this.applyBounds(model, action);
-            return this.submissionHandler.submitModelDirectly();
+            return this.submissionHandler.submitModelDirectly(
+                undefined,
+                LayoutOperation.create([], { canvasBounds: action.canvasBounds, viewport: action.viewport })
+            );
         }
 
         return [];

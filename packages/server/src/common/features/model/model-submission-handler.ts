@@ -17,6 +17,7 @@ import {
     Action,
     DirtyStateChangeReason,
     GModelRootSchema,
+    LayoutOperation,
     MarkersReason,
     MaybePromise,
     RequestBoundsAction,
@@ -112,9 +113,10 @@ export class ModelSubmissionHandler {
      * to the `ActionDispatcher`, or simply returned as the result of an `ActionHandler.execute()` method.
      *
      * @param reason The optional reason that caused the model update.
+     * @param layout The optional layout operation that carries the information for auto-layout.
      * @returns A list of actions to be processed in order to submit the model.
      */
-    submitModel(reason?: DirtyStateChangeReason): MaybePromise<Action[]> {
+    submitModel(reason?: DirtyStateChangeReason, layout?: LayoutOperation): MaybePromise<Action[]> {
         this.modelFactory.createModel();
 
         const revision = this.requestModelAction ? 0 : this.modelState.root.revision! + 1;
@@ -124,7 +126,7 @@ export class ModelSubmissionHandler {
             const root = this.serializeGModel();
             return [RequestBoundsAction.create(root), SetDirtyStateAction.create(this.commandStack.isDirty, { reason })];
         }
-        return this.submitModelDirectly(reason);
+        return this.submitModelDirectly(reason, layout);
     }
 
     /**
@@ -139,11 +141,12 @@ export class ModelSubmissionHandler {
      * `ActionHandler.execute()` method.
      *
      * @param reason The optional reason that caused the model update.
+     * @param layout The optional layout operation that carries the information for auto-layout.
      * @returns A list of actions to be processed in order to submit the model.
      */
-    async submitModelDirectly(reason?: DirtyStateChangeReason): Promise<Action[]> {
+    async submitModelDirectly(reason?: DirtyStateChangeReason, layout?: LayoutOperation): Promise<Action[]> {
         if (this.diagramConfiguration.layoutKind === ServerLayoutKind.AUTOMATIC && this.layoutEngine) {
-            await this.layoutEngine.layout();
+            await this.layoutEngine.layout(layout);
         }
 
         const root = this.serializeGModel();
