@@ -1,5 +1,16 @@
 # Eclipse GLSP Server Changelog
 
+## v2.6.0 - active
+
+### Changes
+
+-   [api] Extend model submission with optional layout information [#121](https://github.com/eclipse-glsp/glsp-server-node/pull/121)
+
+### Potentially Breaking Changes
+
+-   [api] Refactor MenuItem API [#116](https://github.com/eclipse-glsp/glsp-server-node/pull/116)
+    -   `isEnabled`, `isToggled` and `isVisible` are now serializable boolean flags instead of functions
+
 ## [v2.5.0 - 07/09/2025](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.5.0)
 
 ### Changes
