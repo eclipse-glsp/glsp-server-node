@@ -17,6 +17,6 @@ jobs:
   publish-release:
     uses: eclipse-glsp/glsp/.github/workflows/publish-release.yml@master
     with:
-      release_repo: glsp-server
+      release_repo: glsp-server-node
       branch: ${{ inputs.branch }}
       draft: ${{ inputs.draft }}
