@@ -16,6 +16,9 @@
       "path": "./packages/server"
     },
     {
+      "path": "./packages/server-mcp"
+    },
+    {
       "path": "./examples/workflow-server"
     }
   ]

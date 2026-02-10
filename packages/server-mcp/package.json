@@ -1,0 +1,62 @@
+{
+  "name": "@eclipse-glsp/server-mcp",
+  "version": "2.6.0-next",
+  "description": "Extension of the GLSP Node Server for the Model Context Protocol",
+  "keywords": [
+    "eclipse",
+    "graphics",
+    "diagram",
+    "modeling",
+    "visualization",
+    "glsp",
+    "diagram editor",
+    "mcp"
+  ],
+  "homepage": "https://www.eclipse.org/glsp/",
+  "bugs": "https://github.com/eclipse-glsp/glsp/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eclipse-glsp/glsp-server-node.git"
+  },
+  "license": "(EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0)",
+  "author": {
+    "name": "Eclipse GLSP"
+  },
+  "contributors": [
+    {
+      "name": "Eclipse GLSP Project",
+      "email": "glsp-dev@eclipse.org",
+      "url": "https://projects.eclipse.org/projects/ecd.glsp"
+    }
+  ],
+  "main": "lib/index",
+  "types": "lib/index",
+  "files": [
+    "lib",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rimraf lib *.tsbuildinfo coverage .nyc_output",
+    "generate:index": "glsp generateIndex src -f -s",
+    "lint": "eslint --ext .ts,.tsx ./src",
+    "test": "mocha --config ../../.mocharc \"./src/**/*.spec.?(ts|tsx)\"",
+    "test:ci": "yarn test --reporter mocha-ctrf-json-reporter",
+    "test:coverage": "nyc yarn test",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@eclipse-glsp/server": "2.6.0-next",
+    "@modelcontextprotocol/sdk": "^1.25.1",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6"
+  },
+  "peerDependencies": {
+    "inversify": "^6.1.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

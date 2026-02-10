@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPServer, GLSPServerListener } from '@eclipse-glsp/protocol';
+import { GLSPServer, GLSPServerInitContribution, GLSPServerListener } from '@eclipse-glsp/protocol';
 import { ContainerModule, interfaces } from 'inversify';
 import { DefaultGlobalActionProvider, GlobalActionProvider } from '../actions/global-action-provider';
 import { DefaultGLSPServer } from '../protocol/glsp-server';
@@ -77,6 +77,9 @@ export class ServerModule extends GLSPModule {
         this.configureMultiBinding(new MultiBinding<GLSPServerListener>(GLSPServerListener), binding =>
             this.configureGLSPServerListeners(binding)
         );
+        this.configureMultiBinding(new MultiBinding<GLSPServerInitContribution>(GLSPServerInitContribution), binding =>
+            this.configureGLSPServerInitContributions(binding)
+        );
 
         applyBindingTarget(context, GlobalActionProvider, this.bindGlobalActionProvider()).inSingletonScope();
 
@@ -111,5 +114,9 @@ export class ServerModule extends GLSPModule {
 
     protected configureGLSPServerListeners(binding: MultiBinding<GLSPServerListener>): void {
         binding.add({ service: ClientSessionManager });
+    }
+
+    protected configureGLSPServerInitContributions(binding: MultiBinding<GLSPServerInitContribution>): void {
+        // Can be overridden to add contributions
     }
 }
