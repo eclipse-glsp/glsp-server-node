@@ -1,6 +1,6 @@
 {
   "name": "parent",
-  "version": "2.6.0-next",
+  "version": "2.6.0",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -34,7 +34,7 @@
     "watch:bundle": "yarn --cwd examples/workflow-server watch:bundle"
   },
   "devDependencies": {
-    "@eclipse-glsp/dev": "next",
+    "@eclipse-glsp/dev": "2.6.0",
     "@types/node": "20.x",
     "concurrently": "^8.2.2",
     "lerna": "^9.0.0",

@@ -1,6 +1,6 @@
 # Eclipse GLSP Server Changelog
 
-## v2.6.0 - active
+## [v2.6.0 - 10/02/2026](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.6.0)
 
 ### Changes
 
