@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -51,7 +51,7 @@ export class DefaultGlobalActionProvider implements GlobalActionProvider {
         const container = serverContainer.createChild();
         const clientSessionModule = createClientSessionModule({
             clientId: 'tempId',
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
+
             glspClient: { process: () => {} },
             clientActionKinds: []
         });
