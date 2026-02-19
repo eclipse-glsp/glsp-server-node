@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -15,11 +15,11 @@
  ********************************************************************************/
 import { GModelElement } from '@eclipse-glsp/graph';
 import { Args, LabeledAction, Point } from '@eclipse-glsp/protocol';
+import { expect } from 'chai';
 import { CommandPaletteActionProvider } from './command-palette-action-provider';
 import { ContextActionsProvider } from './context-actions-provider';
 import { ContextActionsProviderRegistry } from './context-actions-provider-registry';
 import { DefaultToolPaletteItemProvider } from './tool-palette-item-provider';
-import { expect } from 'chai';
 
 describe('Test DefaultContextActionsProviderRegistry', () => {
     it('check if default registry is empty', () => {

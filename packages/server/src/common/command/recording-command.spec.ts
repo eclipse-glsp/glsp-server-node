@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023-2024 EclipseSource and others.
+ * Copyright (c) 2023-2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -53,7 +53,6 @@ describe('RecordingCommand', () => {
     });
 
     it('should be undoable after execution', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
         const command = new TestRecordingCommand(jsonObject, () => {});
         expect(command.canUndo()).to.be.false;
         await command.execute();

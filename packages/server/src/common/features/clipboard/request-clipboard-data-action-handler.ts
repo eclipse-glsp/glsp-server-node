@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -44,7 +44,7 @@ export class RequestClipboardDataActionHandler implements ActionHandler {
         selectedElements.forEach(element => {
             schemas.push(this.modelSerializer.createSchema(element));
         });
-        // eslint-disable-next-line no-null/no-null
+
         clipboardData['application/json'] = JSON.stringify(schemas, undefined, 2);
         return [SetClipboardDataAction.create(clipboardData)];
     }

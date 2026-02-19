@@ -51,7 +51,7 @@
     "bundle:browser": "webpack --env target=webworker ",
     "clean": "rimraf lib *.tsbuildinfo",
     "generate:index": "glsp generateIndex src/browser src/common src/node -s -f",
-    "lint": "eslint --ext .ts,.tsx ./src",
+    "lint": "eslint ./src",
     "watch": "tsc -w",
     "watch:bundle": "webpack -w"
   },
