@@ -25,6 +25,7 @@ import {
     InitializeParameters,
     InitializeResult,
     MaybePromise,
+    McpInitializeParameters,
     MessageAction,
     ServerActions,
     distinctAdd,
@@ -105,7 +106,13 @@ export class DefaultGLSPServer implements GLSPServer {
 
         let result = { protocolVersion: DefaultGLSPServer.PROTOCOL_VERSION, serverActions };
 
-        result = await this.initializeServer(params, result);
+        // TODO handle via parameter or something
+        // This server is generated as response on diagram request,
+        // i.e., the WebSocketServerLauncher starts DefaultGLSPServer per WS connection and this starts the McpServerManager
+        // For the simple browser "client", this means every client has a new GLSP Server and MCP Server, but this does not generally hold
+        const mcpParams: McpInitializeParameters = { mcpServer: {}, ...params };
+
+        result = await this.initializeServer(mcpParams, result);
         // keep for backwards compatibility
         // eslint-disable-next-line deprecation/deprecation
         result = await this.handleInitializeArgs(result, params.args);

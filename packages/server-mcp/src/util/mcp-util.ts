@@ -14,7 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { CallToolResult } from '@modelcontextprotocol/sdk/types';
+import { CallToolResult, ReadResourceResult } from '@modelcontextprotocol/sdk/types';
+import { ResourceHandlerResult } from '../server';
 
 /**
  * Extracts a single parameter value from MCP resource template parameters.
@@ -69,4 +70,31 @@ export function createToolSuccess<T extends Record<string, any> = Record<string,
  */
 export function createToolError<T extends Record<string, any> = Record<string, any>>(message: string, details?: T): CallToolResult {
     return createToolResult({ success: false, message, error: message, ...(details && { details }) });
+}
+
+/**
+ * Wraps the result of a resource handler ({@link ResourceHandlerResult}) into a result for an
+ * MCP resource endpoint ({@link ReadResourceResult}).
+ */
+export function createResourceResult(result: ResourceHandlerResult): ReadResourceResult {
+    return {
+        contents: [result.content]
+    };
+}
+
+/**
+ * Wraps the result of a resource handler ({@link ResourceHandlerResult}) into a result for an
+ * MCP tool endpoint ({@link ReadResourceResult}). This is necessary if the server is configured
+ * to provide no resources and only tools (as some MCP clients may require this).
+ */
+export function createResourceToolResult(result: ResourceHandlerResult): CallToolResult {
+    return {
+        isError: result.isError,
+        content: [
+            {
+                type: 'resource',
+                resource: result.content
+            }
+        ]
+    };
 }

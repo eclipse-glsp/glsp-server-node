@@ -27,9 +27,9 @@ import {
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { McpServerContribution } from './mcp-server-contribution';
-import { GLSPMcpServer } from './mcp-server-manager';
-import { createToolError, createToolSuccess } from './mcp-util';
+import { McpServerContribution } from './server/mcp-server-contribution';
+import { GLSPMcpServer } from './server/mcp-server-manager';
+import { createToolError, createToolSuccess } from './util/mcp-util';
 
 /**
  * Default MCP server contribution that provides tools for performing actions on

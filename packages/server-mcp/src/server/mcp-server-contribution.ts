@@ -13,10 +13,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-export * from './default-mcp-tool-contribution';
-export * from './di.config';
-export * from './feature-flags';
-export * from './init';
-export * from './resources';
-export * from './server';
-export * from './util';
+
+import { MaybePromise } from '@eclipse-glsp/server';
+import { CallToolResult, ReadResourceResult } from '@modelcontextprotocol/sdk/types';
+import { GLSPMcpServer } from './mcp-server-manager';
+
+export interface McpServerContribution {
+    configure(server: GLSPMcpServer): MaybePromise<void>;
+}
+export const McpServerContribution = Symbol('McpServerContribution');
+
+export type ToolResultContent = CallToolResult['content'][number];
+export type ResourceResultContent = ReadResourceResult['contents'][number];
+export interface ResourceHandlerResult {
+    content: ResourceResultContent;
+    isError: boolean;
+}

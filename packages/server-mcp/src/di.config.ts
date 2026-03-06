@@ -15,19 +15,20 @@
  ********************************************************************************/
 import { GLSPServerInitContribution, GLSPServerListener, bindAsService } from '@eclipse-glsp/server';
 import { ContainerModule } from 'inversify';
-import { DefaultMcpResourceContribution } from './default-mcp-resource-contribution';
 import { DefaultMcpToolContribution } from './default-mcp-tool-contribution';
-import { McpServerContribution } from './mcp-server-contribution';
-import { McpServerManager } from './mcp-server-manager';
+import { configureMcpResourceModule } from './resources';
+import { McpServerContribution, McpServerManager } from './server';
 
-export function configureMcpModule(): ContainerModule {
+export function configureMcpModules(): ContainerModule[] {
+    return [configureMcpServerModule(), configureMcpResourceModule()];
+}
+
+function configureMcpServerModule(): ContainerModule {
     return new ContainerModule(bind => {
         bind(McpServerManager).toSelf().inSingletonScope();
         bind(GLSPServerInitContribution).toService(McpServerManager);
         bind(GLSPServerListener).toService(McpServerManager);
 
-        // Register default MCP contributions for resources and tools
-        bindAsService(bind, McpServerContribution, DefaultMcpResourceContribution);
         bindAsService(bind, McpServerContribution, DefaultMcpToolContribution);
     });
 }

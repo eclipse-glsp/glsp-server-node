@@ -14,11 +14,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+// TODO this class should be removed in time but serves as a development resource for now
+
 import {
     ClientSessionManager,
     CreateOperationHandler,
     DiagramModules,
-    GModelSerializer,
     Logger,
     ModelState,
     OperationHandlerRegistry
@@ -26,9 +27,10 @@ import {
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp';
 import { ReadResourceResult } from '@modelcontextprotocol/sdk/types';
 import { ContainerModule, inject, injectable } from 'inversify';
-import { McpServerContribution } from './mcp-server-contribution';
-import { GLSPMcpServer } from './mcp-server-manager';
-import { extractParam } from './mcp-util';
+import { McpModelSerializer } from './resources/services/mcp-model-serializer';
+import { McpServerContribution } from './server/mcp-server-contribution';
+import { GLSPMcpServer } from './server/mcp-server-manager';
+import { extractParam } from './util/mcp-util';
 
 /**
  * Default MCP server contribution that provides read-only resources for accessing
@@ -306,16 +308,22 @@ export class DefaultMcpResourceContribution implements McpServerContribution {
         }
 
         const modelState = session.container.get<ModelState>(ModelState);
-        const serializer = session.container.get<GModelSerializer>(GModelSerializer);
+        // const serializer = session.container.get<GModelSerializer>(GModelSerializer);
 
-        const schema = serializer.createSchema(modelState.root);
+        // const schema = serializer.createSchema(modelState.root);
+
+        const mcpSerializer = session.container.get<McpModelSerializer>(McpModelSerializer);
+        const mcpString = mcpSerializer.serialize(modelState.root);
 
         return {
             contents: [
                 {
-                    uri: `glsp://diagrams/${sessionId}/model`,
-                    mimeType: 'application/json',
-                    text: JSON.stringify(schema, undefined, 2)
+                    // uri: `glsp://diagrams/${sessionId}/model`,
+                    // mimeType: 'application/json',
+                    // text: JSON.stringify(schema, undefined, 2)
+                    uri: `glsp://diagrams/${sessionId}/model.md`,
+                    mimeType: 'text/markdown',
+                    text: mcpString
                 }
             ]
         };

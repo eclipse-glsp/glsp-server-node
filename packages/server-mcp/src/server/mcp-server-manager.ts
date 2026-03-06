@@ -37,6 +37,9 @@ export type FullMcpServerConfiguration = Required<McpServerConfiguration>;
 
 export interface GLSPMcpServer extends Pick<McpServer, 'registerPrompt' | 'registerResource' | 'registerTool'> {}
 
+// TODO for easier testing
+let MCP_SERVER: McpHttpServerWithSessions | undefined = undefined;
+
 @injectable()
 export class McpServerManager implements GLSPServerInitContribution, GLSPServerListener, Disposable {
     @inject(Logger) protected logger: Logger;
@@ -52,12 +55,19 @@ export class McpServerManager implements GLSPServerInitContribution, GLSPServerL
             return result;
         }
 
-        const { port = 0, host = '127.0.0.1', route = '/glsp-mcp', name = 'glspMcpServer' } = mcpServerParam;
+        // TODO for easier testing
+        MCP_SERVER?.dispose();
+        await new Promise(res => setTimeout(res, 500));
+
+        // TODO use fixed 60000 instead of 0 so that the MCP server need only be registered once and can thus be easier tested
+        const { port = 60000, host = '127.0.0.1', route = '/glsp-mcp', name = 'glspMcpServer' } = mcpServerParam;
         const mcpServerConfig: FullMcpServerConfiguration = { port, host, route, name };
 
         const httpServer = new McpHttpServerWithSessions(this.logger);
         httpServer.onSessionInitialized(client => this.onSessionInitialized(client, mcpServerConfig));
         this.toDispose.push(httpServer);
+        // TODO for easier testing
+        MCP_SERVER = httpServer;
 
         const address = await httpServer.start(mcpServerConfig);
         this.serverUrl = this.toServerUrl(address, route);
