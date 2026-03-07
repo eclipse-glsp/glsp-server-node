@@ -14,11 +14,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-export * from './default-mcp-resource-contribution';
-export * from './default-mcp-resource-tool-contribution';
-export * from './handlers/documentation-handler';
-export * from './handlers/export-png-handler';
-export * from './handlers/model-handler';
-export * from './handlers/session-handler';
+export * from './handlers/diagram-model-handler';
+export * from './handlers/diagram-png-handler';
+export * from './handlers/element-types-handler';
+export * from './handlers/sessions-list-handler';
+export * from './mcp-resource-contribution';
 export * from './resource-module.config';
 export * from './services/mcp-model-serializer';

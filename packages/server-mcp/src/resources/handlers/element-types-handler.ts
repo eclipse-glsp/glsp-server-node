@@ -15,32 +15,18 @@
  ********************************************************************************/
 
 import { ClientSessionManager, CreateOperationHandler, DiagramModules, Logger, OperationHandlerRegistry } from '@eclipse-glsp/server';
+import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp';
 import { ContainerModule, inject, injectable } from 'inversify';
-import { ResourceHandlerResult } from '../../server';
-import { objectArrayToMarkdownTable } from '../../util';
-
-export const McpResourceDocumentationHandler = Symbol('McpResourceDocumentationHandler');
+import * as z from 'zod/v4';
+import { GLSPMcpServer, McpResourceHandler, ResourceHandlerResult } from '../../server';
+import { createResourceResult, createResourceToolResult, extractResourceParam, objectArrayToMarkdownTable } from '../../util';
 
 /**
- * The `McpResourceDocumentationHandler` provides handler functions supplying information about diagrams,
- * their available elements, and other general information. This is independent from the current state of any given diagram.
+ * Lists the available element types for a given diagram type. This should likely include not only their id but also some description.
+ * Additionally, some element types may not be creatable and should be omitted or annotated as such.
  */
-export interface McpResourceDocumentationHandler {
-    /**
-     * Lists the available diagram types.
-     */
-    getDiagramTypes(): string[];
-
-    /**
-     * Lists the available element types. This should likely include not only their id but also some description.
-     * Additionally, some element types may not be creatable and should be omitted or annotated as such.
-     * @param diagramType The diagram type to query the element types for.
-     */
-    getElementTypes(diagramType: string | undefined): ResourceHandlerResult;
-}
-
 @injectable()
-export class DefaultMcpResourceDocumentationHandler implements McpResourceDocumentationHandler {
+export class ElementTypesMcpResourceHandler implements McpResourceHandler {
     @inject(Logger)
     protected logger: Logger;
 
@@ -50,12 +36,54 @@ export class DefaultMcpResourceDocumentationHandler implements McpResourceDocume
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
-    getDiagramTypes(): string[] {
-        return Array.from(this.diagramModules.keys());
+    registerResource(server: GLSPMcpServer): void {
+        server.registerResource(
+            'element-types',
+            new ResourceTemplate('glsp://types/{diagramType}/elements', {
+                list: () => {
+                    const diagramTypes = this.getDiagramTypes();
+                    return {
+                        resources: diagramTypes.map(type => ({
+                            uri: `glsp://types/${type}/elements`,
+                            name: `Element Types: ${type}`,
+                            description: `Creatable element types for ${type} diagrams`,
+                            mimeType: 'text/markdown'
+                        }))
+                    };
+                },
+                complete: {
+                    diagramType: () => this.getDiagramTypes()
+                }
+            }),
+            {
+                title: 'Creatable Element Types',
+                description:
+                    'List all element types (nodes and edges) that can be created for a specific diagram type. ' +
+                    'Use this to discover valid elementTypeId values for creation tools.',
+                mimeType: 'text/markdown'
+            },
+            async (_uri, params) => createResourceResult(await this.handle({ diagramType: extractResourceParam(params, 'diagramType') }))
+        );
     }
 
-    getElementTypes(diagramType: string | undefined): ResourceHandlerResult {
-        this.logger.info(`getElementTypes invoked for diagram type ${diagramType}`);
+    registerTool(server: GLSPMcpServer): void {
+        server.registerTool(
+            'element-types',
+            {
+                title: 'Creatable Element Types',
+                description:
+                    'List all element types (nodes and edges) that can be created for a specific diagram type. ' +
+                    'Use this to discover valid elementTypeId values for creation tools.',
+                inputSchema: {
+                    diagramType: z.string().describe('Diagram type whose elements should be discovered')
+                }
+            },
+            async params => createResourceToolResult(await this.handle(params))
+        );
+    }
+
+    async handle({ diagramType }: { diagramType?: string }): Promise<ResourceHandlerResult> {
+        this.logger.info(`ElementTypesMcpResourceHandler invoked for diagram type ${diagramType}`);
         if (!diagramType) {
             return {
                 content: {
@@ -115,5 +143,9 @@ export class DefaultMcpResourceDocumentationHandler implements McpResourceDocume
             },
             isError: false
         };
+    }
+
+    protected getDiagramTypes(): string[] {
+        return Array.from(this.diagramModules.keys());
     }
 }

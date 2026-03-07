@@ -23,23 +23,16 @@ import {
     Logger,
     RequestExportMcpPngAction
 } from '@eclipse-glsp/server';
+import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp';
 import { inject, injectable } from 'inversify';
-import { ResourceHandlerResult } from '../../server';
-
-export const McpResourcePngHandler = Symbol('McpResourcePngHandler');
-
-/**
- * The `McpResourcePngHandler` provides a handler function to produce a PNG of the current model.
- */
-export interface McpResourcePngHandler {
-    /**
-     * Creates a base64-encoded PNG of the given session's model state.
-     * @param sessionId The relevant session.
-     */
-    getModelPng(sessionId: string | undefined): Promise<ResourceHandlerResult>;
-}
+import * as z from 'zod/v4';
+import { FEATURE_FLAGS } from '../../feature-flags';
+import { GLSPMcpServer, McpResourceHandler, ResourceHandlerResult } from '../../server';
+import { createResourceResult, extractResourceParam } from '../../util';
 
 /**
+ * Creates a base64-encoded PNG of the given session's model state.
+ *
  * Since visual logic is not only much easier on the frontend, but also already implemented there
  * with little reason to engineer the feature on the backend, communication with the frontend is necessary.
  * However, GLSP's architecture is client-driven, i.e., the server is passive and not the driver of events.
@@ -52,7 +45,7 @@ export interface McpResourcePngHandler {
  * However, it is unclear whether this works in all circumstances, as it introduces impure functions.
  */
 @injectable()
-export class DefaultMcpResourcePngHandler implements McpResourcePngHandler, ActionHandler {
+export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionHandler {
     actionKinds = [ExportMcpPngAction.KIND];
 
     @inject(Logger)
@@ -63,24 +56,72 @@ export class DefaultMcpResourcePngHandler implements McpResourcePngHandler, Acti
 
     protected promiseResolveFn: (value: ResourceHandlerResult | PromiseLike<ResourceHandlerResult>) => void;
 
-    async execute(action: ExportMcpPngAction): Promise<Action[]> {
-        const sessionId = action.options?.sessionId ?? '';
-        this.logger.info(`ExportMcpPngAction received for session ${sessionId}`);
-
-        this.promiseResolveFn?.({
-            content: {
-                uri: `glsp://diagrams/${sessionId}/png`,
-                mimeType: 'image/png',
-                blob: action.png
+    registerResource(server: GLSPMcpServer): void {
+        if (!FEATURE_FLAGS.resources.png) {
+            return;
+        }
+        server.registerResource(
+            'diagram-png',
+            new ResourceTemplate('glsp://diagrams/{sessionId}/png', {
+                list: () => {
+                    const sessionIds = this.getSessionIds();
+                    return {
+                        resources: sessionIds.map(sessionId => ({
+                            uri: `glsp://diagrams/${sessionId}/png`,
+                            name: `Diagram PNG: ${sessionId}`,
+                            description: `Complete PNG of the model for session ${sessionId}`,
+                            mimeType: 'image/png'
+                        }))
+                    };
+                },
+                complete: {
+                    sessionId: () => this.getSessionIds()
+                }
+            }),
+            {
+                title: 'Diagram Model PNG',
+                description:
+                    'Get the complete image of the model for a session as a PNG. ' +
+                    'Includes all nodes and edges to help with visually relevant tasks.',
+                mimeType: 'image/png'
             },
-            isError: false
-        });
-
-        return [];
+            async (_uri, params) => createResourceResult(await this.handle({ sessionId: extractResourceParam(params, 'sessionId') }))
+        );
     }
 
-    async getModelPng(sessionId: string | undefined): Promise<ResourceHandlerResult> {
-        this.logger.info(`getModelPng invoked for session ${sessionId}`);
+    registerTool(server: GLSPMcpServer): void {
+        if (!FEATURE_FLAGS.resources.png) {
+            return;
+        }
+        server.registerTool(
+            'diagram-png',
+            {
+                title: 'Diagram Model PNG',
+                description:
+                    'Get the complete image of the model for a session as a PNG. ' +
+                    'Includes all nodes and edges to help with visually relevant tasks.',
+                inputSchema: {
+                    sessionId: z.string().describe('Session ID for which the image should be created')
+                }
+            },
+            async params => {
+                const result = await this.handle(params);
+                return {
+                    isError: result.isError,
+                    content: [
+                        {
+                            type: 'image',
+                            data: (result.content as any).blob,
+                            mimeType: 'image/png'
+                        }
+                    ]
+                };
+            }
+        );
+    }
+
+    async handle({ sessionId }: { sessionId?: string }): Promise<ResourceHandlerResult> {
+        this.logger.info(`DiagramPngMcpResourceHandler invoked for session ${sessionId}`);
         if (!sessionId) {
             return {
                 content: {
@@ -123,5 +164,25 @@ export class DefaultMcpResourcePngHandler implements McpResourcePngHandler, Acti
                 5000
             );
         });
+    }
+
+    async execute(action: ExportMcpPngAction): Promise<Action[]> {
+        const sessionId = action.options?.sessionId ?? '';
+        this.logger.info(`ExportMcpPngAction received for session ${sessionId}`);
+
+        this.promiseResolveFn?.({
+            content: {
+                uri: `glsp://diagrams/${sessionId}/png`,
+                mimeType: 'image/png',
+                blob: action.png
+            },
+            isError: false
+        });
+
+        return [];
+    }
+
+    protected getSessionIds(): string[] {
+        return this.clientSessionManager.getSessions().map(s => s.id);
     }
 }

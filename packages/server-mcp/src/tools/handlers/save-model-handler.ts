@@ -17,27 +17,43 @@
 import { ClientSessionManager, CommandStack, Logger, SaveModelAction } from '@eclipse-glsp/server';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
+import * as z from 'zod/v4';
+import { GLSPMcpServer, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
 
-export const McpToolModelHandler = Symbol('McpToolModelHandler');
-
 /**
- * The `McpToolModelHandler`
+ * Saves the given session's model.
  */
-export interface McpToolModelHandler {
-    saveModel(params: { sessionId: string; fileUri?: string }): Promise<CallToolResult>;
-}
-
 @injectable()
-export class DefaultMcpToolModelHandler implements McpToolModelHandler {
+export class SaveModelMcpToolHandler implements McpToolHandler {
     @inject(Logger)
     protected logger: Logger;
 
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
-    async saveModel({ sessionId, fileUri }: { sessionId: string; fileUri?: string }): Promise<CallToolResult> {
-        this.logger.info(`saveModel invoked for session ${sessionId}`);
+    registerTool(server: GLSPMcpServer): void {
+        server.registerTool(
+            'save-model',
+            {
+                description:
+                    'Save the current diagram model to persistent storage. ' +
+                    'This operation persists all changes back to the source model. ' +
+                    'Optionally specify a new fileUri to save to a different location.',
+                inputSchema: {
+                    sessionId: z.string().describe('Session ID where the model should be saved'),
+                    fileUri: z
+                        .string()
+                        .optional()
+                        .describe('Optional destination file URI. If not provided, saves to the original source model location.')
+                }
+            },
+            params => this.handle(params)
+        );
+    }
+
+    async handle({ sessionId, fileUri }: { sessionId: string; fileUri?: string }): Promise<CallToolResult> {
+        this.logger.info(`SaveModelMcpToolHandler invoked for session ${sessionId}`);
 
         try {
             const session = this.clientSessionManager.getSession(sessionId);

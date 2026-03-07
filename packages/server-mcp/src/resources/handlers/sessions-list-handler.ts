@@ -16,41 +16,47 @@
 
 import { ClientSessionManager, Logger, ModelState } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
-import { ResourceHandlerResult } from '../../server';
-import { objectArrayToMarkdownTable } from '../../util';
-
-export const McpResourceSessionHandler = Symbol('McpResourceSessionHandler');
+import { GLSPMcpServer, McpResourceHandler, ResourceHandlerResult } from '../../server';
+import { createResourceResult, createResourceToolResult, objectArrayToMarkdownTable } from '../../util';
 
 /**
- * The `McpResourceSessionHandler` provides information about the sessions currently active.
+ * Lists the current sessions according to the {@link ClientSessionManager}. This includes not only
+ * their id but also diagram type, source uri, and read-only status.
  */
-export interface McpResourceSessionHandler {
-    /**
-     * Lists the current session ids according to the {@link ClientSessionManager}.
-     */
-    getSessionIds(): string[];
-
-    /**
-     * Lists the current sessions according to the {@link ClientSessionManager}. This includes not only
-     * their id but also diagram type, source uri, and read-only status.
-     */
-    getAllSessions(): ResourceHandlerResult;
-}
-
 @injectable()
-export class DefaultMcpResourceSessionHandler implements McpResourceSessionHandler {
+export class SessionsListMcpResourceHandler implements McpResourceHandler {
     @inject(Logger)
     protected logger: Logger;
 
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
-    getSessionIds(): string[] {
-        return this.clientSessionManager.getSessions().map(s => s.id);
+    registerResource(server: GLSPMcpServer): void {
+        server.registerResource(
+            'sessions-list',
+            'glsp://sessions',
+            {
+                title: 'GLSP Sessions List',
+                description: 'List all active GLSP client sessions across all diagram types',
+                mimeType: 'text/markdown'
+            },
+            async () => createResourceResult(await this.handle({}))
+        );
     }
 
-    getAllSessions(): ResourceHandlerResult {
-        this.logger.info('getAllSessions invoked');
+    registerTool(server: GLSPMcpServer): void {
+        server.registerTool(
+            'sessions-list',
+            {
+                title: 'GLSP Sessions List',
+                description: 'List all active GLSP client sessions across all diagram types'
+            },
+            async () => createResourceToolResult(await this.handle({}))
+        );
+    }
+
+    async handle(params: Record<string, never>): Promise<ResourceHandlerResult> {
+        this.logger.info('SessionsListMcpResourceHandler invoked');
         const sessions = this.clientSessionManager.getSessions();
         const sessionsList = sessions.map(session => {
             const modelState = session.container.get<ModelState>(ModelState);

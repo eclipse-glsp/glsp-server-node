@@ -30,3 +30,31 @@ export interface ResourceHandlerResult {
     content: ResourceResultContent;
     isError: boolean;
 }
+
+/**
+ * An `McpResourceHandler` defines a resource for the MCP server. This includes
+ * not only the logic to execute but also the definition of the endpoint. As
+ * it may be the case that resources should be offered as tools for compatibility
+ * purposes, both kinds of endpoints need to be defined.
+ */
+export interface McpResourceHandler {
+    /** Defines the endpoint and registers the resource with the given MCP server as a resource*/
+    registerResource(server: GLSPMcpServer): void;
+    /** Defines the endpoint and registers the resource with the given MCP server as a tool */
+    registerTool(server: GLSPMcpServer): void;
+    /** Executes the logic given the endpoints input and provides corresponding output */
+    handle(params: Record<string, any>): Promise<ResourceHandlerResult>;
+}
+export const McpResourceHandler = Symbol('McpResourceHandler');
+
+/**
+ * An `McpToolHandler` defines a tools for the MCP server. This includes
+ * not only the logic to execute but also the definition of the endpoint.
+ */
+export interface McpToolHandler {
+    /** Defines the endpoint and registers the tool with the given MCP server */
+    registerTool(server: GLSPMcpServer): void;
+    /** Executes the logic given the endpoints input and provides corresponding output */
+    handle(params: Record<string, any>): Promise<CallToolResult>;
+}
+export const McpToolHandler = Symbol('McpToolHandler');

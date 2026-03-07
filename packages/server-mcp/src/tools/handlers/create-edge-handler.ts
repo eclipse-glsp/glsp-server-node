@@ -14,98 +14,50 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ClientSessionManager, CreateEdgeOperation, CreateNodeOperation, Logger, ModelState } from '@eclipse-glsp/server';
+import { ClientSessionManager, CreateEdgeOperation, Logger, ModelState } from '@eclipse-glsp/server';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
+import * as z from 'zod/v4';
+import { GLSPMcpServer, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
 
-export const McpToolCreationHandler = Symbol('McpToolCreationHandler');
-
 /**
- * The `McpToolCreationHandler`
+ * Creates a new edge in the given session's model.
  */
-export interface McpToolCreationHandler {
-    createNode(params: {
-        sessionId: string;
-        elementTypeId: string;
-        location: { x: number; y: number };
-        containerId?: string;
-        args?: Record<string, any>;
-    }): Promise<CallToolResult>;
-
-    createEdge(params: {
-        sessionId: string;
-        elementTypeId: string;
-        sourceElementId: string;
-        targetElementId: string;
-        args?: Record<string, any>;
-    }): Promise<CallToolResult>;
-}
-
 @injectable()
-export class DefaultMcpToolCreationHandler implements McpToolCreationHandler {
+export class CreateEdgeMcpToolHandler implements McpToolHandler {
     @inject(Logger)
     protected logger: Logger;
 
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
-    async createNode({
-        sessionId,
-        elementTypeId,
-        location,
-        containerId,
-        args
-    }: {
-        sessionId: string;
-        elementTypeId: string;
-        location: { x: number; y: number };
-        containerId?: string;
-        args?: Record<string, any>;
-    }): Promise<CallToolResult> {
-        this.logger.info(`createNode invoked for session ${sessionId}`);
-
-        try {
-            const session = this.clientSessionManager.getSession(sessionId);
-            if (!session) {
-                return createToolResult('Session not found', true);
-            }
-
-            const modelState = session.container.get<ModelState>(ModelState);
-
-            // Check if model is readonly
-            if (modelState.isReadonly) {
-                return createToolResult('Model is read-only', true);
-            }
-
-            // Snapshot element IDs before operation using index.allIds()
-            const beforeIds = new Set(modelState.index.allIds());
-
-            // Create operation
-            const operation = CreateNodeOperation.create(elementTypeId, { location, containerId, args });
-
-            // Dispatch operation
-            await session.actionDispatcher.dispatch(operation);
-
-            // Snapshot element IDs after operation
-            const afterIds = modelState.index.allIds();
-
-            // Find new element ID
-            const newIds = afterIds.filter(id => !beforeIds.has(id));
-            const newElementId = newIds.length > 0 ? newIds[0] : undefined;
-
-            if (!newElementId) {
-                return createToolResult('Node creation succeeded but could not determine element ID', true);
-            }
-
-            return createToolResult(`Node created successfully with element ID: ${newElementId}`, false);
-        } catch (error) {
-            this.logger.error('Node creation failed', error);
-            return createToolResult(`Node creation failed: ${error instanceof Error ? error.message : String(error)}`, true);
-        }
+    registerTool(server: GLSPMcpServer): void {
+        server.registerTool(
+            'create-edge',
+            {
+                description:
+                    'Create a new edge connecting two elements in the diagram. ' +
+                    'This operation modifies the diagram state and requires user approval. ' +
+                    'Query glsp://types/{diagramType}/elements resource to discover valid edge type IDs.',
+                inputSchema: {
+                    sessionId: z.string().describe('Session ID where the edge should be created'),
+                    elementTypeId: z
+                        .string()
+                        .describe('Edge type ID (e.g., "edge", "transition"). Use element-types resource to discover valid IDs.'),
+                    sourceElementId: z.string().describe('ID of the source element (must exist in the diagram)'),
+                    targetElementId: z.string().describe('ID of the target element (must exist in the diagram)'),
+                    args: z
+                        .record(z.string(), z.any())
+                        .optional()
+                        .describe('Additional type-specific arguments for edge creation (varies by edge type)')
+                }
+            },
+            params => this.handle(params)
+        );
     }
 
-    async createEdge({
+    async handle({
         sessionId,
         elementTypeId,
         sourceElementId,
@@ -118,7 +70,7 @@ export class DefaultMcpToolCreationHandler implements McpToolCreationHandler {
         targetElementId: string;
         args?: Record<string, any>;
     }): Promise<CallToolResult> {
-        this.logger.info(`createEdge invoked for session ${sessionId}`);
+        this.logger.info(`CreateEdgeMcpToolHandler invoked for session ${sessionId}`);
 
         try {
             const session = this.clientSessionManager.getSession(sessionId);

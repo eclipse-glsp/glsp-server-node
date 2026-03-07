@@ -15,31 +15,23 @@
  ********************************************************************************/
 import { bindAsService } from '@eclipse-glsp/server';
 import { ContainerModule } from 'inversify';
-import { FEATURE_FLAGS } from '../feature-flags';
-import { McpServerContribution } from '../server';
-import { DefaultMcpResourceContribution } from './default-mcp-resource-contribution';
-import { DefaultMcpResourceToolContribution } from './default-mcp-resource-tool-contribution';
-import { DefaultMcpResourceDocumentationHandler, McpResourceDocumentationHandler } from './handlers/documentation-handler';
-import { DefaultMcpResourcePngHandler, McpResourcePngHandler } from './handlers/export-png-handler';
-import { DefaultMcpResourceModelHandler, McpResourceModelHandler } from './handlers/model-handler';
-import { DefaultMcpResourceSessionHandler, McpResourceSessionHandler } from './handlers/session-handler';
+import { McpResourceHandler, McpServerContribution } from '../server';
+import { DiagramModelMcpResourceHandler } from './handlers/diagram-model-handler';
+import { DiagramPngMcpResourceHandler } from './handlers/diagram-png-handler';
+import { ElementTypesMcpResourceHandler } from './handlers/element-types-handler';
+import { SessionsListMcpResourceHandler } from './handlers/sessions-list-handler';
+import { McpResourceContribution } from './mcp-resource-contribution';
 import { DefaultMcpModelSerializer, McpModelSerializer } from './services/mcp-model-serializer';
 
 export function configureMcpResourceModule(): ContainerModule {
     return new ContainerModule(bind => {
         bindAsService(bind, McpModelSerializer, DefaultMcpModelSerializer);
 
-        bindAsService(bind, McpResourceDocumentationHandler, DefaultMcpResourceDocumentationHandler);
-        bindAsService(bind, McpResourceSessionHandler, DefaultMcpResourceSessionHandler);
-        bindAsService(bind, McpResourceModelHandler, DefaultMcpResourceModelHandler);
-        bindAsService(bind, McpResourcePngHandler, DefaultMcpResourcePngHandler);
+        bindAsService(bind, McpResourceHandler, SessionsListMcpResourceHandler);
+        bindAsService(bind, McpResourceHandler, ElementTypesMcpResourceHandler);
+        bindAsService(bind, McpResourceHandler, DiagramModelMcpResourceHandler);
+        bindAsService(bind, McpResourceHandler, DiagramPngMcpResourceHandler);
 
-        // TODO currently only development tool
-        // think of nice switching mechanism for starting MCP servers with only tools or tools + resources
-        if (FEATURE_FLAGS.useResources) {
-            bindAsService(bind, McpServerContribution, DefaultMcpResourceContribution);
-        } else {
-            bindAsService(bind, McpServerContribution, DefaultMcpResourceToolContribution);
-        }
+        bindAsService(bind, McpServerContribution, McpResourceContribution);
     });
 }

@@ -15,20 +15,22 @@
  ********************************************************************************/
 import { bindAsService } from '@eclipse-glsp/server';
 import { ContainerModule } from 'inversify';
-import { McpServerContribution } from '../server';
-import { DefaultMcpToolContribution } from './default-mcp-tool-contribution';
-import { DefaultMcpToolCreationHandler, McpToolCreationHandler } from './handlers/creation-handler';
-import { DefaultMcpToolDeletionHandler, McpToolDeletionHandler } from './handlers/deletion-handler';
-import { DefaultMcpToolModelHandler, McpToolModelHandler } from './handlers/model-handler';
-import { DefaultMcpToolValidationHandler, McpToolValidationHandler } from './handlers/validation-handler';
+import { McpServerContribution, McpToolHandler } from '../server';
+import { CreateEdgeMcpToolHandler } from './handlers/create-edge-handler';
+import { CreateNodeMcpToolHandler } from './handlers/create-node-handler';
+import { DeleteElementMcpToolHandler } from './handlers/delete-element-handler';
+import { SaveModelMcpToolHandler } from './handlers/save-model-handler';
+import { ValidateDiagramMcpToolHandler } from './handlers/validate-diagram-handler';
+import { McpToolContribution } from './mcp-tool-contribution';
 
 export function configureMcpToolModule(): ContainerModule {
     return new ContainerModule(bind => {
-        bindAsService(bind, McpToolValidationHandler, DefaultMcpToolValidationHandler);
-        bindAsService(bind, McpToolCreationHandler, DefaultMcpToolCreationHandler);
-        bindAsService(bind, McpToolDeletionHandler, DefaultMcpToolDeletionHandler);
-        bindAsService(bind, McpToolModelHandler, DefaultMcpToolModelHandler);
+        bindAsService(bind, McpToolHandler, CreateNodeMcpToolHandler);
+        bindAsService(bind, McpToolHandler, CreateEdgeMcpToolHandler);
+        bindAsService(bind, McpToolHandler, DeleteElementMcpToolHandler);
+        bindAsService(bind, McpToolHandler, SaveModelMcpToolHandler);
+        bindAsService(bind, McpToolHandler, ValidateDiagramMcpToolHandler);
 
-        bindAsService(bind, McpServerContribution, DefaultMcpToolContribution);
+        bindAsService(bind, McpServerContribution, McpToolContribution);
     });
 }

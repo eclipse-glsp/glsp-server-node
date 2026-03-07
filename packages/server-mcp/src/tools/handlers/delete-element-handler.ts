@@ -17,27 +17,40 @@
 import { ClientSessionManager, DeleteElementOperation, Logger, ModelState } from '@eclipse-glsp/server';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
+import * as z from 'zod/v4';
+import { GLSPMcpServer, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
 
-export const McpToolDeletionHandler = Symbol('McpToolDeletionHandler');
-
 /**
- * The `McpToolDeletionHandler`
+ * Deletes an element using their element ID from the given session's model.
  */
-export interface McpToolDeletionHandler {
-    deleteElement(params: { sessionId: string; elementIds: string[] }): Promise<CallToolResult>;
-}
-
 @injectable()
-export class DefaultMcpToolDeletionHandler implements McpToolDeletionHandler {
+export class DeleteElementMcpToolHandler implements McpToolHandler {
     @inject(Logger)
     protected logger: Logger;
 
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
-    async deleteElement({ sessionId, elementIds }: { sessionId: string; elementIds: string[] }): Promise<CallToolResult> {
-        this.logger.info(`deleteElement invoked for session ${sessionId}`);
+    registerTool(server: GLSPMcpServer): void {
+        server.registerTool(
+            'delete-element',
+            {
+                description:
+                    'Delete one or more elements (nodes or edges) from the diagram. ' +
+                    'This operation modifies the diagram state and requires user approval. ' +
+                    'Automatically handles dependent elements (e.g., deleting a node also deletes connected edges).',
+                inputSchema: {
+                    sessionId: z.string().describe('Session ID where the elements should be deleted'),
+                    elementIds: z.array(z.string()).min(1).describe('Array of element IDs to delete. Must include at least one element ID.')
+                }
+            },
+            params => this.handle(params)
+        );
+    }
+
+    async handle({ sessionId, elementIds }: { sessionId: string; elementIds: string[] }): Promise<CallToolResult> {
+        this.logger.info(`DeleteElementMcpToolHandler invoked for session ${sessionId}`);
 
         try {
             const session = this.clientSessionManager.getSession(sessionId);

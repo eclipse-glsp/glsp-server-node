@@ -17,26 +17,47 @@
 import { ClientSessionManager, Logger, MarkersReason, ModelState, ModelValidator } from '@eclipse-glsp/server';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
+import * as z from 'zod/v4';
+import { GLSPMcpServer, McpToolHandler } from '../../server';
 import { createToolResult, objectArrayToMarkdownTable } from '../../util';
 
-export const McpToolValidationHandler = Symbol('McpToolValidationHandler');
-
 /**
- * The `McpToolValidationHandler`
+ * Validates the given session's model.
  */
-export interface McpToolValidationHandler {
-    validateDiagram(params: { sessionId: string; elementIds?: string[]; reason?: string }): Promise<CallToolResult>;
-}
-
 @injectable()
-export class DefaultMcpToolValidationHandler implements McpToolValidationHandler {
+export class ValidateDiagramMcpToolHandler implements McpToolHandler {
     @inject(Logger)
     protected logger: Logger;
 
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
-    async validateDiagram({
+    registerTool(server: GLSPMcpServer): void {
+        server.registerTool(
+            'validate-diagram',
+            {
+                description:
+                    'Validate diagram elements and return validation markers (errors, warnings, info). ' +
+                    'Triggers active validation computation. Use elementIds parameter to validate specific elements, ' +
+                    'or omit to validate the entire model.',
+                inputSchema: {
+                    sessionId: z.string().describe('Session ID to validate'),
+                    elementIds: z
+                        .array(z.string())
+                        .optional()
+                        .describe('Array of element IDs to validate. If not provided, validates entire model starting from root.'),
+                    reason: z
+                        .enum([MarkersReason.BATCH, MarkersReason.LIVE])
+                        .optional()
+                        .default(MarkersReason.LIVE)
+                        .describe('Validation reason: "batch" for thorough validation, "live" for quick incremental checks')
+                }
+            },
+            params => this.handle(params)
+        );
+    }
+
+    async handle({
         sessionId,
         elementIds,
         reason
@@ -45,7 +66,7 @@ export class DefaultMcpToolValidationHandler implements McpToolValidationHandler
         elementIds?: string[];
         reason?: string;
     }): Promise<CallToolResult> {
-        this.logger.info(`validateDiagram invoked for session ${sessionId}`);
+        this.logger.info(`ValidateDiagramMcpToolHandler invoked for session ${sessionId}`);
 
         try {
             const session = this.clientSessionManager.getSession(sessionId);

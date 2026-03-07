@@ -14,9 +14,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-export * from './default-mcp-tool-contribution';
-export * from './handlers/creation-handler';
-export * from './handlers/deletion-handler';
-export * from './handlers/model-handler';
-export * from './handlers/validation-handler';
+export * from './handlers/create-edge-handler';
+export * from './handlers/create-node-handler';
+export * from './handlers/delete-element-handler';
+export * from './handlers/save-model-handler';
+export * from './handlers/validate-diagram-handler';
+export * from './mcp-tool-contribution';
 export * from './tool-module.config';

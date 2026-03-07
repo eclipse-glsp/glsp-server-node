@@ -16,7 +16,7 @@
 
 import { ActionHandlerFactory, ActionHandlerRegistry, Args, ClientSessionInitializer } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
-import { DefaultMcpResourcePngHandler } from '../resources';
+import { DiagramPngMcpResourceHandler } from '../resources';
 
 /**
  * This `ClientSessionInitializer` serves to register an additional `ActionHandler` without needing to extend `ServerModule`.
@@ -29,8 +29,8 @@ export class ExportMcpPngActionHandlerInitContribution implements ClientSessionI
     protected factory: ActionHandlerFactory;
     @inject(ActionHandlerRegistry)
     protected registry: ActionHandlerRegistry;
-    @inject(DefaultMcpResourcePngHandler)
-    protected pngHandler: DefaultMcpResourcePngHandler;
+    @inject(DiagramPngMcpResourceHandler)
+    protected pngHandler: DiagramPngMcpResourceHandler;
 
     initialize(args?: Args): void {
         this.registry.registerHandler(this.pngHandler);
