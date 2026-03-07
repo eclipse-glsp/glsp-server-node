@@ -14,6 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+// TODO this class should be removed in time but serves as a development resource for now
+
 import { DeleteElementOperation, MarkersReason, RedoAction, SaveModelAction, UndoAction } from '@eclipse-glsp/protocol';
 import {
     ClientSessionManager,
@@ -29,7 +31,48 @@ import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { McpServerContribution } from './server/mcp-server-contribution';
 import { GLSPMcpServer } from './server/mcp-server-manager';
-import { createToolError, createToolSuccess } from './util/mcp-util';
+
+/**
+ * Creates a tool result with both text and structured content.
+ * This generic function handles both success and error cases consistently.
+ *
+ * @param data The data to include in the response
+ * @returns A CallToolResult with the provided data in both text and structured form
+ */
+function createToolResult<T extends Record<string, any>>(data: T): CallToolResult {
+    return {
+        content: [
+            {
+                type: 'text',
+                text: JSON.stringify(data, undefined, 2)
+            }
+        ],
+        structuredContent: data
+    };
+}
+
+/**
+ * Creates a successful tool result with both text and structured content.
+ * Includes a `success: true` flag and spreads the provided data.
+ *
+ * @param data Additional data to include in the success response
+ * @returns A CallToolResult with success status and the provided data
+ */
+function createToolSuccess<T extends Record<string, any> = Record<string, any>>(data: T): CallToolResult {
+    return createToolResult({ success: true, ...data });
+}
+
+/**
+ * Creates an error tool result with both text and structured content.
+ * Includes a `success: false` flag, error message, and optional details.
+ *
+ * @param message The error message
+ * @param details Optional additional error details
+ * @returns A CallToolResult with error status and details
+ */
+function createToolError<T extends Record<string, any> = Record<string, any>>(message: string, details?: T): CallToolResult {
+    return createToolResult({ success: false, message, error: message, ...(details && { details }) });
+}
 
 /**
  * Default MCP server contribution that provides tools for performing actions on

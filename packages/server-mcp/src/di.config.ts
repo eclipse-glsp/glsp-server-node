@@ -13,14 +13,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPServerInitContribution, GLSPServerListener, bindAsService } from '@eclipse-glsp/server';
+import { GLSPServerInitContribution, GLSPServerListener } from '@eclipse-glsp/server';
 import { ContainerModule } from 'inversify';
-import { DefaultMcpToolContribution } from './default-mcp-tool-contribution';
 import { configureMcpResourceModule } from './resources';
-import { McpServerContribution, McpServerManager } from './server';
+import { McpServerManager } from './server';
+import { configureMcpToolModule } from './tools';
 
+// TODO possibly instead of wholly separate modules, just provide functions using bind context from tools/resources
 export function configureMcpModules(): ContainerModule[] {
-    return [configureMcpServerModule(), configureMcpResourceModule()];
+    return [configureMcpServerModule(), configureMcpResourceModule(), configureMcpToolModule()];
 }
 
 function configureMcpServerModule(): ContainerModule {
@@ -28,7 +29,5 @@ function configureMcpServerModule(): ContainerModule {
         bind(McpServerManager).toSelf().inSingletonScope();
         bind(GLSPServerInitContribution).toService(McpServerManager);
         bind(GLSPServerListener).toService(McpServerManager);
-
-        bindAsService(bind, McpServerContribution, DefaultMcpToolContribution);
     });
 }

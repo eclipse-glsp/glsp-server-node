@@ -18,7 +18,7 @@ import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp';
 import { inject, injectable } from 'inversify';
 import { FEATURE_FLAGS } from '../feature-flags';
 import { GLSPMcpServer, McpServerContribution } from '../server';
-import { createResourceResult, extractParam } from '../util';
+import { createResourceResult, extractResourceParam } from '../util';
 import { McpResourceDocumentationHandler } from './handlers/documentation-handler';
 import { McpResourcePngHandler } from './handlers/export-png-handler';
 import { McpResourceModelHandler } from './handlers/model-handler';
@@ -89,7 +89,7 @@ export class DefaultMcpResourceContribution implements McpServerContribution {
                     'Use this to discover valid elementTypeId values for creation tools.',
                 mimeType: 'text/markdown'
             },
-            (_uri, params) => createResourceResult(this.documentationHandler.getElementTypes(extractParam(params, 'diagramType')))
+            (_uri, params) => createResourceResult(this.documentationHandler.getElementTypes(extractResourceParam(params, 'diagramType')))
         );
     }
 
@@ -119,7 +119,7 @@ export class DefaultMcpResourceContribution implements McpServerContribution {
                     'Includes all nodes, edges, and their relevant properties.',
                 mimeType: 'text/markdown'
             },
-            (_uri, params) => createResourceResult(this.modelHandler.getDiagramModel(extractParam(params, 'sessionId')))
+            (_uri, params) => createResourceResult(this.modelHandler.getDiagramModel(extractResourceParam(params, 'sessionId')))
         );
     }
 
@@ -150,7 +150,7 @@ export class DefaultMcpResourceContribution implements McpServerContribution {
                 mimeType: 'image/png'
             },
             async (_uri, params) => {
-                const result = await this.pngHandler.getModelPng(extractParam(params, 'sessionId'));
+                const result = await this.pngHandler.getModelPng(extractResourceParam(params, 'sessionId'));
                 return createResourceResult(result);
             }
         );

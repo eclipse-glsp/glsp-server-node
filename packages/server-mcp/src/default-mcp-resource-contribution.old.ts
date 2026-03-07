@@ -30,7 +30,7 @@ import { ContainerModule, inject, injectable } from 'inversify';
 import { McpModelSerializer } from './resources/services/mcp-model-serializer';
 import { McpServerContribution } from './server/mcp-server-contribution';
 import { GLSPMcpServer } from './server/mcp-server-manager';
-import { extractParam } from './util/mcp-util';
+import { extractResourceParam } from './util/mcp-util';
 
 /**
  * Default MCP server contribution that provides read-only resources for accessing
@@ -194,7 +194,7 @@ export class DefaultMcpResourceContribution implements McpServerContribution {
     }
 
     protected async getSessionInfo(params: Record<string, string | string[]>): Promise<ReadResourceResult> {
-        const sessionId = extractParam(params, 'sessionId');
+        const sessionId = extractResourceParam(params, 'sessionId');
         if (!sessionId) {
             return { contents: [] };
         }
@@ -238,7 +238,7 @@ export class DefaultMcpResourceContribution implements McpServerContribution {
     }
 
     protected async getElementTypes(params: Record<string, string | string[]>): Promise<ReadResourceResult> {
-        const diagramType = extractParam(params, 'diagramType');
+        const diagramType = extractResourceParam(params, 'diagramType');
         if (!diagramType) {
             return { contents: [] };
         }
@@ -297,7 +297,7 @@ export class DefaultMcpResourceContribution implements McpServerContribution {
     }
 
     protected async getDiagramModel(params: Record<string, string | string[]>): Promise<ReadResourceResult> {
-        const sessionId = extractParam(params, 'sessionId');
+        const sessionId = extractResourceParam(params, 'sessionId');
         if (!sessionId) {
             return { contents: [] };
         }

@@ -25,6 +25,7 @@ export const McpServerContribution = Symbol('McpServerContribution');
 
 export type ToolResultContent = CallToolResult['content'][number];
 export type ResourceResultContent = ReadResourceResult['contents'][number];
+
 export interface ResourceHandlerResult {
     content: ResourceResultContent;
     isError: boolean;
