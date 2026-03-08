@@ -72,7 +72,7 @@ export class DiagramModelMcpResourceHandler implements McpResourceHandler {
                     'Get the complete GLSP model for a session as a markdown structure. ' +
                     'Includes all nodes, edges, and their relevant properties.',
                 inputSchema: {
-                    sessionId: z.string().describe('Session ID where the node should be created')
+                    sessionId: z.string().describe('Session ID for which to query the model.')
                 }
             },
             async params => createResourceToolResult(await this.handle(params))
@@ -108,6 +108,9 @@ export class DiagramModelMcpResourceHandler implements McpResourceHandler {
         const mcpSerializer = session.container.get<McpModelSerializer>(McpModelSerializer);
         const mcpString = mcpSerializer.serialize(modelState.root);
 
+        // TODO should likely not contain the generic name attribute but rather the label text
+        // TODO should ignore irrelevant/uncontrollable/indirect model elements like icons (and labels)
+        // should be done in workflow specific implementation
         return {
             content: {
                 uri: `glsp://diagrams/${sessionId}/model`,

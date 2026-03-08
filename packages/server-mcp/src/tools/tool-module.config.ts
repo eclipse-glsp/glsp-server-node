@@ -19,6 +19,8 @@ import { McpServerContribution, McpToolHandler } from '../server';
 import { CreateEdgeMcpToolHandler } from './handlers/create-edge-handler';
 import { CreateNodeMcpToolHandler } from './handlers/create-node-handler';
 import { DeleteElementMcpToolHandler } from './handlers/delete-element-handler';
+import { DiagramElementMcpToolHandler } from './handlers/diagram-element-handler';
+import { ModifyNodesMcpToolHandler } from './handlers/modify-nodes-handler';
 import { SaveModelMcpToolHandler } from './handlers/save-model-handler';
 import { ValidateDiagramMcpToolHandler } from './handlers/validate-diagram-handler';
 import { McpToolContribution } from './mcp-tool-contribution';
@@ -30,6 +32,8 @@ export function configureMcpToolModule(): ContainerModule {
         bindAsService(bind, McpToolHandler, DeleteElementMcpToolHandler);
         bindAsService(bind, McpToolHandler, SaveModelMcpToolHandler);
         bindAsService(bind, McpToolHandler, ValidateDiagramMcpToolHandler);
+        bindAsService(bind, McpToolHandler, DiagramElementMcpToolHandler);
+        bindAsService(bind, McpToolHandler, ModifyNodesMcpToolHandler);
 
         bindAsService(bind, McpServerContribution, McpToolContribution);
     });

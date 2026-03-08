@@ -39,6 +39,7 @@ export class SaveModelMcpToolHandler implements McpToolHandler {
                 description:
                     'Save the current diagram model to persistent storage. ' +
                     'This operation persists all changes back to the source model. ' +
+                    'Only do this on an explicit user request and not as part of other tasks. ' +
                     'Optionally specify a new fileUri to save to a different location.',
                 inputSchema: {
                     sessionId: z.string().describe('Session ID where the model should be saved'),

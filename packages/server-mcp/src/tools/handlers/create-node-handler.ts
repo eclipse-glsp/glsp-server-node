@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ClientSessionManager, CreateNodeOperation, Logger, ModelState } from '@eclipse-glsp/server';
+import { ApplyLabelEditOperation, ClientSessionManager, CreateNodeOperation, GLabel, Logger, ModelState } from '@eclipse-glsp/server';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
@@ -37,7 +37,8 @@ export class CreateNodeMcpToolHandler implements McpToolHandler {
             'create-node',
             {
                 description:
-                    'Create a new node element in the diagram at a specified location. ' +
+                    'Create a new node element in the diagram at a specified position. ' +
+                    'When creating new nodes absolutely consider the visual alignment with existing nodes. ' +
                     'This operation modifies the diagram state and requires user approval. ' +
                     'Query glsp://types/{diagramType}/elements resource to discover valid element type IDs.',
                 inputSchema: {
@@ -48,12 +49,13 @@ export class CreateNodeMcpToolHandler implements McpToolHandler {
                             'Element type ID (e.g., "task:manual", "task:automated"). ' +
                                 'Use element-types resource to discover valid IDs.'
                         ),
-                    location: z
+                    position: z
                         .object({
                             x: z.number().describe('X coordinate in diagram space'),
                             y: z.number().describe('Y coordinate in diagram space')
                         })
                         .describe('Position where the node should be created (absolute diagram coordinates)'),
+                    text: z.string().optional().describe('Label text to use in case the given element type allows for labels.'),
                     containerId: z.string().optional().describe('ID of the container element. If not provided, node is added to the root.'),
                     args: z
                         .record(z.string(), z.any())
@@ -68,13 +70,15 @@ export class CreateNodeMcpToolHandler implements McpToolHandler {
     async handle({
         sessionId,
         elementTypeId,
-        location,
+        position,
+        text,
         containerId,
         args
     }: {
         sessionId: string;
         elementTypeId: string;
-        location: { x: number; y: number };
+        position: { x: number; y: number };
+        text?: string;
         containerId?: string;
         args?: Record<string, any>;
     }): Promise<CallToolResult> {
@@ -97,7 +101,8 @@ export class CreateNodeMcpToolHandler implements McpToolHandler {
             const beforeIds = new Set(modelState.index.allIds());
 
             // Create operation
-            const operation = CreateNodeOperation.create(elementTypeId, { location, containerId, args });
+            // Using the name "position" instead of "location", as this is the name in the elements properties
+            const operation = CreateNodeOperation.create(elementTypeId, { location: position, containerId, args });
 
             // Dispatch operation
             await session.actionDispatcher.dispatch(operation);
@@ -110,10 +115,19 @@ export class CreateNodeMcpToolHandler implements McpToolHandler {
             const newElementId = newIds.length > 0 ? newIds[0] : undefined;
 
             if (!newElementId) {
-                return createToolResult('Node creation succeeded but could not determine element ID', true);
+                return createToolResult('Node creation likely failed, because no new element ID could be determined', true);
             }
 
-            return createToolResult(`Node created successfully with element ID: ${newElementId}`, false);
+            // Assume that generally, labelled nodes have those labels as direct children
+            const newElementLabelId = modelState.index.get(newElementId).children.find(child => child instanceof GLabel)?.id;
+            // If it is indeed labeled (and we actually want to set the label)...
+            if (newElementLabelId && text) {
+                // ...then use an already existing operation to set the label
+                const editLabelOperation = ApplyLabelEditOperation.create({ labelId: newElementLabelId, text });
+                await session.actionDispatcher.dispatch(editLabelOperation);
+            }
+
+            return createToolResult(`Node created successfully with the element ID: ${newElementId}`, false);
         } catch (error) {
             this.logger.error('Node creation failed', error);
             return createToolResult(`Node creation failed: ${error instanceof Error ? error.message : String(error)}`, true);

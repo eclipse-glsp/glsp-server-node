@@ -62,7 +62,7 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
     protected prepareElement(element: GModelElement): Record<string, Record<string, any>[]> {
         const schema = this.gModelSerialzer.createSchema(element);
 
-        const elements = this.flattenStructure(schema, undefined);
+        const elements = this.flattenStructure(schema, element.parent?.id);
 
         const result: Record<string, Record<string, any>[]> = {};
         elements.forEach(element => {
@@ -114,9 +114,11 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
             const width = Math.trunc(size.width);
             const height = Math.trunc(size.height);
 
-            delete schema['position'];
-            delete schema['size'];
+            // Only expose the truncated sizes for smaller context size at irrelevant precision loss
+            schema['position'] = { x, y };
+            schema['size'] = { width, height };
 
+            // Add bounds in addition to position and size to reduce derived calculations
             schema['bounds'] = {
                 left: x,
                 right: x + width,

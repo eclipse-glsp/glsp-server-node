@@ -113,7 +113,7 @@ export class CreateEdgeMcpToolHandler implements McpToolHandler {
             const newElementId = newIds.length > 0 ? newIds[0] : undefined;
 
             if (!newElementId) {
-                return createToolResult('Edge creation succeeded but could not determine element ID', true);
+                return createToolResult('Edge creation likely failed, because no new element ID could be determined', true);
             }
 
             return createToolResult(`Edge created successfully with element ID: ${newElementId}`, false);

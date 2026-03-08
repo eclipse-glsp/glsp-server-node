@@ -127,6 +127,8 @@ export class ElementTypesMcpResourceHandler implements McpResourceHandler {
             }
         }
 
+        // TODO should likely also contain information about whether a node is labeled
+        // should be done in workflow specific implementation
         const result = [
             `# Creatable element types for ${diagramType} diagrams`,
             '## Node Types',
