@@ -20,7 +20,9 @@
  */
 export const FEATURE_FLAGS = {
     /**
-     * Changes how resources are registered
+     * Changes how resources are registered.
+     * This is relevant since some MCP clients are unable to deal with MCP resource endpoints
+     * and thus they must be provided as tools.
      *
      * true -> MCP resources
      *
