@@ -16,7 +16,7 @@
 import { GhostElement, Point } from '@eclipse-glsp/protocol';
 import { CreateNodeOperation, GNode } from '@eclipse-glsp/server';
 import { injectable } from 'inversify';
-import { TaskNode, TaskNodeBuilder } from '../graph-extension';
+import { generateId, TaskNode, TaskNodeBuilder } from '../graph-extension';
 import { ModelTypes } from '../util/model-types';
 import { CreateWorkflowNodeOperationHandler } from './create-workflow-node-operation-handler';
 
@@ -28,6 +28,7 @@ export abstract class CreateTaskHandler extends CreateWorkflowNodeOperationHandl
 
     protected builder(point: Point = Point.ORIGIN, elementTypeId = this.elementTypeIds[0]): TaskNodeBuilder {
         return TaskNode.builder()
+            .id(generateId(elementTypeId))
             .position(point ?? Point.ORIGIN)
             .name(this.label.replace(' ', '') + this.modelState.index.getAllByClass(TaskNode).length)
             .type(elementTypeId)

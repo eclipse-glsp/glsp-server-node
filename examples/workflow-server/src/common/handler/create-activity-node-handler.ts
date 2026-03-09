@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { CreateNodeOperation, GNode, GhostElement, Point } from '@eclipse-glsp/server';
 import { injectable } from 'inversify';
-import { ActivityNode, ActivityNodeBuilder } from '../graph-extension';
+import { ActivityNode, ActivityNodeBuilder, generateId } from '../graph-extension';
 import { ModelTypes } from '../util/model-types';
 import { CreateWorkflowNodeOperationHandler } from './create-workflow-node-operation-handler';
 
@@ -26,7 +26,11 @@ export abstract class CreateActivityNodeHandler extends CreateWorkflowNodeOperat
     }
 
     protected builder(point: Point = Point.ORIGIN, elementTypeId = this.elementTypeIds[0]): ActivityNodeBuilder {
-        return ActivityNode.builder().position(point).type(elementTypeId).nodeType(ModelTypes.toNodeType(elementTypeId));
+        return ActivityNode.builder()
+            .id(generateId(elementTypeId))
+            .position(point)
+            .type(elementTypeId)
+            .nodeType(ModelTypes.toNodeType(elementTypeId));
     }
 
     override createTriggerGhostElement(elementTypeId: string): GhostElement | undefined {

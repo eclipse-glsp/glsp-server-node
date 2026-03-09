@@ -165,3 +165,18 @@ export class CategoryNodeBuilder<T extends Category = Category> extends Activity
             .build();
     }
 }
+
+/**
+ * While UUIDs are virtually always unique, they are long, meaningless strings. Typically,
+ * this is not an issue since classic software doesn't care about the semantics of some
+ * identifier. However, considering LLMs, this becomes a problem. Since the strings are random
+ * and meaningless, tokenization is less efficient, thus expanding context size. Furthermore,
+ * the lack of semantics hurts reasoning and memory.
+ */
+export function generateId(type: string): string {
+    // 36^4 possible hashes
+    const randomPart = Math.floor(Math.random() * 1679615);
+    const hash = randomPart.toString(36).padStart(4, '0');
+    // type + 36^4 hashes makes collisions very unlikely
+    return `${type}_${hash}`;
+}

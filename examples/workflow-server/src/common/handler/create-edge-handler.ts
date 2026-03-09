@@ -14,12 +14,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { DefaultTypes, GEdge, GEdgeBuilder, GModelCreateEdgeOperationHandler, GModelElement } from '@eclipse-glsp/server';
+import { generateId } from '../graph-extension';
 
 export class CreateEdgeHandler extends GModelCreateEdgeOperationHandler {
     label = 'Edge';
     elementTypeIds = [DefaultTypes.EDGE];
 
     createEdge(source: GModelElement, target: GModelElement): GEdge | undefined {
-        return new GEdgeBuilder(GEdge).sourceId(source.id).targetId(target.id).build();
+        return new GEdgeBuilder(GEdge).id(generateId(DefaultTypes.EDGE)).sourceId(source.id).targetId(target.id).build();
     }
 }

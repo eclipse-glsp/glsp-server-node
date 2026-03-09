@@ -101,24 +101,7 @@ export abstract class GModelElementBuilder<G extends GModelElement> {
         return this;
     }
 
-    /**
-     * While UUIDs are virtually always unique, they are long, meaningless strings. Typically,
-     * this is not an issue since classic software doesn't care about the semantics of some
-     * identifier. However, considering LLMs, this becomes a problem. Since the strings are random
-     * and meaningless, tokenization is less efficient, thus expanding context size. Furthermore,
-     * the lack of semantics hurts reasoning and memory.
-     */
-    private generateId(): string {
-        // 36^4 possible hashes
-        const randomPart = Math.floor(Math.random() * 1679615);
-        const hash = randomPart.toString(36).padStart(4, '0');
-        // type + 36^4 hashes makes collisions very unlikely
-        return `${this.proxy.type}_${hash}`;
-    }
-
     build(): G {
-        // TODO re-evaluate ID generation method
-        this.proxy.id = this.generateId();
         const element = new this.elementConstructor();
         Object.assign(element, this.proxy);
         element.children.forEach(child => (child.parent = element));
