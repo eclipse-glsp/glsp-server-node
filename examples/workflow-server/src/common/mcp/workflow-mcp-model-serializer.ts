@@ -22,21 +22,6 @@ import { ModelTypes } from '../util/model-types';
 
 @injectable()
 export class WorkflowMcpModelSerializer extends DefaultMcpModelSerializer {
-    override keysToRemove: string[] = [
-        'type',
-        'cssClasses',
-        'revision',
-        'layout',
-        'args',
-        'layoutOptions',
-        'alignment',
-        'children',
-        'routingPoints',
-        'resizeLocations',
-        'taskType',
-        'nodeType'
-    ];
-
     override serialize(element: GModelElement): string {
         const elementsByType = this.prepareElement(element);
 
@@ -46,12 +31,11 @@ export class WorkflowMcpModelSerializer extends DefaultMcpModelSerializer {
     }
 
     override prepareElement(element: GModelElement): Record<string, Record<string, any>[]> {
-        const schema = this.gModelSerialzer.createSchema(element);
-
-        const elements = this.flattenStructure(schema, element.parent?.id);
+        const elements = this.flattenStructure(element);
 
         // Define the order of keys
         const result: Record<string, Record<string, any>[]> = {
+            [DefaultTypes.GRAPH]: [],
             [ModelTypes.CATEGORY]: [],
             [ModelTypes.AUTOMATED_TASK]: [],
             [ModelTypes.MANUAL_TASK]: [],
@@ -71,86 +55,100 @@ export class WorkflowMcpModelSerializer extends DefaultMcpModelSerializer {
             }
 
             result[element.type].push(adjustedElement);
-
-            this.removeKeys(adjustedElement);
         });
 
         return result;
     }
 
     private adjustElement(element: Record<string, any>): Record<string, any> | undefined {
-        if ([ModelTypes.AUTOMATED_TASK, ModelTypes.MANUAL_TASK].includes(element.type)) {
-            const label = element.children.find((child: { type: string }) => child.type.startsWith('label'));
+        switch (element.type) {
+            case ModelTypes.AUTOMATED_TASK:
+            case ModelTypes.MANUAL_TASK: {
+                const label = element.children.find((child: { type: string }) => child.type === ModelTypes.LABEL_HEADING);
 
-            // For tasks, the only content with impact on element size is the label
-            // Therefore, all other factors get integrated into the label size for the AI to do proper resizing operations
-            const labelSize = {
-                // 10px padding right, 31px padding left (incl. icon)
-                width: Math.trunc(label.size.width + 10 + 31),
-                // 7px padding top and bottom each
-                height: Math.trunc(label.size.height + 14)
-            };
+                // For tasks, the only content with impact on element size is the label
+                // Therefore, all other factors get integrated into the label size for the AI to do proper resizing operations
+                const labelSize = {
+                    // 10px padding right, 31px padding left (incl. icon)
+                    width: Math.trunc(label.size.width + 10 + 31),
+                    // 7px padding top and bottom each
+                    height: Math.trunc(label.size.height + 14)
+                };
 
-            return {
-                id: element.id,
-                position: element.position,
-                size: element.size,
-                bounds: element.bounds,
-                label: label.text,
-                labelSize: labelSize,
-                parent: element.parent
-            };
+                return {
+                    id: element.id,
+                    position: element.position,
+                    size: element.size,
+                    bounds: element.bounds,
+                    label: label.text,
+                    labelSize: labelSize,
+                    parentId: element.parent.type === ModelTypes.STRUCTURE ? element.parent.parent.id : element.parentId
+                };
+            }
+            case ModelTypes.CATEGORY: {
+                const label = element.children
+                    .find((child: { type: string }) => child.type === ModelTypes.COMP_HEADER)
+                    ?.children.find((child: { type: string }) => child.type === ModelTypes.LABEL_HEADING);
+
+                const labelSize = {
+                    width: Math.trunc(label.size.width + 20),
+                    height: Math.trunc(label.size.height + 20)
+                };
+
+                const usableSpaceSize = {
+                    width: Math.trunc(Math.max(0, element.size.width - 10)),
+                    height: Math.trunc(Math.max(0, element.size.height - labelSize.height - 10))
+                };
+
+                return {
+                    id: element.id,
+                    isContainer: true,
+                    position: element.position,
+                    size: element.size,
+                    bounds: element.bounds,
+                    label: label.text,
+                    labelSize: labelSize,
+                    usableSpaceSize: usableSpaceSize,
+                    parentId: element.parentId
+                };
+            }
+            case ModelTypes.JOIN_NODE:
+            case ModelTypes.MERGE_NODE:
+            case ModelTypes.DECISION_NODE:
+            case ModelTypes.FORK_NODE: {
+                return {
+                    id: element.id,
+                    position: element.position,
+                    size: element.size,
+                    bounds: element.bounds,
+                    parentId: element.parentId
+                };
+            }
+            case DefaultTypes.EDGE: {
+                return {
+                    id: element.id,
+                    sourceId: element.sourceId,
+                    targetId: element.targetId,
+                    parentId: element.parentId
+                };
+            }
+            case ModelTypes.WEIGHTED_EDGE: {
+                return {
+                    id: element.id,
+                    sourceId: element.sourceId,
+                    targetId: element.targetId,
+                    probability: element.probability,
+                    parentId: element.parentId
+                };
+            }
+            case DefaultTypes.GRAPH: {
+                return {
+                    id: element.id,
+                    isContainer: true
+                };
+            }
+            default:
+                return undefined;
         }
-
-        if ([ModelTypes.CATEGORY].includes(element.type)) {
-            const label = element.children.find((child: { type: string }) => child.type.startsWith('label'));
-
-            const labelSize = {
-                width: Math.trunc(label.size.width + 20),
-                height: Math.trunc(label.size.height + 20)
-            };
-
-            const usableSpaceSize = {
-                width: Math.trunc(element.size - 10),
-                height: Math.trunc(Math.max(0, element.size - labelSize.height - 10))
-            };
-
-            return {
-                id: element.id,
-                position: element.position,
-                size: element.size,
-                bounds: element.bounds,
-                label: label.text,
-                labelSize: labelSize,
-                usableSpaceSize: usableSpaceSize,
-                parent: element.parent
-            };
-        }
-
-        if ([ModelTypes.JOIN_NODE, ModelTypes.MERGE_NODE, ModelTypes.DECISION_NODE, ModelTypes.FORK_NODE].includes(element.type)) {
-            return {
-                id: element.id,
-                position: element.position,
-                size: element.size,
-                bounds: element.bounds,
-                parent: element.parent
-            };
-        }
-
-        // elements to exclude
-        if (
-            [
-                ModelTypes.ICON,
-                ModelTypes.LABEL_HEADING,
-                ModelTypes.LABEL_ICON,
-                ModelTypes.LABEL_TEXT,
-                ModelTypes.STRUCTURE,
-                ModelTypes.COMP_HEADER
-            ].includes(element.type)
-        ) {
-            return undefined;
-        }
-
-        return element;
     }
 }

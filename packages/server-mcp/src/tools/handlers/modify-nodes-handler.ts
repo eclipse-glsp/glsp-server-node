@@ -136,7 +136,7 @@ export class ModifyNodesMcpToolHandler implements McpToolHandler {
             }
 
             // Change the label if applicable
-            const newElementLabelId = element.children.find(child => child instanceof GLabel)?.id;
+            const newElementLabelId = this.getCorrespondingLabelId(element);
             if (newElementLabelId && text) {
                 const editLabelOperation = ApplyLabelEditOperation.create({ labelId: newElementLabelId, text });
                 promises.push(session.actionDispatcher.dispatch(editLabelOperation));
@@ -147,5 +147,10 @@ export class ModifyNodesMcpToolHandler implements McpToolHandler {
         await Promise.all(promises);
 
         return createToolResult('Nodes succesfully modified', false);
+    }
+
+    protected getCorrespondingLabelId(element: GShapeElement): string | undefined {
+        // Assume that generally, labelled nodes have those labels as direct children
+        return element.children.find(child => child instanceof GLabel)?.id;
     }
 }

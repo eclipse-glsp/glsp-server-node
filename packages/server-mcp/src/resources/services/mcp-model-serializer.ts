@@ -48,7 +48,8 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
         'alignment',
         'children',
         'routingPoints',
-        'resizeLocations'
+        'resizeLocations',
+        'parent'
     ];
 
     serialize(element: GModelElement): string {
@@ -80,16 +81,13 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
     protected flattenStructure(schema: Record<string, any>, parentId?: string): Record<string, any>[] {
         const result: Record<string, any>[] = [];
 
-        // this element is sure to exist but is irrelevant for the AI
-        if (schema.type !== 'graph') {
-            result.push(schema);
-        }
+        result.push(schema);
         if (schema.children !== undefined) {
             schema.children
                 .flatMap((child: Record<string, any>) => this.flattenStructure(child, schema.id))
                 .forEach((element: Record<string, any>) => result.push(element));
         }
-        schema.parent = parentId;
+        schema.parentId = parentId;
 
         return result;
     }

@@ -32,6 +32,7 @@ export class CreateEdgeMcpToolHandler implements McpToolHandler {
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
+    // TODO make multi creation
     registerTool(server: GLSPMcpServer): void {
         server.registerTool(
             'create-edge',

@@ -85,7 +85,7 @@ export class TaskNodeBuilder<T extends TaskNode = TaskNode> extends GNodeBuilder
 
     protected createCompartmentHeader(): GLabel {
         return new GLabelBuilder(GLabel)
-            .type(ModelTypes.LABEL_TEXT)
+            .type(ModelTypes.LABEL_HEADING)
             .id(this.proxy.id + '_label')
             .text(this.proxy.name)
             .build();

@@ -14,14 +14,23 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ElementTypesMcpResourceHandler, McpModelSerializer } from '@eclipse-glsp/server-mcp';
+import {
+    CreateNodeMcpToolHandler,
+    ElementTypesMcpResourceHandler,
+    McpModelSerializer,
+    ModifyNodesMcpToolHandler
+} from '@eclipse-glsp/server-mcp';
 import { ContainerModule } from 'inversify';
+import { WorkflowCreateNodeMcpToolHandler } from './workflow-create-node-handler';
 import { WorkflowElementTypesMcpResourceHandler } from './workflow-element-types-handler';
 import { WorkflowMcpModelSerializer } from './workflow-mcp-model-serializer';
+import { WorkflowModifyNodesMcpToolHandler } from './workflow-modify-nodes-handler';
 
 export function configureWorfklowMcpModule(): ContainerModule {
     return new ContainerModule((bind, unbind, isBound, rebind) => {
         rebind(McpModelSerializer).to(WorkflowMcpModelSerializer).inSingletonScope();
         rebind(ElementTypesMcpResourceHandler).to(WorkflowElementTypesMcpResourceHandler).inSingletonScope();
+        rebind(CreateNodeMcpToolHandler).to(WorkflowCreateNodeMcpToolHandler).inSingletonScope();
+        rebind(ModifyNodesMcpToolHandler).to(WorkflowModifyNodesMcpToolHandler).inSingletonScope();
     });
 }

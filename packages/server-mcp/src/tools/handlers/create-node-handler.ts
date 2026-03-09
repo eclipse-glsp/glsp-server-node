@@ -14,7 +14,15 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ApplyLabelEditOperation, ClientSessionManager, CreateNodeOperation, GLabel, Logger, ModelState } from '@eclipse-glsp/server';
+import {
+    ApplyLabelEditOperation,
+    ClientSessionManager,
+    CreateNodeOperation,
+    GLabel,
+    GModelElement,
+    Logger,
+    ModelState
+} from '@eclipse-glsp/server';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
@@ -32,6 +40,7 @@ export class CreateNodeMcpToolHandler implements McpToolHandler {
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
+    // TODO make multi creation
     registerTool(server: GLSPMcpServer): void {
         server.registerTool(
             'create-node',
@@ -118,8 +127,7 @@ export class CreateNodeMcpToolHandler implements McpToolHandler {
                 return createToolResult('Node creation likely failed, because no new element ID could be determined', true);
             }
 
-            // Assume that generally, labelled nodes have those labels as direct children
-            const newElementLabelId = modelState.index.get(newElementId).children.find(child => child instanceof GLabel)?.id;
+            const newElementLabelId = this.getCorrespondingLabelId(modelState.index.get(newElementId));
             // If it is indeed labeled (and we actually want to set the label)...
             if (newElementLabelId && text) {
                 // ...then use an already existing operation to set the label
@@ -132,5 +140,10 @@ export class CreateNodeMcpToolHandler implements McpToolHandler {
             this.logger.error('Node creation failed', error);
             return createToolResult(`Node creation failed: ${error instanceof Error ? error.message : String(error)}`, true);
         }
+    }
+
+    protected getCorrespondingLabelId(element: GModelElement): string | undefined {
+        // Assume that generally, labelled nodes have those labels as direct children
+        return element.children.find(child => child instanceof GLabel)?.id;
     }
 }
