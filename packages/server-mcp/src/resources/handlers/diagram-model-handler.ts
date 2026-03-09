@@ -108,9 +108,6 @@ export class DiagramModelMcpResourceHandler implements McpResourceHandler {
         const mcpSerializer = session.container.get<McpModelSerializer>(McpModelSerializer);
         const mcpString = mcpSerializer.serialize(modelState.root);
 
-        // TODO should likely not contain the generic name attribute but rather the label text
-        // TODO should ignore irrelevant/uncontrollable/indirect model elements like icons (and labels)
-        // should be done in workflow specific implementation
         return {
             content: {
                 uri: `glsp://diagrams/${sessionId}/model`,

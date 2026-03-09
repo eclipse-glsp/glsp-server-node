@@ -25,7 +25,7 @@ import { DefaultMcpModelSerializer, McpModelSerializer } from './services/mcp-mo
 
 export function configureMcpResourceModule(): ContainerModule {
     return new ContainerModule(bind => {
-        bindAsService(bind, McpModelSerializer, DefaultMcpModelSerializer);
+        bind(McpModelSerializer).to(DefaultMcpModelSerializer).inSingletonScope();
 
         bindAsService(bind, McpResourceHandler, SessionsListMcpResourceHandler);
         bindAsService(bind, McpResourceHandler, ElementTypesMcpResourceHandler);

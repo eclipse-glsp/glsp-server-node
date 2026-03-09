@@ -36,6 +36,13 @@ export interface ResourceHandlerResult {
  * not only the logic to execute but also the definition of the endpoint. As
  * it may be the case that resources should be offered as tools for compatibility
  * purposes, both kinds of endpoints need to be defined.
+ *
+ * The following code shows how to register a new handler or override an existing one:
+ * @example
+ * // Register a new handler
+ * bindAsService(bind, McpResourceHandler, SessionsListMcpResourceHandler);
+ * // Override an existing handler; necessitates inheritance
+ * rebind(SessionsListMcpResourceHandler).to(MySessionsListMcpResourceHandler).inSingletonScope();
  */
 export interface McpResourceHandler {
     /** Defines the endpoint and registers the resource with the given MCP server as a resource*/
@@ -50,6 +57,13 @@ export const McpResourceHandler = Symbol('McpResourceHandler');
 /**
  * An `McpToolHandler` defines a tools for the MCP server. This includes
  * not only the logic to execute but also the definition of the endpoint.
+ *
+ * The following code shows how to register a new handler or override an existing one:
+ * @example
+ * // Register a new handler
+ * bindAsService(bind, McpToolHandler, CreateNodeMcpToolHandler);
+ * // Override an existing handler; necessitates inheritance
+ * rebind(CreateNodeMcpToolHandler).to(MyCreateNodeMcpToolHandler).inSingletonScope();
  */
 export interface McpToolHandler {
     /** Defines the endpoint and registers the tool with the given MCP server */

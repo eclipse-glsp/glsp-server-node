@@ -21,6 +21,7 @@ import { Container } from 'inversify';
 
 import { configureMcpInitModule, configureMcpModules } from '@eclipse-glsp/server-mcp';
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
+import { configureWorfklowMcpModule } from '../common/mcp/workflow-mcp-module';
 import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-diagram-module';
 import { createWorkflowCliParser } from './workflow-cli-parser';
 
@@ -48,11 +49,11 @@ async function launch(argv?: string[]): Promise<void> {
     const mcpModules = configureMcpModules(); // must not be part of `configureDiagramModule` to ensure MCP server launch
     if (options.webSocket) {
         const launcher = appContainer.resolve(WebSocketServerLauncher);
-        launcher.configure(serverModule, ...mcpModules);
+        launcher.configure(serverModule, ...mcpModules, configureWorfklowMcpModule());
         await launcher.start({ port: options.port, host: options.host, path: 'workflow' });
     } else {
         const launcher = appContainer.resolve(SocketServerLauncher);
-        launcher.configure(serverModule, ...mcpModules);
+        launcher.configure(serverModule, ...mcpModules, configureWorfklowMcpModule());
         await launcher.start({ port: options.port, host: options.host });
     }
 }

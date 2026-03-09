@@ -119,18 +119,16 @@ export class ElementTypesMcpResourceHandler implements McpResourceHandler {
             if (handler && CreateOperationHandler.is(handler)) {
                 if (key.startsWith('createNode_')) {
                     const elementTypeId = key.substring('createNode_'.length);
-                    nodeTypes.push({ id: elementTypeId, label: elementTypeId });
+                    nodeTypes.push({ id: elementTypeId, label: handler.label });
                 } else if (key.startsWith('createEdge_')) {
                     const elementTypeId = key.substring('createEdge_'.length);
-                    edgeTypes.push({ id: elementTypeId, label: elementTypeId });
+                    edgeTypes.push({ id: elementTypeId, label: handler.label });
                 }
             }
         }
 
-        // TODO should likely also contain information about whether a node is labeled
-        // should be done in workflow specific implementation
         const result = [
-            `# Creatable element types for ${diagramType} diagrams`,
+            `# Creatable element types for diagram type "${diagramType}"`,
             '## Node Types',
             objectArrayToMarkdownTable(nodeTypes),
             '## Edge Types',

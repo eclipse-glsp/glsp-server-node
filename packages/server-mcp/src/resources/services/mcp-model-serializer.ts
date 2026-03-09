@@ -39,7 +39,7 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
     @inject(GModelSerializer)
     protected gModelSerialzer: GModelSerializer;
 
-    private keysToRemove: string[] = [
+    protected keysToRemove: string[] = [
         'cssClasses',
         'revision',
         'layout',
@@ -77,7 +77,7 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
         return result;
     }
 
-    private flattenStructure(schema: Record<string, any>, parentId?: string): Record<string, any>[] {
+    protected flattenStructure(schema: Record<string, any>, parentId?: string): Record<string, any>[] {
         const result: Record<string, any>[] = [];
 
         // this element is sure to exist but is irrelevant for the AI
@@ -88,14 +88,13 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
             schema.children
                 .flatMap((child: Record<string, any>) => this.flattenStructure(child, schema.id))
                 .forEach((element: Record<string, any>) => result.push(element));
-            schema.children = undefined;
         }
         schema.parent = parentId;
 
         return result;
     }
 
-    private removeKeys(schema: Record<string, any>): void {
+    protected removeKeys(schema: Record<string, any>): void {
         for (const key in schema) {
             if (this.keysToRemove.includes(key)) {
                 delete schema[key];
@@ -103,7 +102,7 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
         }
     }
 
-    private combinePositionAndSize(schema: Record<string, any>): void {
+    protected combinePositionAndSize(schema: Record<string, any>): void {
         const position = schema.position;
         if (position) {
             // Not all positioned elements necessarily possess a size
