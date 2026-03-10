@@ -122,6 +122,7 @@ export class CreateNodesMcpToolHandler implements McpToolHandler {
 
         const errors = [];
         const successIds = [];
+        let dispatchedOperations = 0;
         // Since we need sequential handling of the created elements, we can't call all in parallel
         for (const node of nodes) {
             const { elementTypeId, position, text, containerId, args } = node;
@@ -132,6 +133,7 @@ export class CreateNodesMcpToolHandler implements McpToolHandler {
             const operation = CreateNodeOperation.create(elementTypeId, { location: position, containerId, args });
             // Wait for the operation to be handled so the new ID is present
             await session.actionDispatcher.dispatch(operation);
+            dispatchedOperations++;
 
             // Snapshot element IDs after operation
             const afterIds = modelState.index.allIds();
@@ -158,6 +160,7 @@ export class CreateNodesMcpToolHandler implements McpToolHandler {
                 // ...then use an already existing operation to set the label
                 const editLabelOperation = ApplyLabelEditOperation.create({ labelId: newElementLabelId, text });
                 await session.actionDispatcher.dispatch(editLabelOperation);
+                dispatchedOperations++;
             }
 
             successIds.push(newElementId);
@@ -174,7 +177,8 @@ export class CreateNodesMcpToolHandler implements McpToolHandler {
         // Even if every input given yields an error, the MCP call was still successful technically (even if not semantically)
         // Otherwise, we would need some kind of transaction to rollback successful creations, which would be a great technical challenge
         return createToolResult(
-            `Successfully created ${successIds.length} node(s) with the element IDs:\n${successListStr}${failureStr}`,
+            `Successfully created ${successIds.length} node(s) (in ${dispatchedOperations} commands) ` +
+                `with the element IDs:\n${successListStr}${failureStr}`,
             false
         );
     }

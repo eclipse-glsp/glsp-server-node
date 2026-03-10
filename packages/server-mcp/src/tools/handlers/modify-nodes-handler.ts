@@ -148,7 +148,7 @@ export class ModifyNodesMcpToolHandler implements McpToolHandler {
         // Wait for all dispatches to finish before notifying the caller
         await Promise.all(promises);
 
-        return createToolResult(`Succesfully modified ${changes.length} node(s)`, false);
+        return createToolResult(`Succesfully modified ${changes.length} node(s) (in ${promises.length} commands)`, false);
     }
 
     /**
