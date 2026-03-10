@@ -14,19 +14,22 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ClientSessionManager, CommandStack, Logger, RedoAction } from '@eclipse-glsp/server';
+import { ClientSessionManager, LayoutOperation, Logger } from '@eclipse-glsp/server';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { FEATURE_FLAGS } from '../../feature-flags';
 import { GLSPMcpServer, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
 
 /**
- * Redo a given number of the most recent undone actions on the command stack.
+ * Requests an automatic layout of a given session's diagram.
+ *
+ * This tool is not registered by default, since the implementation of a `LayoutEngine`
+ * depends on a specific GLSP implementation and cannot be assumed to generally exist.
+ * Thus, it must be registered manually if layouting is required.
  */
 @injectable()
-export class RedoMcpToolHandler implements McpToolHandler {
+export class RequestLayoutMcpToolHandler implements McpToolHandler {
     @inject(Logger)
     protected logger: Logger;
 
@@ -34,24 +37,23 @@ export class RedoMcpToolHandler implements McpToolHandler {
     protected clientSessionManager: ClientSessionManager;
 
     registerTool(server: GLSPMcpServer): void {
-        if (!FEATURE_FLAGS.tools.redo) {
-            return;
-        }
         server.registerTool(
-            'redo',
+            'request-layout',
             {
-                description: 'Redo a given number of the last undone commands in the diagram and re-applies their effect.',
+                description:
+                    "Requests an automatic layout for the given session's model. " +
+                    'This should only be used if the user demands some unspecified layout. ' +
+                    "In case of a custom layout, refer to the 'modify-nodes' and 'modify-edges' tools instead.",
                 inputSchema: {
-                    sessionId: z.string().describe('Session ID where redo should be performed'),
-                    commandsToRedo: z.number().min(1).describe('Number of commands to redo')
+                    sessionId: z.string().describe('Session ID of the model to layout')
                 }
             },
             params => this.handle(params)
         );
     }
 
-    async handle({ sessionId, commandsToRedo }: { sessionId: string; commandsToRedo: number }): Promise<CallToolResult> {
-        this.logger.info(`'redo' invoked for session '${sessionId}'`);
+    async handle({ sessionId }: { sessionId: string }): Promise<CallToolResult> {
+        this.logger.info(`'request-layout' invoked for session '${sessionId}'`);
 
         if (!sessionId) {
             return createToolResult('No session id provided.', true);
@@ -62,17 +64,9 @@ export class RedoMcpToolHandler implements McpToolHandler {
             return createToolResult('Session not found', true);
         }
 
-        const commandStack = session.container.get<CommandStack>(CommandStack);
+        const operation = LayoutOperation.create();
+        await session.actionDispatcher.dispatch(operation);
 
-        if (!commandStack.canRedo()) {
-            return createToolResult('Nothing to redo', true);
-        }
-
-        for (let i = 0; i < commandsToRedo; i++) {
-            const action = RedoAction.create();
-            await session.actionDispatcher.dispatch(action);
-        }
-
-        return createToolResult('Redo successful', false);
+        return createToolResult('Automatic layout applied', false);
     }
 }

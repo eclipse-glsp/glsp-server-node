@@ -31,5 +31,9 @@ export const FEATURE_FLAGS = {
     useResources: true,
     resources: {
         png: false
+    },
+    tools: {
+        undo: true,
+        redo: true
     }
 };
