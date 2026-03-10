@@ -86,33 +86,35 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
         return result;
     }
 
-    protected flattenStructure(schema: Record<string, any>, parentId?: string): Record<string, any>[] {
+    protected flattenStructure(element: Record<string, any>, parentId?: string): Record<string, any>[] {
+        const newElement = { ...element };
+
         const result: Record<string, any>[] = [];
 
-        result.push(schema);
-        if (schema.children !== undefined) {
-            schema.children
-                .flatMap((child: Record<string, any>) => this.flattenStructure(child, schema.id))
+        result.push(newElement);
+        if (newElement.children !== undefined) {
+            newElement.children
+                .flatMap((child: Record<string, any>) => this.flattenStructure(child, newElement.id))
                 .forEach((element: Record<string, any>) => result.push(element));
         }
-        schema.parentId = parentId;
+        newElement.parentId = parentId;
 
         return result;
     }
 
-    protected removeKeys(schema: Record<string, any>): void {
-        for (const key in schema) {
+    protected removeKeys(element: Record<string, any>): void {
+        for (const key in element) {
             if (this.keysToRemove.includes(key)) {
-                delete schema[key];
+                delete element[key];
             }
         }
     }
 
-    protected combinePositionAndSize(schema: Record<string, any>): void {
-        const position = schema.position;
+    protected combinePositionAndSize(element: Record<string, any>): void {
+        const position = element.position;
         if (position) {
             // Not all positioned elements necessarily possess a size
-            const size = schema.size ?? { width: 0, height: 0 };
+            const size = element.size ?? { width: 0, height: 0 };
 
             const x = Math.trunc(position.x);
             const y = Math.trunc(position.y);
@@ -120,11 +122,11 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
             const height = Math.trunc(size.height);
 
             // Only expose the truncated sizes for smaller context size at irrelevant precision loss
-            schema['position'] = { x, y };
-            schema['size'] = { width, height };
+            element['position'] = { x, y };
+            element['size'] = { width, height };
 
             // Add bounds in addition to position and size to reduce derived calculations
-            schema['bounds'] = {
+            element['bounds'] = {
                 left: x,
                 right: x + width,
                 top: y,

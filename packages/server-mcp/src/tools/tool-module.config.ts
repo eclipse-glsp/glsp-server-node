@@ -20,6 +20,7 @@ import { CreateEdgesMcpToolHandler } from './handlers/create-edges-handler';
 import { CreateNodesMcpToolHandler } from './handlers/create-nodes-handler';
 import { DeleteElementsMcpToolHandler } from './handlers/delete-elements-handler';
 import { DiagramElementMcpToolHandler } from './handlers/diagram-element-handler';
+import { ModifyEdgesMcpToolHandler } from './handlers/modify-edges-handler';
 import { ModifyNodesMcpToolHandler } from './handlers/modify-nodes-handler';
 import { RedoMcpToolHandler } from './handlers/redo-handler';
 import { SaveModelMcpToolHandler } from './handlers/save-model-handler';
@@ -36,6 +37,7 @@ export function configureMcpToolModule(): ContainerModule {
         bindAsService(bind, McpToolHandler, ValidateDiagramMcpToolHandler);
         bindAsService(bind, McpToolHandler, DiagramElementMcpToolHandler);
         bindAsService(bind, McpToolHandler, ModifyNodesMcpToolHandler);
+        bindAsService(bind, McpToolHandler, ModifyEdgesMcpToolHandler);
         bindAsService(bind, McpToolHandler, UndoMcpToolHandler);
         bindAsService(bind, McpToolHandler, RedoMcpToolHandler);
 

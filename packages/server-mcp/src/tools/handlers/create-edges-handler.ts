@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ClientSessionManager, CreateEdgeOperation, Logger, ModelState } from '@eclipse-glsp/server';
+import { ChangeRoutingPointsOperation, ClientSessionManager, CreateEdgeOperation, Logger, ModelState } from '@eclipse-glsp/server';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
@@ -52,6 +52,15 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
                                     ),
                                 sourceElementId: z.string().describe('ID of the source element (must exist in the diagram)'),
                                 targetElementId: z.string().describe('ID of the target element (must exist in the diagram)'),
+                                routingPoints: z
+                                    .array(
+                                        z.object({
+                                            x: z.number().describe('Routing point x coordinate'),
+                                            y: z.number().describe('Routing point y coordinate')
+                                        })
+                                    )
+                                    .optional()
+                                    .describe('Optional array of routing point coordinates that allow for a complex edge path.'),
                                 args: z
                                     .record(z.string(), z.any())
                                     .optional()
@@ -71,7 +80,13 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
         edges
     }: {
         sessionId: string;
-        edges: { elementTypeId: string; sourceElementId: string; targetElementId: string; args?: Record<string, any> }[];
+        edges: {
+            elementTypeId: string;
+            sourceElementId: string;
+            targetElementId: string;
+            routingPoints?: { x: number; y: number }[];
+            args?: Record<string, any>;
+        }[];
     }): Promise<CallToolResult> {
         this.logger.info(`'create-edges' invoked for session '${sessionId}' with ${edges.length} edges`);
 
@@ -97,9 +112,10 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
 
         const errors = [];
         const successIds = [];
+        let dispatchedOperations = 0;
         // Since we need sequential handling of the created elements, we can't call all in parallel
         for (const edge of edges) {
-            const { elementTypeId, sourceElementId, targetElementId, args } = edge;
+            const { elementTypeId, sourceElementId, targetElementId, routingPoints, args } = edge;
 
             // Validate source and target exist
             const source = modelState.index.find(sourceElementId);
@@ -117,6 +133,7 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
             const operation = CreateEdgeOperation.create({ elementTypeId, sourceElementId, targetElementId, args });
             // Wait for the operation to be handled so the new ID is present
             await session.actionDispatcher.dispatch(operation);
+            dispatchedOperations++;
 
             // Snapshot element IDs after operation
             const afterIds = modelState.index.allIds();
@@ -137,6 +154,14 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
                 continue;
             }
 
+            if (routingPoints) {
+                const routingPointsOperation = ChangeRoutingPointsOperation.create([
+                    { elementId: newElementId, newRoutingPoints: routingPoints }
+                ]);
+                await session.actionDispatcher.dispatch(routingPointsOperation);
+                dispatchedOperations++;
+            }
+
             successIds.push(newElementId);
         }
 
@@ -151,7 +176,7 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
         // Even if every input given yields an error, the MCP call was still successful technically (even if not semantically)
         // Otherwise, we would need some kind of transaction to rollback successful creations, which would be a great technical challenge
         return createToolResult(
-            `Sucessfully created ${successIds.length} edge(s) (in ${successIds.length} commands) ` +
+            `Sucessfully created ${successIds.length} edge(s) (in ${dispatchedOperations} commands) ` +
                 `with element IDs:\n${successListStr}${failureStr}`,
             false
         );
