@@ -14,15 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import {
-    Action,
-    ActionDispatcher,
-    ActionHandler,
-    ClientSessionManager,
-    ExportMcpPngAction,
-    Logger,
-    RequestExportMcpPngAction
-} from '@eclipse-glsp/server';
+import { Action, ActionHandler, ClientSessionManager, ExportMcpPngAction, Logger, RequestExportMcpPngAction } from '@eclipse-glsp/server';
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
@@ -121,7 +113,8 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
     }
 
     async handle({ sessionId }: { sessionId?: string }): Promise<ResourceHandlerResult> {
-        this.logger.info(`DiagramPngMcpResourceHandler invoked for session ${sessionId}`);
+        this.logger.info(`'diagram-png' invoked for session ${sessionId}`);
+
         if (!sessionId) {
             return {
                 content: {
@@ -145,10 +138,9 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
             };
         }
 
-        const actionDispatcher = session.container.get<ActionDispatcher>(ActionDispatcher);
+        session.actionDispatcher.dispatch(RequestExportMcpPngAction.create({ options: { sessionId } }));
 
-        actionDispatcher.dispatch(RequestExportMcpPngAction.create({ options: { sessionId } }));
-
+        // Start a promise and save the resolve function to the class
         return new Promise(resolve => {
             this.promiseResolveFn = resolve;
             setTimeout(
@@ -168,8 +160,9 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
 
     async execute(action: ExportMcpPngAction): Promise<Action[]> {
         const sessionId = action.options?.sessionId ?? '';
-        this.logger.info(`ExportMcpPngAction received for session ${sessionId}`);
+        this.logger.info(`ExportMcpPngAction received for session '${sessionId}'`);
 
+        // Resolve the previously started promise
         this.promiseResolveFn?.({
             content: {
                 uri: `glsp://diagrams/${sessionId}/png`,

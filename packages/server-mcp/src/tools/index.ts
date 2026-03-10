@@ -14,9 +14,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-export * from './handlers/create-edge-handler';
-export * from './handlers/create-node-handler';
-export * from './handlers/delete-element-handler';
+export * from './handlers/create-edges-handler';
+export * from './handlers/create-nodes-handler';
+export * from './handlers/delete-elements-handler';
 export * from './handlers/diagram-element-handler';
 export * from './handlers/modify-nodes-handler';
 export * from './handlers/save-model-handler';

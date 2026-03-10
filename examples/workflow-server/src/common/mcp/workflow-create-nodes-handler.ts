@@ -15,13 +15,14 @@
  ********************************************************************************/
 
 import { GLabel, GModelElement } from '@eclipse-glsp/server';
-import { CreateNodeMcpToolHandler } from '@eclipse-glsp/server-mcp';
+import { CreateNodesMcpToolHandler } from '@eclipse-glsp/server-mcp';
 import { injectable } from 'inversify';
 import { ModelTypes } from '../util/model-types';
 
 @injectable()
-export class WorkflowCreateNodeMcpToolHandler extends CreateNodeMcpToolHandler {
+export class WorkflowCreateNodesMcpToolHandler extends CreateNodesMcpToolHandler {
     override getCorrespondingLabelId(element: GModelElement): string | undefined {
+        // Category labels are nested in a header component
         if (element.type === ModelTypes.CATEGORY) {
             return element.children.find(child => child.type === ModelTypes.COMP_HEADER)?.children.find(child => child instanceof GLabel)
                 ?.id;

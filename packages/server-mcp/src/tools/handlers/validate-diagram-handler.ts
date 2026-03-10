@@ -66,36 +66,35 @@ export class ValidateDiagramMcpToolHandler implements McpToolHandler {
         elementIds?: string[];
         reason?: string;
     }): Promise<CallToolResult> {
-        this.logger.info(`ValidateDiagramMcpToolHandler invoked for session ${sessionId}`);
+        this.logger.info(`'validate-diagram' invoked for session '${sessionId}'`);
 
-        try {
-            const session = this.clientSessionManager.getSession(sessionId);
-            if (!session) {
-                return createToolResult('Session not found', true);
-            }
-
-            const modelState = session.container.get<ModelState>(ModelState);
-
-            let validator: ModelValidator;
-            try {
-                validator = session.container.get<ModelValidator>(ModelValidator);
-            } catch (error) {
-                return createToolResult('No validator configured for this diagram type', true);
-            }
-
-            // Determine which elements to validate
-            const idsToValidate = elementIds && elementIds.length > 0 ? elementIds : [modelState.root.id];
-
-            // Get elements from index
-            const elements = modelState.index.getAll(idsToValidate);
-
-            // Run validation
-            const markers = await validator.validate(elements, reason ?? MarkersReason.BATCH);
-
-            return createToolResult(objectArrayToMarkdownTable(markers), false);
-        } catch (error) {
-            this.logger.error('Validation failed', error);
-            return createToolResult(`Validation failed: ${error instanceof Error ? error.message : String(error)}`, true);
+        if (!sessionId) {
+            return createToolResult('No session id provided.', true);
         }
+
+        const session = this.clientSessionManager.getSession(sessionId);
+        if (!session) {
+            return createToolResult('Session not found', true);
+        }
+
+        const modelState = session.container.get<ModelState>(ModelState);
+
+        let validator: ModelValidator;
+        try {
+            validator = session.container.get<ModelValidator>(ModelValidator);
+        } catch (error) {
+            return createToolResult('No validator configured for this diagram type', true);
+        }
+
+        // Determine which elements to validate
+        const idsToValidate = elementIds && elementIds.length > 0 ? elementIds : [modelState.root.id];
+
+        // Get elements from index
+        const elements = modelState.index.getAll(idsToValidate);
+
+        // Run validation
+        const markers = await validator.validate(elements, reason ?? MarkersReason.BATCH);
+
+        return createToolResult(objectArrayToMarkdownTable(markers), false);
     }
 }

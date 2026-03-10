@@ -54,29 +54,28 @@ export class SaveModelMcpToolHandler implements McpToolHandler {
     }
 
     async handle({ sessionId, fileUri }: { sessionId: string; fileUri?: string }): Promise<CallToolResult> {
-        this.logger.info(`SaveModelMcpToolHandler invoked for session ${sessionId}`);
+        this.logger.info(`'save-model' invoked for session '${sessionId}'`);
 
-        try {
-            const session = this.clientSessionManager.getSession(sessionId);
-            if (!session) {
-                return createToolResult('Session not found', true);
-            }
-
-            const commandStack = session.container.get<CommandStack>(CommandStack);
-
-            // Check if there are unsaved changes
-            if (!commandStack.isDirty) {
-                return createToolResult('No changes to save', false);
-            }
-
-            // Dispatch save action
-            const action = SaveModelAction.create({ fileUri });
-            await session.actionDispatcher.dispatch(action);
-
-            return createToolResult('Model saved successfully', false);
-        } catch (error) {
-            this.logger.error('Save failed', error);
-            return createToolResult(`Save failed: ${error instanceof Error ? error.message : String(error)}`, true);
+        if (!sessionId) {
+            return createToolResult('No session id provided.', true);
         }
+
+        const session = this.clientSessionManager.getSession(sessionId);
+        if (!session) {
+            return createToolResult('Session not found', true);
+        }
+
+        const commandStack = session.container.get<CommandStack>(CommandStack);
+
+        // Check if there are unsaved changes
+        if (!commandStack.isDirty) {
+            return createToolResult('No changes to save', false);
+        }
+
+        // Dispatch save action
+        const action = SaveModelAction.create({ fileUri });
+        await session.actionDispatcher.dispatch(action);
+
+        return createToolResult('Model saved successfully', false);
     }
 }

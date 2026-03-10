@@ -83,7 +83,8 @@ export class ElementTypesMcpResourceHandler implements McpResourceHandler {
     }
 
     async handle({ diagramType }: { diagramType?: string }): Promise<ResourceHandlerResult> {
-        this.logger.info(`ElementTypesMcpResourceHandler invoked for diagram type ${diagramType}`);
+        this.logger.info(`'element-types' invoked for diagram type '${diagramType}'`);
+
         if (!diagramType) {
             return {
                 content: {
@@ -114,6 +115,7 @@ export class ElementTypesMcpResourceHandler implements McpResourceHandler {
         const nodeTypes: Array<{ id: string; label: string }> = [];
         const edgeTypes: Array<{ id: string; label: string }> = [];
 
+        // Extract the node and edge operations by the systematic the registry stores them
         for (const key of registry.keys()) {
             const handler = registry.get(key);
             if (handler && CreateOperationHandler.is(handler)) {

@@ -22,10 +22,10 @@ import { GLSPMcpServer, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
 
 /**
- * Deletes an element using their element ID from the given session's model.
+ * Deletes one or more element using their element ID from the given session's model.
  */
 @injectable()
-export class DeleteElementMcpToolHandler implements McpToolHandler {
+export class DeleteElementsMcpToolHandler implements McpToolHandler {
     @inject(Logger)
     protected logger: Logger;
 
@@ -34,7 +34,7 @@ export class DeleteElementMcpToolHandler implements McpToolHandler {
 
     registerTool(server: GLSPMcpServer): void {
         server.registerTool(
-            'delete-element',
+            'delete-elements',
             {
                 description:
                     'Delete one or more elements (nodes or edges) from the diagram. ' +
@@ -50,49 +50,49 @@ export class DeleteElementMcpToolHandler implements McpToolHandler {
     }
 
     async handle({ sessionId, elementIds }: { sessionId: string; elementIds: string[] }): Promise<CallToolResult> {
-        this.logger.info(`DeleteElementMcpToolHandler invoked for session ${sessionId}`);
+        this.logger.info(`'delete-elements' invoked for session '${sessionId}' with ${elementIds.length} elements`);
 
-        try {
-            const session = this.clientSessionManager.getSession(sessionId);
-            if (!session) {
-                return createToolResult('Session not found', true);
-            }
-
-            const modelState = session.container.get<ModelState>(ModelState);
-
-            // Check if model is readonly
-            if (modelState.isReadonly) {
-                return createToolResult('Model is read-only', true);
-            }
-
-            // Validate elements exist
-            const missingIds: string[] = [];
-            for (const elementId of elementIds) {
-                const element = modelState.index.find(elementId);
-                if (!element) {
-                    missingIds.push(elementId);
-                }
-            }
-
-            if (missingIds.length > 0) {
-                return createToolResult(`Some elements not found: ${missingIds}`, true);
-            }
-
-            // Snapshot element count before operation
-            const beforeCount = modelState.index.allIds().length;
-
-            // Create and dispatch delete operation
-            const operation = DeleteElementOperation.create(elementIds);
-            await session.actionDispatcher.dispatch(operation);
-
-            // Calculate how many elements were deleted (including dependents)
-            const afterCount = modelState.index.allIds().length;
-            const deletedCount = beforeCount - afterCount;
-
-            return createToolResult(`Successfully deleted ${deletedCount} element(s) (including dependents)`, false);
-        } catch (error) {
-            this.logger.error('Element deletion failed', error);
-            return createToolResult(`Element deletion failed: ${error instanceof Error ? error.message : String(error)}`, true);
+        if (!sessionId) {
+            return createToolResult('No session id provided.', true);
         }
+        if (!elementIds || !elementIds.length) {
+            return createToolResult('No elementIds provided.', true);
+        }
+
+        const session = this.clientSessionManager.getSession(sessionId);
+        if (!session) {
+            return createToolResult('Session not found', true);
+        }
+
+        const modelState = session.container.get<ModelState>(ModelState);
+        if (modelState.isReadonly) {
+            return createToolResult('Model is read-only', true);
+        }
+
+        // Validate elements exist
+        const missingIds: string[] = [];
+        for (const elementId of elementIds) {
+            const element = modelState.index.find(elementId);
+            if (!element) {
+                missingIds.push(elementId);
+            }
+        }
+
+        if (missingIds.length > 0) {
+            return createToolResult(`Some elements not found: ${missingIds}`, true);
+        }
+
+        // Snapshot element count before operation
+        const beforeCount = modelState.index.allIds().length;
+
+        // Create and dispatch delete operation
+        const operation = DeleteElementOperation.create(elementIds);
+        await session.actionDispatcher.dispatch(operation);
+
+        // Calculate how many elements were deleted (including dependents)
+        const afterCount = modelState.index.allIds().length;
+        const deletedCount = beforeCount - afterCount;
+
+        return createToolResult(`Successfully deleted ${deletedCount} element(s) (including dependents)`, false);
     }
 }

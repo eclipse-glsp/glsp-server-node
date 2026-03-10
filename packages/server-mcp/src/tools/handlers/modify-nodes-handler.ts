@@ -30,7 +30,7 @@ import { GLSPMcpServer, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
 
 /**
- * Modifies a specific nodes in the given session's model.
+ * Modifies onr or more nodes in the given session's model.
  */
 @injectable()
 export class ModifyNodesMcpToolHandler implements McpToolHandler {
@@ -89,9 +89,10 @@ export class ModifyNodesMcpToolHandler implements McpToolHandler {
         changes
     }: {
         sessionId: string;
-        changes?: { elementId: string; position?: { x: number; y: number }; size?: { width: number; height: number }; text?: string }[];
+        changes: { elementId: string; position?: { x: number; y: number }; size?: { width: number; height: number }; text?: string }[];
     }): Promise<CallToolResult> {
-        this.logger.info(`ModifyNodesMcpToolHandler invoked for session ${sessionId}`);
+        this.logger.info(`'modify-nodes' invoked for session '${sessionId}' with ${changes.length} changes`);
+
         if (!sessionId) {
             return createToolResult('No session id provided.', true);
         }
@@ -116,9 +117,10 @@ export class ModifyNodesMcpToolHandler implements McpToolHandler {
         ]);
 
         // If any element could not be resolved, do not proceed
+        // As compared to the create operations, changes can be done in bulk, i.e., in a single transaction
         const undefinedElements = elements.filter(([change, element]) => !element).map(([change]) => change.elementId);
         if (undefinedElements.length) {
-            return createToolResult(`No elements found for the following element ids: ${undefinedElements}`, true);
+            return createToolResult(`No nodes found for the following element ids: ${undefinedElements}`, true);
         }
 
         // Do all dispatches in parallel, as they should not interfere with each other
@@ -146,11 +148,19 @@ export class ModifyNodesMcpToolHandler implements McpToolHandler {
         // Wait for all dispatches to finish before notifying the caller
         await Promise.all(promises);
 
-        return createToolResult('Nodes succesfully modified', false);
+        return createToolResult(`Succesfully modified ${changes.length} node(s)`, false);
     }
 
+    /**
+     * This method provides the label ID for a labelled node's label.
+     *
+     * While it can be generally assumed that labelled nodes contain those labels
+     * as direct children, some custom elements may wrap their labels in intermediary
+     * container nodes. However, in the likely scenario that a specific GLSP implementation
+     * requires no further changes to this handler except extracting nested labels, this
+     * function serves as an easy entrypoint without a full override.
+     */
     protected getCorrespondingLabelId(element: GShapeElement): string | undefined {
-        // Assume that generally, labelled nodes have those labels as direct children
         return element.children.find(child => child instanceof GLabel)?.id;
     }
 }

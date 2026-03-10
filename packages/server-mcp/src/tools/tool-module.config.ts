@@ -16,9 +16,9 @@
 import { bindAsService } from '@eclipse-glsp/server';
 import { ContainerModule } from 'inversify';
 import { McpServerContribution, McpToolHandler } from '../server';
-import { CreateEdgeMcpToolHandler } from './handlers/create-edge-handler';
-import { CreateNodeMcpToolHandler } from './handlers/create-node-handler';
-import { DeleteElementMcpToolHandler } from './handlers/delete-element-handler';
+import { CreateEdgesMcpToolHandler } from './handlers/create-edges-handler';
+import { CreateNodesMcpToolHandler } from './handlers/create-nodes-handler';
+import { DeleteElementsMcpToolHandler } from './handlers/delete-elements-handler';
 import { DiagramElementMcpToolHandler } from './handlers/diagram-element-handler';
 import { ModifyNodesMcpToolHandler } from './handlers/modify-nodes-handler';
 import { SaveModelMcpToolHandler } from './handlers/save-model-handler';
@@ -27,9 +27,9 @@ import { McpToolContribution } from './mcp-tool-contribution';
 
 export function configureMcpToolModule(): ContainerModule {
     return new ContainerModule(bind => {
-        bindAsService(bind, McpToolHandler, CreateNodeMcpToolHandler);
-        bindAsService(bind, McpToolHandler, CreateEdgeMcpToolHandler);
-        bindAsService(bind, McpToolHandler, DeleteElementMcpToolHandler);
+        bindAsService(bind, McpToolHandler, CreateNodesMcpToolHandler);
+        bindAsService(bind, McpToolHandler, CreateEdgesMcpToolHandler);
+        bindAsService(bind, McpToolHandler, DeleteElementsMcpToolHandler);
         bindAsService(bind, McpToolHandler, SaveModelMcpToolHandler);
         bindAsService(bind, McpToolHandler, ValidateDiagramMcpToolHandler);
         bindAsService(bind, McpToolHandler, DiagramElementMcpToolHandler);

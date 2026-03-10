@@ -56,7 +56,8 @@ export class SessionsListMcpResourceHandler implements McpResourceHandler {
     }
 
     async handle(params: Record<string, never>): Promise<ResourceHandlerResult> {
-        this.logger.info('SessionsListMcpResourceHandler invoked');
+        this.logger.info("'sessions-list' invoked");
+
         const sessions = this.clientSessionManager.getSessions();
         const sessionsList = sessions.map(session => {
             const modelState = session.container.get<ModelState>(ModelState);

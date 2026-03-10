@@ -50,8 +50,9 @@ export class DiagramElementMcpToolHandler implements McpToolHandler {
         );
     }
 
-    async handle({ sessionId, elementId }: { sessionId?: string; elementId?: string }): Promise<CallToolResult> {
-        this.logger.info(`DiagramElementMcpToolHandler invoked for session ${sessionId} and element ${elementId}`);
+    async handle({ sessionId, elementId }: { sessionId: string; elementId: string }): Promise<CallToolResult> {
+        this.logger.info(`'diagram-element' invoked for session '${sessionId}' and element '${elementId}'`);
+
         if (!sessionId) {
             return createToolResult('No session id provided.', true);
         }

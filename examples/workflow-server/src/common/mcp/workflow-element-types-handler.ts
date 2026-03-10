@@ -106,8 +106,9 @@ const WORKFLOW_ELEMENT_TYPES_STRING = [
 @injectable()
 export class WorkflowElementTypesMcpResourceHandler extends ElementTypesMcpResourceHandler {
     override async handle({ diagramType }: { diagramType?: string }): Promise<ResourceHandlerResult> {
-        this.logger.info(`WorkflowElementTypesMcpResourceHandler invoked for diagram type ${diagramType}`);
+        this.logger.info(`'element-types' invoked for diagram type '${diagramType}'`);
 
+        // In this specifc GLSP implementation, only 'workflow-diagram' is valid
         if (diagramType !== 'workflow-diagram') {
             return {
                 content: {

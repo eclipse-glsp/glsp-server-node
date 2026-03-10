@@ -20,6 +20,13 @@ import { DefaultMcpModelSerializer, objectArrayToMarkdownTable } from '@eclipse-
 import { injectable } from 'inversify';
 import { ModelTypes } from '../util/model-types';
 
+/**
+ * As compared to the {@link DefaultMcpModelSerializer}, this is a specific implementation and we
+ * know not only the structure of our graph but also each relevant attribute. This enables us to
+ * order them semantically so the produced serialization makes more sense if read with semantics
+ * mind. As LLMs (i.e., the MCP clients) work semantically, this is superior to a random ordering.
+ * Furthermore, including only the relevant information without redundancies decreases context size.
+ */
 @injectable()
 export class WorkflowMcpModelSerializer extends DefaultMcpModelSerializer {
     override serialize(element: GModelElement): string {

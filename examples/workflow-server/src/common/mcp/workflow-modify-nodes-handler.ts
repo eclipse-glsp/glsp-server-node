@@ -22,11 +22,13 @@ import { ModelTypes } from '../util/model-types';
 @injectable()
 export class WorkflowModifyNodesMcpToolHandler extends ModifyNodesMcpToolHandler {
     override getCorrespondingLabelId(element: GShapeElement): string | undefined {
+        // Category labels are nested in a header component
         if (element.type === ModelTypes.CATEGORY) {
             return element.children.find(child => child.type === ModelTypes.COMP_HEADER)?.children.find(child => child instanceof GLabel)
                 ?.id;
         }
 
+        // Assume that generally, labelled nodes have those labels as direct children
         return element.children.find(child => child instanceof GLabel)?.id;
     }
 }

@@ -80,7 +80,8 @@ export class DiagramModelMcpResourceHandler implements McpResourceHandler {
     }
 
     async handle({ sessionId }: { sessionId?: string }): Promise<ResourceHandlerResult> {
-        this.logger.info(`DiagramModelMcpResourceHandler invoked for session ${sessionId}`);
+        this.logger.info(`'diagram-model' invoked for session '${sessionId}'`);
+
         if (!sessionId) {
             return {
                 content: {

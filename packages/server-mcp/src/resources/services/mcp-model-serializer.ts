@@ -34,6 +34,14 @@ export interface McpModelSerializer {
     serialize(element: GModelElement): string;
 }
 
+/**
+ * The `DefaultMcpModelSerializer` transforms the graph into a canonically serializable
+ * format (as produced by `GModelSerializer`), flattens the graph structure into a list of elements,
+ * removes unnecessary information, and finally adds some derived visual information.
+ *
+ * It can only do so in a generic manner without control of the order of elements or element attributes,
+ * since no details of a specific GLSP implementation are known.
+ */
 @injectable()
 export class DefaultMcpModelSerializer implements McpModelSerializer {
     @inject(GModelSerializer)
