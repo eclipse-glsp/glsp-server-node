@@ -32,7 +32,6 @@ export class CreateEdgeMcpToolHandler implements McpToolHandler {
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
-    // TODO make multi creation
     registerTool(server: GLSPMcpServer): void {
         server.registerTool(
             'create-edge',
@@ -43,15 +42,24 @@ export class CreateEdgeMcpToolHandler implements McpToolHandler {
                     'Query glsp://types/{diagramType}/elements resource to discover valid edge type IDs.',
                 inputSchema: {
                     sessionId: z.string().describe('Session ID where the edge should be created'),
-                    elementTypeId: z
-                        .string()
-                        .describe('Edge type ID (e.g., "edge", "transition"). Use element-types resource to discover valid IDs.'),
-                    sourceElementId: z.string().describe('ID of the source element (must exist in the diagram)'),
-                    targetElementId: z.string().describe('ID of the target element (must exist in the diagram)'),
-                    args: z
-                        .record(z.string(), z.any())
-                        .optional()
-                        .describe('Additional type-specific arguments for edge creation (varies by edge type)')
+                    edges: z
+                        .array(
+                            z.object({
+                                elementTypeId: z
+                                    .string()
+                                    .describe(
+                                        'Edge type ID (e.g., "edge", "transition"). Use element-types resource to discover valid IDs.'
+                                    ),
+                                sourceElementId: z.string().describe('ID of the source element (must exist in the diagram)'),
+                                targetElementId: z.string().describe('ID of the target element (must exist in the diagram)'),
+                                args: z
+                                    .record(z.string(), z.any())
+                                    .optional()
+                                    .describe('Additional type-specific arguments for edge creation (varies by edge type)')
+                            })
+                        )
+                        .min(1)
+                        .describe('Array of edges to create. Must include at least one node.')
                 }
             },
             params => this.handle(params)
@@ -60,16 +68,10 @@ export class CreateEdgeMcpToolHandler implements McpToolHandler {
 
     async handle({
         sessionId,
-        elementTypeId,
-        sourceElementId,
-        targetElementId,
-        args
+        edges
     }: {
         sessionId: string;
-        elementTypeId: string;
-        sourceElementId: string;
-        targetElementId: string;
-        args?: Record<string, any>;
+        edges: { elementTypeId: string; sourceElementId: string; targetElementId: string; args?: Record<string, any> }[];
     }): Promise<CallToolResult> {
         this.logger.info(`CreateEdgeMcpToolHandler invoked for session ${sessionId}`);
 
@@ -86,38 +88,57 @@ export class CreateEdgeMcpToolHandler implements McpToolHandler {
                 return createToolResult('Model is read-only', true);
             }
 
-            // Validate source and target exist
-            const source = modelState.index.find(sourceElementId);
-            if (!source) {
-                return createToolResult(`Source element not found: ${sourceElementId}`, true);
-            }
-
-            const target = modelState.index.find(targetElementId);
-            if (!target) {
-                return createToolResult(`Target element not found: ${targetElementId}`, true);
-            }
-
             // Snapshot element IDs before operation using index.allIds()
-            const beforeIds = new Set(modelState.index.allIds());
+            let beforeIds = new Set(modelState.index.allIds());
 
-            // Create operation
-            const operation = CreateEdgeOperation.create({ elementTypeId, sourceElementId, targetElementId, args });
+            const errors = [];
+            const successIds = [];
+            // Since we need sequential handling of the created elements, we can't call all in parallel
+            for (const edge of edges) {
+                const { elementTypeId, sourceElementId, targetElementId, args } = edge;
 
-            // Dispatch operation
-            await session.actionDispatcher.dispatch(operation);
+                // Validate source and target exist
+                const source = modelState.index.find(sourceElementId);
+                if (!source) {
+                    errors.push(`Source element not found: ${sourceElementId}`);
+                }
 
-            // Snapshot element IDs after operation
-            const afterIds = modelState.index.allIds();
+                const target = modelState.index.find(targetElementId);
+                if (!target) {
+                    errors.push(`Target element not found: ${targetElementId}`);
+                }
 
-            // Find new element ID
-            const newIds = afterIds.filter(id => !beforeIds.has(id));
-            const newElementId = newIds.length > 0 ? newIds[0] : undefined;
+                // Create operation
+                const operation = CreateEdgeOperation.create({ elementTypeId, sourceElementId, targetElementId, args });
 
-            if (!newElementId) {
-                return createToolResult('Edge creation likely failed, because no new element ID could be determined', true);
+                // Dispatch operation
+                await session.actionDispatcher.dispatch(operation);
+
+                // Snapshot element IDs after operation
+                const afterIds = modelState.index.allIds();
+
+                // Find new element ID
+                const newIds = afterIds.filter(id => !beforeIds.has(id));
+                const newElementId = newIds.length > 0 ? newIds[0] : undefined;
+
+                beforeIds = new Set(afterIds);
+
+                if (!newElementId) {
+                    errors.push(`Edge creation failed for input: ${JSON.stringify(edge)}`);
+                    continue;
+                }
+
+                successIds.push(newElementId);
             }
 
-            return createToolResult(`Edge created successfully with element ID: ${newElementId}`, false);
+            let failureStr = '';
+            if (errors.length) {
+                const failureListStr = errors.map(error => `- ${error}\n`);
+                failureStr = `\nThe following errors occured:\n${failureListStr}`;
+            }
+
+            const successListStr = successIds.map(successId => `- ${successId}`).join('\n');
+            return createToolResult(`Edge created successfully with element ID:\n${successListStr}${failureStr}`, false);
         } catch (error) {
             this.logger.error('Edge creation failed', error);
             return createToolResult(`Edge creation failed: ${error instanceof Error ? error.message : String(error)}`, true);

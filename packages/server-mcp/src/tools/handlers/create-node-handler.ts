@@ -40,7 +40,6 @@ export class CreateNodeMcpToolHandler implements McpToolHandler {
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
-    // TODO make multi creation
     registerTool(server: GLSPMcpServer): void {
         server.registerTool(
             'create-node',
@@ -52,24 +51,34 @@ export class CreateNodeMcpToolHandler implements McpToolHandler {
                     'Query glsp://types/{diagramType}/elements resource to discover valid element type IDs.',
                 inputSchema: {
                     sessionId: z.string().describe('Session ID where the node should be created'),
-                    elementTypeId: z
-                        .string()
-                        .describe(
-                            'Element type ID (e.g., "task:manual", "task:automated"). ' +
-                                'Use element-types resource to discover valid IDs.'
-                        ),
-                    position: z
-                        .object({
-                            x: z.number().describe('X coordinate in diagram space'),
-                            y: z.number().describe('Y coordinate in diagram space')
-                        })
-                        .describe('Position where the node should be created (absolute diagram coordinates)'),
-                    text: z.string().optional().describe('Label text to use in case the given element type allows for labels.'),
-                    containerId: z.string().optional().describe('ID of the container element. If not provided, node is added to the root.'),
-                    args: z
-                        .record(z.string(), z.any())
-                        .optional()
-                        .describe('Additional type-specific arguments for node creation (varies by element type)')
+                    nodes: z
+                        .array(
+                            z.object({
+                                elementTypeId: z
+                                    .string()
+                                    .describe(
+                                        'Element type ID (e.g., "task:manual", "task:automated"). ' +
+                                            'Use element-types resource to discover valid IDs.'
+                                    ),
+                                position: z
+                                    .object({
+                                        x: z.number().describe('X coordinate in diagram space'),
+                                        y: z.number().describe('Y coordinate in diagram space')
+                                    })
+                                    .describe('Position where the node should be created (absolute diagram coordinates)'),
+                                text: z.string().optional().describe('Label text to use in case the given element type allows for labels.'),
+                                containerId: z
+                                    .string()
+                                    .optional()
+                                    .describe('ID of the container element. If not provided, node is added to the root.'),
+                                args: z
+                                    .record(z.string(), z.any())
+                                    .optional()
+                                    .describe('Additional type-specific arguments for node creation (varies by element type)')
+                            })
+                        )
+                        .min(1)
+                        .describe('Array of nodes to create. Must include at least one node.')
                 }
             },
             params => this.handle(params)
@@ -78,18 +87,16 @@ export class CreateNodeMcpToolHandler implements McpToolHandler {
 
     async handle({
         sessionId,
-        elementTypeId,
-        position,
-        text,
-        containerId,
-        args
+        nodes
     }: {
         sessionId: string;
-        elementTypeId: string;
-        position: { x: number; y: number };
-        text?: string;
-        containerId?: string;
-        args?: Record<string, any>;
+        nodes: {
+            elementTypeId: string;
+            position: { x: number; y: number };
+            text?: string;
+            containerId?: string;
+            args?: Record<string, any>;
+        }[];
     }): Promise<CallToolResult> {
         this.logger.info(`CreateNodeMcpToolHandler invoked for session ${sessionId}`);
 
@@ -107,35 +114,54 @@ export class CreateNodeMcpToolHandler implements McpToolHandler {
             }
 
             // Snapshot element IDs before operation using index.allIds()
-            const beforeIds = new Set(modelState.index.allIds());
+            let beforeIds = new Set(modelState.index.allIds());
 
-            // Create operation
-            // Using the name "position" instead of "location", as this is the name in the elements properties
-            const operation = CreateNodeOperation.create(elementTypeId, { location: position, containerId, args });
+            const failures = [];
+            const successIds = [];
+            // Since we need sequential handling of the created elements, we can't call all in parallel
+            for (const node of nodes) {
+                const { elementTypeId, position, text, containerId, args } = node;
 
-            // Dispatch operation
-            await session.actionDispatcher.dispatch(operation);
+                // Create operation
+                // Using the name "position" instead of "location", as this is the name in the elements properties
+                const operation = CreateNodeOperation.create(elementTypeId, { location: position, containerId, args });
 
-            // Snapshot element IDs after operation
-            const afterIds = modelState.index.allIds();
+                // Dispatch operation
+                await session.actionDispatcher.dispatch(operation);
 
-            // Find new element ID
-            const newIds = afterIds.filter(id => !beforeIds.has(id));
-            const newElementId = newIds.length > 0 ? newIds[0] : undefined;
+                // Snapshot element IDs after operation
+                const afterIds = modelState.index.allIds();
 
-            if (!newElementId) {
-                return createToolResult('Node creation likely failed, because no new element ID could be determined', true);
+                // Find new element ID
+                const newIds = afterIds.filter(id => !beforeIds.has(id));
+                const newElementId = newIds.length > 0 ? newIds[0] : undefined;
+
+                beforeIds = new Set(afterIds);
+
+                if (!newElementId) {
+                    failures.push(node);
+                    continue;
+                }
+
+                const newElementLabelId = this.getCorrespondingLabelId(modelState.index.get(newElementId));
+                // If it is indeed labeled (and we actually want to set the label)...
+                if (newElementLabelId && text) {
+                    // ...then use an already existing operation to set the label
+                    const editLabelOperation = ApplyLabelEditOperation.create({ labelId: newElementLabelId, text });
+                    await session.actionDispatcher.dispatch(editLabelOperation);
+                }
+
+                successIds.push(newElementId);
             }
 
-            const newElementLabelId = this.getCorrespondingLabelId(modelState.index.get(newElementId));
-            // If it is indeed labeled (and we actually want to set the label)...
-            if (newElementLabelId && text) {
-                // ...then use an already existing operation to set the label
-                const editLabelOperation = ApplyLabelEditOperation.create({ labelId: newElementLabelId, text });
-                await session.actionDispatcher.dispatch(editLabelOperation);
+            let failureStr = '';
+            if (failures.length) {
+                const failureListStr = failures.map(failure => `- ${JSON.stringify(failure)}\n`);
+                failureStr = `\nThe following inputs likely failed, because no new element ID could be determined:\n${failureListStr}`;
             }
 
-            return createToolResult(`Node created successfully with the element ID: ${newElementId}`, false);
+            const successListStr = successIds.map(successId => `- ${successId}`).join('\n');
+            return createToolResult(`Nodes created successfully with the element IDs:\n${successListStr}${failureStr}`, false);
         } catch (error) {
             this.logger.error('Node creation failed', error);
             return createToolResult(`Node creation failed: ${error instanceof Error ? error.message : String(error)}`, true);
