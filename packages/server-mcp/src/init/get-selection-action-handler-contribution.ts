@@ -16,8 +16,7 @@
 
 import { ActionHandlerFactory, ActionHandlerRegistry, Args, ClientSessionInitializer } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
-import { FEATURE_FLAGS } from '../feature-flags';
-import { DiagramPngMcpResourceHandler } from '../resources';
+import { GetSelectionMcpToolHandler } from '../tools';
 
 /**
  * This `ClientSessionInitializer` serves to register an additional `ActionHandler` without needing to extend `ServerModule`.
@@ -25,17 +24,15 @@ import { DiagramPngMcpResourceHandler } from '../resources';
  * See `ActionHandlerRegistryInitializer`
  */
 @injectable()
-export class ExportMcpPngActionHandlerInitContribution implements ClientSessionInitializer {
+export class GetSelectionActionHandlerInitContribution implements ClientSessionInitializer {
     @inject(ActionHandlerFactory)
     protected factory: ActionHandlerFactory;
     @inject(ActionHandlerRegistry)
     protected registry: ActionHandlerRegistry;
-    @inject(DiagramPngMcpResourceHandler)
-    protected pngHandler: DiagramPngMcpResourceHandler;
+    @inject(GetSelectionMcpToolHandler)
+    protected handler: GetSelectionMcpToolHandler;
 
     initialize(args?: Args): void {
-        if (FEATURE_FLAGS.resources.png) {
-            this.registry.registerHandler(this.pngHandler);
-        }
+        this.registry.registerHandler(this.handler);
     }
 }

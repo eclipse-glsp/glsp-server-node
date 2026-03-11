@@ -16,7 +16,7 @@
 
 import { GModelElement } from '@eclipse-glsp/graph';
 import { DefaultTypes } from '@eclipse-glsp/server';
-import { DefaultMcpModelSerializer, objectArrayToMarkdownTable } from '@eclipse-glsp/server-mcp';
+import { DefaultMcpModelSerializer } from '@eclipse-glsp/server-mcp';
 import { injectable } from 'inversify';
 import { ModelTypes } from '../util/model-types';
 
@@ -29,14 +29,6 @@ import { ModelTypes } from '../util/model-types';
  */
 @injectable()
 export class WorkflowMcpModelSerializer extends DefaultMcpModelSerializer {
-    override serialize(element: GModelElement): string {
-        const elementsByType = this.prepareElement(element);
-
-        return Object.entries(elementsByType)
-            .flatMap(([type, elements]) => [`# ${type}`, objectArrayToMarkdownTable(elements)])
-            .join('\n');
-    }
-
     override prepareElement(element: GModelElement): Record<string, Record<string, any>[]> {
         const elements = this.flattenStructure(element);
 

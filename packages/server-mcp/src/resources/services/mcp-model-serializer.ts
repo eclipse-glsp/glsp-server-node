@@ -32,6 +32,15 @@ export interface McpModelSerializer {
      * @returns The transformed string.
      */
     serialize(element: GModelElement): string;
+
+    /**
+     * Transforms the given {@link GModelElement} items into a string representation.
+     * It is assumed that they represent a subgraph of the total graph and duplicate elements, e.g,
+     * by hierarchy, are removed.
+     * @param elements The elements that should be serialized.
+     * @returns The transformed string.
+     */
+    serializeArray(elements: GModelElement[]): string;
 }
 
 /**
@@ -64,6 +73,24 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
         const elementsByType = this.prepareElement(element);
 
         return Object.entries(elementsByType)
+            .flatMap(([type, elements]) => [`# ${type}`, objectArrayToMarkdownTable(elements)])
+            .join('\n');
+    }
+
+    serializeArray(elements: GModelElement[]): string {
+        const elementsByTypeArray = elements.map(element => this.prepareElement(element));
+
+        const result: Record<string, Record<string, any>[]> = {};
+
+        const allKeys = new Set(elementsByTypeArray.flatMap(obj => Object.keys(obj)));
+
+        allKeys.forEach(key => {
+            const combined = elementsByTypeArray.flatMap(obj => obj[key] || []);
+
+            result[key] = Array.from(new Map(combined.map(item => [item.id, item])).values());
+        });
+
+        return Object.entries(result)
             .flatMap(([type, elements]) => [`# ${type}`, objectArrayToMarkdownTable(elements)])
             .join('\n');
     }

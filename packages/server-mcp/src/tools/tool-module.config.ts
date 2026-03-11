@@ -19,7 +19,8 @@ import { McpServerContribution, McpToolHandler } from '../server';
 import { CreateEdgesMcpToolHandler } from './handlers/create-edges-handler';
 import { CreateNodesMcpToolHandler } from './handlers/create-nodes-handler';
 import { DeleteElementsMcpToolHandler } from './handlers/delete-elements-handler';
-import { DiagramElementMcpToolHandler } from './handlers/diagram-element-handler';
+import { DiagramElementsMcpToolHandler } from './handlers/diagram-elements-handler';
+import { GetSelectionMcpToolHandler } from './handlers/get-selection-handler';
 import { ModifyEdgesMcpToolHandler } from './handlers/modify-edges-handler';
 import { ModifyNodesMcpToolHandler } from './handlers/modify-nodes-handler';
 import { RedoMcpToolHandler } from './handlers/redo-handler';
@@ -35,11 +36,12 @@ export function configureMcpToolModule(): ContainerModule {
         bindAsService(bind, McpToolHandler, DeleteElementsMcpToolHandler);
         bindAsService(bind, McpToolHandler, SaveModelMcpToolHandler);
         bindAsService(bind, McpToolHandler, ValidateDiagramMcpToolHandler);
-        bindAsService(bind, McpToolHandler, DiagramElementMcpToolHandler);
+        bindAsService(bind, McpToolHandler, DiagramElementsMcpToolHandler);
         bindAsService(bind, McpToolHandler, ModifyNodesMcpToolHandler);
         bindAsService(bind, McpToolHandler, ModifyEdgesMcpToolHandler);
         bindAsService(bind, McpToolHandler, UndoMcpToolHandler);
         bindAsService(bind, McpToolHandler, RedoMcpToolHandler);
+        bindAsService(bind, McpToolHandler, GetSelectionMcpToolHandler);
 
         bindAsService(bind, McpServerContribution, McpToolContribution);
     });

@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ClientSessionManager, Logger, ModelState } from '@eclipse-glsp/server';
+import { ClientSessionManager, GModelElement, Logger, ModelState } from '@eclipse-glsp/server';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
@@ -22,11 +22,13 @@ import { McpModelSerializer } from '../../resources/services/mcp-model-serialize
 import { GLSPMcpServer, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
 
+// TODO extend to multiple
+
 /**
- * Creates a serialized representation of a specific element of a given session's model.
+ * Creates a serialized representation of one or more specific elements of a given session's model.
  */
 @injectable()
-export class DiagramElementMcpToolHandler implements McpToolHandler {
+export class DiagramElementsMcpToolHandler implements McpToolHandler {
     @inject(Logger)
     protected logger: Logger;
 
@@ -35,29 +37,29 @@ export class DiagramElementMcpToolHandler implements McpToolHandler {
 
     registerTool(server: GLSPMcpServer): void {
         server.registerTool(
-            'diagram-element',
+            'diagram-elements',
             {
-                title: 'Diagram Model Element',
+                title: 'Diagram Model Elements',
                 description:
-                    'Get the a single element of a GLSP model for a session as a markdown structure. ' +
-                    'This is a more specific query than diagram-model.',
+                    'Get one or more elements of a GLSP model for a session as a markdown structure. ' +
+                    'This is a more specific query than diagram-model to use if not the entire model is relevant.',
                 inputSchema: {
                     sessionId: z.string().describe('Session ID containing the relevant model.'),
-                    elementId: z.string().describe('Element ID that should be queried.')
+                    elementIds: z.array(z.string()).min(1).describe('Element IDs that should be queried.')
                 }
             },
             params => this.handle(params)
         );
     }
 
-    async handle({ sessionId, elementId }: { sessionId: string; elementId: string }): Promise<CallToolResult> {
-        this.logger.info(`'diagram-element' invoked for session '${sessionId}' and element '${elementId}'`);
+    async handle({ sessionId, elementIds }: { sessionId: string; elementIds: string[] }): Promise<CallToolResult> {
+        this.logger.info(`'diagram-element' invoked for session '${sessionId}' and '${elementIds.length}' elements`);
 
         if (!sessionId) {
             return createToolResult('No session id provided.', true);
         }
-        if (!elementId) {
-            return createToolResult('No element id provided.', true);
+        if (!elementIds || !elementIds.length) {
+            return createToolResult('No element ids provided.', true);
         }
 
         const session = this.clientSessionManager.getSession(sessionId);
@@ -67,13 +69,17 @@ export class DiagramElementMcpToolHandler implements McpToolHandler {
 
         const modelState = session.container.get<ModelState>(ModelState);
 
-        const element = modelState.index.find(elementId);
-        if (!element) {
-            return createToolResult('No element found for this element id.', true);
+        const elements: GModelElement[] = [];
+        for (const elementId of elementIds) {
+            const element = modelState.index.find(elementId);
+            if (!element) {
+                return createToolResult('No element found for this element id.', true);
+            }
+            elements.push(element);
         }
 
         const mcpSerializer = session.container.get<McpModelSerializer>(McpModelSerializer);
-        const mcpString = mcpSerializer.serialize(element);
+        const mcpString = mcpSerializer.serializeArray(elements);
 
         return createToolResult(mcpString, false);
     }

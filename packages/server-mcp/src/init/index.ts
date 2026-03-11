@@ -15,4 +15,5 @@
  ********************************************************************************/
 
 export * from './export-png-action-handler-contribution';
+export * from './get-selection-action-handler-contribution';
 export * from './init-module.config';
