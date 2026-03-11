@@ -30,7 +30,7 @@ export const FEATURE_FLAGS = {
      */
     useResources: true,
     resources: {
-        png: false
+        png: true
     },
     tools: {
         undo: true,

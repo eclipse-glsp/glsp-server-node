@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Action, ActionHandler, ClientSessionManager, ExportMcpPngAction, Logger, RequestExportMcpPngAction } from '@eclipse-glsp/server';
+import { Action, ActionHandler, ClientSessionManager, ExportPngMcpAction, ExportPngMcpActionResult, Logger } from '@eclipse-glsp/server';
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
@@ -30,15 +30,15 @@ import { createResourceResult, extractResourceParam } from '../../util';
  * However, GLSP's architecture is client-driven, i.e., the server is passive and not the driver of events.
  * This means that we have to somewhat circumvent this by making this handler simultaneously an `ActionHandler`.
  *
- * We trigger the frontend PNG creation using {@link RequestExportMcpPngAction} and register this class as an
- * `ActionHandler` for the response action {@link ExportMcpPngAction}. This is necessary, because we can't just
+ * We trigger the frontend PNG creation using {@link ExportPngMcpAction} and register this class as an
+ * `ActionHandler` for the response action {@link ExportPngMcpActionResult}. This is necessary, because we can't just
  * wait for the result of a dispatched action (at least on the server side). Instead, we make use of the class
  * to carry the promise resolver for the initial request (by the MCP client) to use when receiving the response action.
  * However, it is unclear whether this works in all circumstances, as it introduces impure functions.
  */
 @injectable()
 export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionHandler {
-    actionKinds = [ExportMcpPngAction.KIND];
+    actionKinds = [ExportPngMcpActionResult.KIND];
 
     @inject(Logger)
     protected logger: Logger;
@@ -46,7 +46,10 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
-    protected promiseResolveFn: (value: ResourceHandlerResult | PromiseLike<ResourceHandlerResult>) => void;
+    protected resolvers: Record<
+        string,
+        { sessionId: string; resolve: (value: ResourceHandlerResult | PromiseLike<ResourceHandlerResult>) => void }
+    > = {};
 
     registerResource(server: GLSPMcpServer): void {
         if (!FEATURE_FLAGS.resources.png) {
@@ -138,11 +141,13 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
             };
         }
 
-        session.actionDispatcher.dispatch(RequestExportMcpPngAction.create({ options: { sessionId } }));
+        const requestId = Math.trunc(Math.random() * 1000).toString();
+        this.logger.info(`ExportPngMcpAction dispatched with request ID '${requestId}'`);
+        session.actionDispatcher.dispatch(ExportPngMcpAction.create(requestId));
 
         // Start a promise and save the resolve function to the class
         return new Promise(resolve => {
-            this.promiseResolveFn = resolve;
+            this.resolvers[requestId] = { sessionId, resolve };
             setTimeout(
                 () =>
                     resolve({
@@ -158,12 +163,13 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
         });
     }
 
-    async execute(action: ExportMcpPngAction): Promise<Action[]> {
-        const sessionId = action.options?.sessionId ?? '';
-        this.logger.info(`ExportMcpPngAction received for session '${sessionId}'`);
+    async execute(action: ExportPngMcpActionResult): Promise<Action[]> {
+        const requestId = action.mcpRequestId;
+        this.logger.info(`ExportPngMcpActionResult received with request ID '${requestId}'`);
 
         // Resolve the previously started promise
-        this.promiseResolveFn?.({
+        const { sessionId, resolve } = this.resolvers[requestId];
+        resolve?.({
             content: {
                 uri: `glsp://diagrams/${sessionId}/png`,
                 mimeType: 'image/png',
@@ -171,6 +177,7 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
             },
             isError: false
         });
+        delete this.resolvers[requestId];
 
         return [];
     }

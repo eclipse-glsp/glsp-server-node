@@ -22,8 +22,6 @@ import { McpModelSerializer } from '../../resources/services/mcp-model-serialize
 import { GLSPMcpServer, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
 
-// TODO extend to multiple
-
 /**
  * Creates a serialized representation of one or more specific elements of a given session's model.
  */

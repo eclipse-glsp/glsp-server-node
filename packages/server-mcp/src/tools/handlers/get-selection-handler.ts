@@ -14,7 +14,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Action, ActionHandler, ClientSessionManager, GetSelectionMcpAction, Logger, SelectionMcpResult } from '@eclipse-glsp/server';
+import {
+    Action,
+    ActionHandler,
+    ClientSessionManager,
+    GetSelectionMcpAction,
+    GetSelectionMcpResultAction,
+    Logger
+} from '@eclipse-glsp/server';
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
@@ -26,7 +33,7 @@ import { createToolResult } from '../../util';
  */
 @injectable()
 export class GetSelectionMcpToolHandler implements McpToolHandler, ActionHandler {
-    actionKinds = [SelectionMcpResult.KIND];
+    actionKinds = [GetSelectionMcpResultAction.KIND];
 
     @inject(Logger)
     protected logger: Logger;
@@ -75,13 +82,14 @@ export class GetSelectionMcpToolHandler implements McpToolHandler, ActionHandler
         });
     }
 
-    async execute(action: SelectionMcpResult): Promise<Action[]> {
+    async execute(action: GetSelectionMcpResultAction): Promise<Action[]> {
         const requestId = action.mcpRequestId;
-        this.logger.info(`SelectionMcpResult received with request ID '${requestId}'`);
+        this.logger.info(`GetSelectionMcpResultAction received with request ID '${requestId}'`);
 
         // Resolve the previously started promise
         const selectedIdsStr = action.selectedElementsIDs.map(id => `- ${id}`).join('\n');
         this.resolvers[requestId]?.(createToolResult(`Following element IDs are selected:\n${selectedIdsStr}`, false));
+        delete this.resolvers[requestId];
 
         return [];
     }
