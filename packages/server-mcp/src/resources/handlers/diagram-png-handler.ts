@@ -52,7 +52,7 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
     > = {};
 
     registerResource(server: GLSPMcpServer): void {
-        if (!FEATURE_FLAGS.resources.png) {
+        if (!FEATURE_FLAGS.resources.diagramPng) {
             return;
         }
         server.registerResource(
@@ -85,7 +85,7 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
     }
 
     registerTool(server: GLSPMcpServer): void {
-        if (!FEATURE_FLAGS.resources.png) {
+        if (!FEATURE_FLAGS.resources.diagramPng) {
             return;
         }
         server.registerTool(

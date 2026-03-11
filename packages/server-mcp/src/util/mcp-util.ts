@@ -50,13 +50,16 @@ export function createResourceToolResult(result: ResourceHandlerResult): CallToo
         isError: result.isError,
         content: [
             {
-                type: 'resource',
-                resource: result.content
+                type: 'text',
+                text: (result.content as any).text
             }
         ]
     };
 }
 
+/**
+ * Generates a proper {@link CallToolResult} from a text and error flag.
+ */
 export function createToolResult(text: string, isError: boolean): CallToolResult {
     return {
         isError,

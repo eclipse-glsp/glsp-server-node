@@ -34,7 +34,7 @@ export class ExportMcpPngActionHandlerInitContribution implements ClientSessionI
     protected pngHandler: DiagramPngMcpResourceHandler;
 
     initialize(args?: Args): void {
-        if (FEATURE_FLAGS.resources.png) {
+        if (FEATURE_FLAGS.resources.diagramPng) {
             this.registry.registerHandler(this.pngHandler);
         }
     }

@@ -28,12 +28,13 @@ export const FEATURE_FLAGS = {
      *
      * false -> MCP tools
      */
-    useResources: true,
+    useResources: false,
     resources: {
-        png: true
+        diagramPng: true
     },
     tools: {
         undo: true,
-        redo: true
+        redo: true,
+        saveModel: true
     }
 };

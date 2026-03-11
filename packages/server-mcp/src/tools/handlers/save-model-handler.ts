@@ -18,6 +18,7 @@ import { ClientSessionManager, CommandStack, Logger, SaveModelAction } from '@ec
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
+import { FEATURE_FLAGS } from '../../feature-flags';
 import { GLSPMcpServer, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
 
@@ -33,6 +34,9 @@ export class SaveModelMcpToolHandler implements McpToolHandler {
     protected clientSessionManager: ClientSessionManager;
 
     registerTool(server: GLSPMcpServer): void {
+        if (!FEATURE_FLAGS.tools.saveModel) {
+            return;
+        }
         server.registerTool(
             'save-model',
             {

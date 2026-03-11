@@ -16,6 +16,7 @@
 import { bindAsService } from '@eclipse-glsp/server';
 import { ContainerModule } from 'inversify';
 import { McpServerContribution, McpToolHandler } from '../server';
+import { ChangeViewMcpToolHandler } from './handlers/change-view-handler';
 import { CreateEdgesMcpToolHandler } from './handlers/create-edges-handler';
 import { CreateNodesMcpToolHandler } from './handlers/create-nodes-handler';
 import { DeleteElementsMcpToolHandler } from './handlers/delete-elements-handler';
@@ -42,6 +43,7 @@ export function configureMcpToolModule(): ContainerModule {
         bindAsService(bind, McpToolHandler, UndoMcpToolHandler);
         bindAsService(bind, McpToolHandler, RedoMcpToolHandler);
         bindAsService(bind, McpToolHandler, GetSelectionMcpToolHandler);
+        bindAsService(bind, McpToolHandler, ChangeViewMcpToolHandler);
 
         bindAsService(bind, McpServerContribution, McpToolContribution);
     });
