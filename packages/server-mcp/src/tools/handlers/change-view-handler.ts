@@ -18,7 +18,7 @@ import { Action, CenterAction, ClientSessionManager, FitToScreenAction, Logger, 
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { GLSPMcpServer, McpToolHandler } from '../../server';
+import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
 
 /**
@@ -78,6 +78,10 @@ export class ChangeViewMcpToolHandler implements McpToolHandler {
         if (!elementIds) {
             const modelState = session.container.get<ModelState>(ModelState);
             elementIds = modelState.index.allIds();
+        } else {
+            // The input consists of ID aliases
+            const mcpIdAliasService = session.container.get<McpIdAliasService>(McpIdAliasService);
+            elementIds = elementIds.map(id => mcpIdAliasService.lookup(sessionId, id));
         }
 
         let action: Action | undefined = undefined;

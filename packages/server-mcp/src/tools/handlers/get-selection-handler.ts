@@ -25,7 +25,7 @@ import {
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { GLSPMcpServer, McpToolHandler } from '../../server';
+import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
 import { createToolResult, createToolResultJson } from '../../util';
 import { FEATURE_FLAGS } from '../../feature-flags';
 
@@ -42,7 +42,7 @@ export class GetSelectionMcpToolHandler implements McpToolHandler, ActionHandler
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
 
-    protected resolvers: Record<string, (value: CallToolResult | PromiseLike<CallToolResult>) => void> = {};
+    protected resolvers: Record<string, { sessionId: string; resolve: (value: CallToolResult | PromiseLike<CallToolResult>) => void }> = {};
 
     registerTool(server: GLSPMcpServer): void {
         server.registerTool(
@@ -81,7 +81,7 @@ export class GetSelectionMcpToolHandler implements McpToolHandler, ActionHandler
 
         // Start a promise and save the resolve function to the class
         return new Promise(resolve => {
-            this.resolvers[requestId] = resolve;
+            this.resolvers[requestId] = { sessionId, resolve };
             setTimeout(() => resolve(createToolResult('The request timed out.', true)), 5000);
         });
     }
@@ -90,12 +90,24 @@ export class GetSelectionMcpToolHandler implements McpToolHandler, ActionHandler
         const requestId = action.mcpRequestId;
         this.logger.info(`GetSelectionMcpResultAction received with request ID '${requestId}'`);
 
+        const { sessionId, resolve } = this.resolvers[requestId];
+
+        const session = this.clientSessionManager.getSession(sessionId);
+        if (!session) {
+            this.logger.warn(`No session '${sessionId}' for request ID '${requestId}'`);
+            return [];
+        }
+
+        const mcpIdAliasService = session.container.get<McpIdAliasService>(McpIdAliasService);
+
+        const selectedIds = action.selectedElementsIDs.map(id => mcpIdAliasService.alias(sessionId, id));
+
         if (FEATURE_FLAGS.useJson) {
-            this.resolvers[requestId]?.(createToolResultJson({ selectedIds: action.selectedElementsIDs }));
+            resolve?.(createToolResultJson({ selectedIds }));
         } else {
             // Resolve the previously started promise
-            const selectedIdsStr = action.selectedElementsIDs.map(id => `- ${id}`).join('\n');
-            this.resolvers[requestId]?.(createToolResult(`Following element IDs are selected:\n${selectedIdsStr}`, false));
+            const selectedIdsStr = selectedIds.map(id => `- ${id}`).join('\n');
+            resolve?.(createToolResult(`Following element IDs are selected:\n${selectedIdsStr}`, false));
         }
 
         delete this.resolvers[requestId];

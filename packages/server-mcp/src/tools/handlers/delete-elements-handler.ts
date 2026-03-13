@@ -18,7 +18,7 @@ import { ClientSessionManager, DeleteElementOperation, Logger, ModelState } from
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { GLSPMcpServer, McpToolHandler } from '../../server';
+import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
 
 /**
@@ -69,10 +69,12 @@ export class DeleteElementsMcpToolHandler implements McpToolHandler {
             return createToolResult('Model is read-only', true);
         }
 
+        const mcpIdAliasService = session.container.get<McpIdAliasService>(McpIdAliasService);
+
         // Validate elements exist
         const missingIds: string[] = [];
         for (const elementId of elementIds) {
-            const element = modelState.index.find(elementId);
+            const element = modelState.index.find(mcpIdAliasService.lookup(sessionId, elementId));
             if (!element) {
                 missingIds.push(elementId);
             }

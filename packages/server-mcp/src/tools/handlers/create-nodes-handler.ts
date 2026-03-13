@@ -26,7 +26,7 @@ import {
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { GLSPMcpServer, McpToolHandler } from '../../server';
+import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
 import { createToolResult, createToolResultJson } from '../../util';
 import { FEATURE_FLAGS } from '../../feature-flags';
 
@@ -125,6 +125,8 @@ export class CreateNodesMcpToolHandler implements McpToolHandler {
             return createToolResult('Model is read-only', true);
         }
 
+        const mcpIdAliasService = session.container.get<McpIdAliasService>(McpIdAliasService);
+
         // Snapshot element IDs before operation
         let beforeIds = modelState.index.allIds();
 
@@ -133,7 +135,8 @@ export class CreateNodesMcpToolHandler implements McpToolHandler {
         let dispatchedOperations = 0;
         // Since we need sequential handling of the created elements, we can't call all in parallel
         for (const node of nodes) {
-            const { elementTypeId, position, text, containerId, args } = node;
+            const { elementTypeId, position, text, args } = node;
+            const containerId = node.containerId ? mcpIdAliasService.lookup(sessionId, node.containerId) : undefined;
 
             // Using the name "position" instead of "location", as this is the name in the element's properties
             // This just ensures that the AI sees a coherent API with common naming
@@ -171,7 +174,7 @@ export class CreateNodesMcpToolHandler implements McpToolHandler {
                 dispatchedOperations++;
             }
 
-            successIds.push(newElementId);
+            successIds.push(mcpIdAliasService.alias(sessionId, newElementId));
         }
 
         if (FEATURE_FLAGS.useJson) {

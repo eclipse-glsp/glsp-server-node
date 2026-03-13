@@ -19,7 +19,7 @@ import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { McpModelSerializer } from '../../resources/services/mcp-model-serializer';
-import { GLSPMcpServer, McpToolHandler } from '../../server';
+import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
 import { createToolResult, createToolResultJson } from '../../util';
 import { FEATURE_FLAGS } from '../../feature-flags';
 
@@ -71,9 +71,11 @@ export class DiagramElementsMcpToolHandler implements McpToolHandler {
 
         const modelState = session.container.get<ModelState>(ModelState);
 
+        const mcpIdAliasService = session.container.get<McpIdAliasService>(McpIdAliasService);
+
         const elements: GModelElement[] = [];
         for (const elementId of elementIds) {
-            const element = modelState.index.find(elementId);
+            const element = modelState.index.find(mcpIdAliasService.lookup(sessionId, elementId));
             if (!element) {
                 return createToolResult('No element found for this element id.', true);
             }

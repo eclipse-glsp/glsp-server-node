@@ -26,7 +26,7 @@ import {
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { GLSPMcpServer, McpToolHandler } from '../../server';
+import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
 import { createToolResult, createToolResultJson } from '../../util';
 import { FEATURE_FLAGS } from '../../feature-flags';
 
@@ -117,10 +117,12 @@ export class ModifyNodesMcpToolHandler implements McpToolHandler {
             return createToolResult('Model is read-only', true);
         }
 
+        const mcpIdAliasService = session.container.get<McpIdAliasService>(McpIdAliasService);
+
         // Map the list of changes to their underlying element
         const elements: [(typeof changes)[number], GShapeElement][] = changes.map(change => [
             change,
-            modelState.index.find(change.elementId) as GShapeElement
+            modelState.index.find(mcpIdAliasService.lookup(sessionId, change.elementId)) as GShapeElement
         ]);
 
         // If any element could not be resolved, do not proceed
@@ -133,7 +135,8 @@ export class ModifyNodesMcpToolHandler implements McpToolHandler {
         // Do all dispatches in parallel, as they should not interfere with each other
         const promises: Promise<void>[] = [];
         elements.forEach(([change, element]) => {
-            const { elementId, size, position, text } = change;
+            const { size, position, text } = change;
+            const elementId = mcpIdAliasService.lookup(sessionId, change.elementId);
 
             // Resize and/or move the affected node if applicable
             if (size || position) {

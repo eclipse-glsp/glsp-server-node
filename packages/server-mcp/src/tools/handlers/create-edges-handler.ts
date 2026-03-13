@@ -18,7 +18,7 @@ import { ChangeRoutingPointsOperation, ClientSessionManager, CreateEdgeOperation
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { GLSPMcpServer, McpToolHandler } from '../../server';
+import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
 import { createToolResult, createToolResultJson } from '../../util';
 import { FEATURE_FLAGS } from '../../feature-flags';
 
@@ -115,6 +115,8 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
             return createToolResult('Model is read-only', true);
         }
 
+        const mcpIdAliasService = session.container.get<McpIdAliasService>(McpIdAliasService);
+
         // Snapshot element IDs before operation
         let beforeIds = modelState.index.allIds();
 
@@ -123,7 +125,9 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
         let dispatchedOperations = 0;
         // Since we need sequential handling of the created elements, we can't call all in parallel
         for (const edge of edges) {
-            const { elementTypeId, sourceElementId, targetElementId, routingPoints, args } = edge;
+            const { elementTypeId, routingPoints, args } = edge;
+            const sourceElementId = mcpIdAliasService.lookup(sessionId, edge.sourceElementId);
+            const targetElementId = mcpIdAliasService.lookup(sessionId, edge.targetElementId);
 
             // Validate source and target exist
             const source = modelState.index.find(sourceElementId);
@@ -170,7 +174,7 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
                 dispatchedOperations++;
             }
 
-            successIds.push(newElementId);
+            successIds.push(mcpIdAliasService.alias(sessionId, newElementId));
         }
 
         if (FEATURE_FLAGS.useJson) {

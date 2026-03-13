@@ -16,8 +16,9 @@
 import { GLSPServerInitContribution, GLSPServerListener } from '@eclipse-glsp/server';
 import { ContainerModule } from 'inversify';
 import { configureMcpResourceModule } from './resources';
-import { McpServerManager } from './server';
+import { DefaultMcpIdAliasService, DummyMcpIdAliasService, McpIdAliasService, McpServerManager } from './server';
 import { configureMcpToolModule } from './tools';
+import { FEATURE_FLAGS } from './feature-flags';
 
 // TODO possibly instead of wholly separate modules, just provide functions using bind context from tools/resources
 export function configureMcpModules(): ContainerModule[] {
@@ -29,5 +30,11 @@ function configureMcpServerModule(): ContainerModule {
         bind(McpServerManager).toSelf().inSingletonScope();
         bind(GLSPServerInitContribution).toService(McpServerManager);
         bind(GLSPServerListener).toService(McpServerManager);
+
+        if (FEATURE_FLAGS.aliasIds) {
+            bind(McpIdAliasService).to(DefaultMcpIdAliasService).inSingletonScope();
+        } else {
+            bind(McpIdAliasService).to(DummyMcpIdAliasService).inSingletonScope();
+        }
     });
 }

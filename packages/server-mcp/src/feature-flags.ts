@@ -31,6 +31,8 @@ export const FEATURE_FLAGS = {
     useResources: false,
     /** Changes whether structured data should be returned as JSON or Markdown. */
     useJson: false,
+    /** Changes string-based IDs to integer strings for MCP communication */
+    aliasIds: true,
     /** Enable or disable unstable resources */
     resources: {
         diagramPng: true

@@ -18,7 +18,7 @@ import { ClientSessionManager, Logger, ModelState } from '@eclipse-glsp/server';
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { GLSPMcpServer, McpResourceHandler, ResourceHandlerResult } from '../../server';
+import { GLSPMcpServer, McpIdAliasService, McpResourceHandler, ResourceHandlerResult } from '../../server';
 import { createResourceResult, createResourceToolResult, extractResourceParam } from '../../util';
 import { McpModelSerializer } from '../services/mcp-model-serializer';
 import { FEATURE_FLAGS } from '../../feature-flags';
@@ -110,8 +110,12 @@ export class DiagramModelMcpResourceHandler implements McpResourceHandler {
         }
 
         const modelState = session.container.get<ModelState>(ModelState);
+
+        const mcpIdAliasService = session.container.get<McpIdAliasService>(McpIdAliasService);
+        const aliasFn = mcpIdAliasService.alias.bind(mcpIdAliasService, sessionId);
+
         const mcpSerializer = session.container.get<McpModelSerializer>(McpModelSerializer);
-        const [mcpString, flattenedGraph] = mcpSerializer.serialize(modelState.root);
+        const [mcpString, flattenedGraph] = mcpSerializer.serialize(modelState.root, aliasFn);
 
         return {
             content: {

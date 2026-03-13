@@ -17,3 +17,4 @@
 export * from './http-server-with-sessions';
 export * from './mcp-server-contribution';
 export * from './mcp-server-manager';
+export * from './mcp-id-alias-service';

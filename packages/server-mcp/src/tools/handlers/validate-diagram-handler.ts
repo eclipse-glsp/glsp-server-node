@@ -18,7 +18,7 @@ import { ClientSessionManager, Logger, MarkersReason, ModelState, ModelValidator
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { GLSPMcpServer, McpToolHandler } from '../../server';
+import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
 import { createToolResult, createToolResultJson, objectArrayToMarkdownTable } from '../../util';
 import { FEATURE_FLAGS } from '../../feature-flags';
 
@@ -101,14 +101,20 @@ export class ValidateDiagramMcpToolHandler implements McpToolHandler {
             return createToolResult('No validator configured for this diagram type', true);
         }
 
+        const mcpIdAliasService = session.container.get<McpIdAliasService>(McpIdAliasService);
+
         // Determine which elements to validate
-        const idsToValidate = elementIds && elementIds.length > 0 ? elementIds : [modelState.root.id];
+        const idsToValidate =
+            elementIds && elementIds.length > 0 ? elementIds.map(id => mcpIdAliasService.lookup(sessionId, id)) : [modelState.root.id];
 
         // Get elements from index
         const elements = modelState.index.getAll(idsToValidate);
 
         // Run validation
-        const markers = await validator.validate(elements, reason ?? MarkersReason.BATCH);
+        const markers = (await validator.validate(elements, reason ?? MarkersReason.BATCH)).map(marker => ({
+            ...marker,
+            elementId: mcpIdAliasService.alias(sessionId, marker.elementId)
+        }));
 
         if (FEATURE_FLAGS.useJson) {
             return createToolResultJson({ markers });

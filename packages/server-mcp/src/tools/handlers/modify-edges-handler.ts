@@ -17,7 +17,6 @@
 import {
     ChangeRoutingPointsOperation,
     ClientSessionManager,
-    GLabel,
     GShapeElement,
     Logger,
     ModelState,
@@ -26,7 +25,7 @@ import {
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { GLSPMcpServer, McpToolHandler } from '../../server';
+import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
 import { createToolResult, createToolResultJson } from '../../util';
 import { FEATURE_FLAGS } from '../../feature-flags';
 
@@ -113,10 +112,12 @@ export class ModifyEdgesMcpToolHandler implements McpToolHandler {
             return createToolResult('Model is read-only', true);
         }
 
+        const mcpIdAliasService = session.container.get<McpIdAliasService>(McpIdAliasService);
+
         // Map the list of changes to their underlying element
         const elements: [(typeof changes)[number], GShapeElement][] = changes.map(change => [
             change,
-            modelState.index.find(change.elementId) as GShapeElement
+            modelState.index.find(mcpIdAliasService.lookup(sessionId, change.elementId)) as GShapeElement
         ]);
 
         // If any element could not be resolved, do not proceed
@@ -130,7 +131,10 @@ export class ModifyEdgesMcpToolHandler implements McpToolHandler {
         const promises: Promise<void>[] = [];
         const errors: string[] = [];
         elements.forEach(([change, element]) => {
-            const { elementId, sourceElementId, targetElementId, routingPoints } = change;
+            const { routingPoints } = change;
+            const elementId = mcpIdAliasService.lookup(sessionId, change.elementId);
+            const sourceElementId = change.sourceElementId ? mcpIdAliasService.lookup(sessionId, change.sourceElementId) : undefined;
+            const targetElementId = change.targetElementId ? mcpIdAliasService.lookup(sessionId, change.targetElementId) : undefined;
 
             // Filter incomplete change requests
             if ((sourceElementId && !targetElementId) || (!sourceElementId && targetElementId)) {
@@ -186,18 +190,5 @@ export class ModifyEdgesMcpToolHandler implements McpToolHandler {
             `Succesfully modified ${changes.length - errors.length} edge(s) (in ${promises.length} commands)${failureStr}`,
             false
         );
-    }
-
-    /**
-     * This method provides the label ID for a labelled node's label.
-     *
-     * While it can be generally assumed that labelled nodes contain those labels
-     * as direct children, some custom elements may wrap their labels in intermediary
-     * container nodes. However, in the likely scenario that a specific GLSP implementation
-     * requires no further changes to this handler except extracting nested labels, this
-     * function serves as an easy entrypoint without a full override.
-     */
-    protected getCorrespondingLabelId(element: GShapeElement): string | undefined {
-        return element.children.find(child => child instanceof GLabel)?.id;
     }
 }

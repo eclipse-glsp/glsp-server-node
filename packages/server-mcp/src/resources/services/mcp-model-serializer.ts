@@ -30,18 +30,20 @@ export interface McpModelSerializer {
     /**
      * Transforms the given {@link GModelElement} into a string representation.
      * @param element The element that should be serialized.
+     * @param aliasFn Optional function to alias an ID according to `McpIdAliasService`
      * @returns The transformed string and the underlying flattened graph object.
      */
-    serialize(element: GModelElement): [string, Record<string, Record<string, any>[]>];
+    serialize(element: GModelElement, aliasFn?: (id: string) => string): [string, Record<string, Record<string, any>[]>];
 
     /**
      * Transforms the given {@link GModelElement} items into a string representation.
      * It is assumed that they represent a subgraph of the total graph and duplicate elements, e.g,
      * by hierarchy, are removed.
      * @param elements The elements that should be serialized.
+     * @param aliasFn Optional function to alias an ID according to `McpIdAliasService`
      * @returns The transformed string and the underlying flattened graph object.
      */
-    serializeArray(elements: GModelElement[]): [string, Record<string, Record<string, any>[]>];
+    serializeArray(elements: GModelElement[], aliasFn?: (id: string) => string): [string, Record<string, Record<string, any>[]>];
 }
 
 /**
@@ -70,22 +72,11 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
         'parent'
     ];
 
-    serialize(element: GModelElement): [string, Record<string, Record<string, any>[]>] {
-        const elementsByType = this.prepareElement(element);
-
-        if (FEATURE_FLAGS.useJson) {
-            return [JSON.stringify(elementsByType), elementsByType];
-        }
-
-        return [
-            Object.entries(elementsByType)
-                .flatMap(([type, elements]) => [`# ${type}`, objectArrayToMarkdownTable(elements)])
-                .join('\n'),
-            elementsByType
-        ];
+    serialize(element: GModelElement, aliasFn?: (id: string) => string): [string, Record<string, Record<string, any>[]>] {
+        return this.serializeArray([element], aliasFn);
     }
 
-    serializeArray(elements: GModelElement[]): [string, Record<string, Record<string, any>[]>] {
+    serializeArray(elements: GModelElement[], aliasFn?: (id: string) => string): [string, Record<string, Record<string, any>[]>] {
         const elementsByTypeArray = elements.map(element => this.prepareElement(element));
 
         const result: Record<string, Record<string, any>[]> = {};
@@ -95,7 +86,7 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
         allKeys.forEach(key => {
             const combined = elementsByTypeArray.flatMap(obj => obj[key] || []);
 
-            result[key] = Array.from(new Map(combined.map(item => [item.id, item])).values());
+            result[key] = Array.from(new Map(combined.map(item => [item.id, item])).values()).map(item => this.applyAlias(item, aliasFn));
         });
 
         if (FEATURE_FLAGS.useJson) {
@@ -108,6 +99,22 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
                 .join('\n'),
             result
         ];
+    }
+
+    protected applyAlias(element: Record<string, any>, aliasFn?: (id: string) => string): Record<string, any> {
+        if (element.id) {
+            element.id = aliasFn?.(element.id);
+        }
+        if (element.sourceId) {
+            element.sourceId = aliasFn?.(element.sourceId);
+        }
+        if (element.targetId) {
+            element.targetId = aliasFn?.(element.targetId);
+        }
+        if (element.parentId) {
+            element.parentId = aliasFn?.(element.parentId);
+        }
+        return element;
     }
 
     protected prepareElement(element: GModelElement): Record<string, Record<string, any>[]> {
