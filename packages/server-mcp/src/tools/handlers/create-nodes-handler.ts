@@ -27,7 +27,8 @@ import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { GLSPMcpServer, McpToolHandler } from '../../server';
-import { createToolResult } from '../../util';
+import { createToolResult, createToolResultJson } from '../../util';
+import { FEATURE_FLAGS } from '../../feature-flags';
 
 /**
  * Creates one or multiple new nodes in the given session's model.
@@ -79,7 +80,14 @@ export class CreateNodesMcpToolHandler implements McpToolHandler {
                         )
                         .min(1)
                         .describe('Array of nodes to create. Must include at least one node.')
-                }
+                },
+                outputSchema: FEATURE_FLAGS.useJson
+                    ? z.object({
+                          nodeIds: z.array(z.string()).describe('List of IDs of the created nodes.'),
+                          errors: z.array(z.string()).optional().describe('List of errors encountered.'),
+                          nrOfCommands: z.number().describe('The number of commands executed in the course of this tool call.')
+                      })
+                    : undefined
             },
             params => this.handle(params)
         );
@@ -120,8 +128,8 @@ export class CreateNodesMcpToolHandler implements McpToolHandler {
         // Snapshot element IDs before operation
         let beforeIds = modelState.index.allIds();
 
-        const errors = [];
-        const successIds = [];
+        const errors: string[] = [];
+        const successIds: string[] = [];
         let dispatchedOperations = 0;
         // Since we need sequential handling of the created elements, we can't call all in parallel
         for (const node of nodes) {
@@ -164,6 +172,16 @@ export class CreateNodesMcpToolHandler implements McpToolHandler {
             }
 
             successIds.push(newElementId);
+        }
+
+        if (FEATURE_FLAGS.useJson) {
+            const content = {
+                nodeIds: successIds,
+                errors: errors.length ? errors : undefined,
+                nrOfCommands: dispatchedOperations
+            };
+
+            return createToolResultJson(content);
         }
 
         // Create a failure string if any errors occurred

@@ -18,6 +18,7 @@ import { GModelElement } from '@eclipse-glsp/graph';
 import { GModelSerializer } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 import { objectArrayToMarkdownTable } from '../../util';
+import { FEATURE_FLAGS } from '../../feature-flags';
 
 export const McpModelSerializer = Symbol('McpModelSerializer');
 
@@ -29,18 +30,18 @@ export interface McpModelSerializer {
     /**
      * Transforms the given {@link GModelElement} into a string representation.
      * @param element The element that should be serialized.
-     * @returns The transformed string.
+     * @returns The transformed string and the underlying flattened graph object.
      */
-    serialize(element: GModelElement): string;
+    serialize(element: GModelElement): [string, Record<string, Record<string, any>[]>];
 
     /**
      * Transforms the given {@link GModelElement} items into a string representation.
      * It is assumed that they represent a subgraph of the total graph and duplicate elements, e.g,
      * by hierarchy, are removed.
      * @param elements The elements that should be serialized.
-     * @returns The transformed string.
+     * @returns The transformed string and the underlying flattened graph object.
      */
-    serializeArray(elements: GModelElement[]): string;
+    serializeArray(elements: GModelElement[]): [string, Record<string, Record<string, any>[]>];
 }
 
 /**
@@ -69,15 +70,22 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
         'parent'
     ];
 
-    serialize(element: GModelElement): string {
+    serialize(element: GModelElement): [string, Record<string, Record<string, any>[]>] {
         const elementsByType = this.prepareElement(element);
 
-        return Object.entries(elementsByType)
-            .flatMap(([type, elements]) => [`# ${type}`, objectArrayToMarkdownTable(elements)])
-            .join('\n');
+        if (FEATURE_FLAGS.useJson) {
+            return [JSON.stringify(elementsByType), elementsByType];
+        }
+
+        return [
+            Object.entries(elementsByType)
+                .flatMap(([type, elements]) => [`# ${type}`, objectArrayToMarkdownTable(elements)])
+                .join('\n'),
+            elementsByType
+        ];
     }
 
-    serializeArray(elements: GModelElement[]): string {
+    serializeArray(elements: GModelElement[]): [string, Record<string, Record<string, any>[]>] {
         const elementsByTypeArray = elements.map(element => this.prepareElement(element));
 
         const result: Record<string, Record<string, any>[]> = {};
@@ -90,9 +98,16 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
             result[key] = Array.from(new Map(combined.map(item => [item.id, item])).values());
         });
 
-        return Object.entries(result)
-            .flatMap(([type, elements]) => [`# ${type}`, objectArrayToMarkdownTable(elements)])
-            .join('\n');
+        if (FEATURE_FLAGS.useJson) {
+            return [JSON.stringify(result), result];
+        }
+
+        return [
+            Object.entries(result)
+                .flatMap(([type, elements]) => [`# ${type}`, objectArrayToMarkdownTable(elements)])
+                .join('\n'),
+            result
+        ];
     }
 
     protected prepareElement(element: GModelElement): Record<string, Record<string, any>[]> {

@@ -313,7 +313,7 @@ export class DefaultMcpResourceContribution implements McpServerContribution {
         // const schema = serializer.createSchema(modelState.root);
 
         const mcpSerializer = session.container.get<McpModelSerializer>(McpModelSerializer);
-        const mcpString = mcpSerializer.serialize(modelState.root);
+        const [mcpString] = mcpSerializer.serialize(modelState.root);
 
         return {
             contents: [

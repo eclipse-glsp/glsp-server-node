@@ -29,9 +29,13 @@ export const FEATURE_FLAGS = {
      * false -> MCP tools
      */
     useResources: false,
+    /** Changes whether structured data should be returned as JSON or Markdown. */
+    useJson: false,
+    /** Enable or disable unstable resources */
     resources: {
         diagramPng: true
     },
+    /** Enable or disable unstable tools */
     tools: {
         undo: true,
         redo: true,

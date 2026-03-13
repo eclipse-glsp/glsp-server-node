@@ -29,6 +29,8 @@ export type ResourceResultContent = ReadResourceResult['contents'][number];
 export interface ResourceHandlerResult {
     content: ResourceResultContent;
     isError: boolean;
+    // TODO only relevant considering FEATURE_FLAGS.useJson
+    data?: Record<string, any>;
 }
 
 /**

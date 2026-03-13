@@ -15,9 +15,17 @@
  ********************************************************************************/
 
 import { DefaultTypes } from '@eclipse-glsp/server';
-import { ElementTypesMcpResourceHandler, objectArrayToMarkdownTable, ResourceHandlerResult } from '@eclipse-glsp/server-mcp';
+import {
+    createResourceToolResult,
+    ElementTypesMcpResourceHandler,
+    FEATURE_FLAGS,
+    GLSPMcpServer,
+    objectArrayToMarkdownTable,
+    ResourceHandlerResult
+} from '@eclipse-glsp/server-mcp';
 import { injectable } from 'inversify';
 import { ModelTypes } from '../util/model-types';
+import * as z from 'zod/v4';
 
 interface ElementType {
     id: string;
@@ -85,13 +93,20 @@ const WORKFLOW_EDGE_ELEMENT_TYPES: ElementType[] = [
     }
 ];
 
-const WORKFLOW_ELEMENT_TYPES_STRING = [
-    '# Creatable element types for diagram type "workflow-diagram"',
-    '## Node Types',
-    objectArrayToMarkdownTable(WORKFLOW_NODE_ELEMENT_TYPES),
-    '## Edge Types',
-    objectArrayToMarkdownTable(WORKFLOW_EDGE_ELEMENT_TYPES)
-].join('\n');
+const WORKFLOW_ELEMENTS_OBJ = {
+    diagramType: 'workflow-diagram',
+    nodeTypes: WORKFLOW_NODE_ELEMENT_TYPES,
+    edgeTypes: WORKFLOW_EDGE_ELEMENT_TYPES
+};
+const WORKFLOW_ELEMENT_TYPES_STRING = FEATURE_FLAGS.useJson
+    ? JSON.stringify(WORKFLOW_ELEMENTS_OBJ)
+    : [
+          '# Creatable element types for diagram type "workflow-diagram"',
+          '## Node Types',
+          objectArrayToMarkdownTable(WORKFLOW_NODE_ELEMENT_TYPES),
+          '## Edge Types',
+          objectArrayToMarkdownTable(WORKFLOW_EDGE_ELEMENT_TYPES)
+      ].join('\n');
 
 /**
  * The default {@link ElementTypesMcpResourceHandler} extracts a list of operations generically from
@@ -105,6 +120,43 @@ const WORKFLOW_ELEMENT_TYPES_STRING = [
  */
 @injectable()
 export class WorkflowElementTypesMcpResourceHandler extends ElementTypesMcpResourceHandler {
+    override registerTool(server: GLSPMcpServer): void {
+        server.registerTool(
+            'element-types',
+            {
+                title: 'Creatable Element Types',
+                description:
+                    'List all element types (nodes and edges) that can be created for a specific diagram type. ' +
+                    'Use this to discover valid elementTypeId values for creation tools.',
+                inputSchema: {
+                    diagramType: z.string().describe('Diagram type whose elements should be discovered')
+                },
+                outputSchema: FEATURE_FLAGS.useJson
+                    ? z.object({
+                          diagramType: z.string(),
+                          nodeTypes: z.array(
+                              z.object({
+                                  id: z.string(),
+                                  label: z.string(),
+                                  description: z.string(),
+                                  hasLabel: z.boolean()
+                              })
+                          ),
+                          edgeTypes: z.array(
+                              z.object({
+                                  id: z.string(),
+                                  label: z.string(),
+                                  description: z.string(),
+                                  hasLabel: z.boolean()
+                              })
+                          )
+                      })
+                    : undefined
+            },
+            async params => createResourceToolResult(await this.handle(params))
+        );
+    }
+
     override async handle({ diagramType }: { diagramType?: string }): Promise<ResourceHandlerResult> {
         this.logger.info(`'element-types' invoked for diagram type '${diagramType}'`);
 
@@ -123,10 +175,11 @@ export class WorkflowElementTypesMcpResourceHandler extends ElementTypesMcpResou
         return {
             content: {
                 uri: `glsp://types/${diagramType}/elements`,
-                mimeType: 'text/markdown',
+                mimeType: FEATURE_FLAGS.useJson ? 'application/json' : 'text/markdown',
                 text: WORKFLOW_ELEMENT_TYPES_STRING
             },
-            isError: false
+            isError: false,
+            data: WORKFLOW_ELEMENTS_OBJ
         };
     }
 }

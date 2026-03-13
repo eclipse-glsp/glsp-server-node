@@ -20,7 +20,8 @@ import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { McpModelSerializer } from '../../resources/services/mcp-model-serializer';
 import { GLSPMcpServer, McpToolHandler } from '../../server';
-import { createToolResult } from '../../util';
+import { createToolResult, createToolResultJson } from '../../util';
+import { FEATURE_FLAGS } from '../../feature-flags';
 
 /**
  * Creates a serialized representation of one or more specific elements of a given session's model.
@@ -44,7 +45,10 @@ export class DiagramElementsMcpToolHandler implements McpToolHandler {
                 inputSchema: {
                     sessionId: z.string().describe('Session ID containing the relevant model.'),
                     elementIds: z.array(z.string()).min(1).describe('Element IDs that should be queried.')
-                }
+                },
+                outputSchema: FEATURE_FLAGS.useJson
+                    ? z.object().describe('Dictionary of diagram element type to a list of elements.')
+                    : undefined
             },
             params => this.handle(params)
         );
@@ -77,7 +81,11 @@ export class DiagramElementsMcpToolHandler implements McpToolHandler {
         }
 
         const mcpSerializer = session.container.get<McpModelSerializer>(McpModelSerializer);
-        const mcpString = mcpSerializer.serializeArray(elements);
+        const [mcpString, flattenedGraph] = mcpSerializer.serializeArray(elements);
+
+        if (FEATURE_FLAGS.useJson) {
+            return createToolResultJson(flattenedGraph);
+        }
 
         return createToolResult(mcpString, false);
     }

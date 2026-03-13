@@ -19,7 +19,8 @@ import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { GLSPMcpServer, McpToolHandler } from '../../server';
-import { createToolResult } from '../../util';
+import { createToolResult, createToolResultJson } from '../../util';
+import { FEATURE_FLAGS } from '../../feature-flags';
 
 /**
  * Creates one or multiple new edges in the given session's model.
@@ -69,7 +70,14 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
                         )
                         .min(1)
                         .describe('Array of edges to create. Must include at least one node.')
-                }
+                },
+                outputSchema: FEATURE_FLAGS.useJson
+                    ? z.object({
+                          edgeIds: z.array(z.string()).describe('List of IDs of the created edges.'),
+                          errors: z.array(z.string()).optional().describe('List of errors encountered.'),
+                          nrOfCommands: z.number().describe('The number of commands executed in the course of this tool call.')
+                      })
+                    : undefined
             },
             params => this.handle(params)
         );
@@ -110,8 +118,8 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
         // Snapshot element IDs before operation
         let beforeIds = modelState.index.allIds();
 
-        const errors = [];
-        const successIds = [];
+        const errors: string[] = [];
+        const successIds: string[] = [];
         let dispatchedOperations = 0;
         // Since we need sequential handling of the created elements, we can't call all in parallel
         for (const edge of edges) {
@@ -163,6 +171,16 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
             }
 
             successIds.push(newElementId);
+        }
+
+        if (FEATURE_FLAGS.useJson) {
+            const content = {
+                edgeIds: successIds,
+                errors: errors.length ? errors : undefined,
+                nrOfCommands: dispatchedOperations
+            };
+
+            return createToolResultJson(content);
         }
 
         // Create a failure string if any errors occurred

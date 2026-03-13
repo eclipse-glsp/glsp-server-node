@@ -26,7 +26,8 @@ import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { GLSPMcpServer, McpToolHandler } from '../../server';
-import { createToolResult } from '../../util';
+import { createToolResult, createToolResultJson } from '../../util';
+import { FEATURE_FLAGS } from '../../feature-flags';
 
 /**
  * Queries the currently selected elements for a given session's diagram.
@@ -53,7 +54,10 @@ export class GetSelectionMcpToolHandler implements McpToolHandler, ActionHandler
                     'This is usually only relevant when a user directly references their selection.',
                 inputSchema: {
                     sessionId: z.string().describe('Session ID for which the selection should be queried')
-                }
+                },
+                outputSchema: z.object({
+                    selectedIds: z.array(z.string()).describe('IDs of the selected diagram elements')
+                })
             },
             params => this.handle(params)
         );
@@ -86,9 +90,14 @@ export class GetSelectionMcpToolHandler implements McpToolHandler, ActionHandler
         const requestId = action.mcpRequestId;
         this.logger.info(`GetSelectionMcpResultAction received with request ID '${requestId}'`);
 
-        // Resolve the previously started promise
-        const selectedIdsStr = action.selectedElementsIDs.map(id => `- ${id}`).join('\n');
-        this.resolvers[requestId]?.(createToolResult(`Following element IDs are selected:\n${selectedIdsStr}`, false));
+        if (FEATURE_FLAGS.useJson) {
+            this.resolvers[requestId]?.(createToolResultJson({ selectedIds: action.selectedElementsIDs }));
+        } else {
+            // Resolve the previously started promise
+            const selectedIdsStr = action.selectedElementsIDs.map(id => `- ${id}`).join('\n');
+            this.resolvers[requestId]?.(createToolResult(`Following element IDs are selected:\n${selectedIdsStr}`, false));
+        }
+
         delete this.resolvers[requestId];
 
         return [];
