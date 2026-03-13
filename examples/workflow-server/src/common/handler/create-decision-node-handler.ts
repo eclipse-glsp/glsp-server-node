@@ -25,6 +25,6 @@ export class CreateDecisionNodeHandler extends CreateActivityNodeHandler {
     label = 'Decision Node';
 
     protected override builder(point?: Point): ActivityNodeBuilder {
-        return super.builder(point).addCssClass('decision').resizeLocations(GResizeLocation.CROSS);
+        return super.builder(point).addCssClass('decision').resizeLocations(GResizeLocation.CROSS).size(32, 32);
     }
 }
