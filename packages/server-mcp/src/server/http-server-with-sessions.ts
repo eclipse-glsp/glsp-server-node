@@ -15,10 +15,10 @@
  ********************************************************************************/
 
 import { Deferred, Disposable, Emitter, Logger } from '@eclipse-glsp/server';
-import { InMemoryEventStore } from '@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore';
-import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express';
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp';
-import { isInitializeRequest } from '@modelcontextprotocol/sdk/types';
+import { InMemoryEventStore } from '@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore.js';
+import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import type { Express } from 'express';
 import * as express from 'express';
 import * as http from 'http';

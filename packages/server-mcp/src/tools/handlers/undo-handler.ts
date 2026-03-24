@@ -18,7 +18,6 @@ import { ClientSessionManager, CommandStack, Logger, UndoAction } from '@eclipse
 import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { FEATURE_FLAGS } from '../../feature-flags';
 import { GLSPMcpServer, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
 
@@ -34,9 +33,6 @@ export class UndoMcpToolHandler implements McpToolHandler {
     protected clientSessionManager: ClientSessionManager;
 
     registerTool(server: GLSPMcpServer): void {
-        if (!FEATURE_FLAGS.tools.undo) {
-            return;
-        }
         server.registerTool(
             'undo',
             {

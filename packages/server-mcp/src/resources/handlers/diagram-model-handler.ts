@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { ClientSessionManager, Logger, ModelState } from '@eclipse-glsp/server';
-import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp';
+import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { GLSPMcpServer, McpIdAliasService, McpResourceHandler, ResourceHandlerResult } from '../../server';

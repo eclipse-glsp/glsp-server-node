@@ -32,15 +32,5 @@ export const FEATURE_FLAGS = {
     /** Changes whether structured data should be returned as JSON or Markdown. */
     useJson: false,
     /** Changes string-based IDs to integer strings for MCP communication */
-    aliasIds: true,
-    /** Enable or disable unstable resources */
-    resources: {
-        diagramPng: true
-    },
-    /** Enable or disable unstable tools */
-    tools: {
-        undo: true,
-        redo: true,
-        saveModel: true
-    }
+    aliasIds: true
 };

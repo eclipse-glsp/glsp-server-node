@@ -16,7 +16,6 @@
 
 import { ActionHandlerFactory, ActionHandlerRegistry, Args, ClientSessionInitializer } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
-import { FEATURE_FLAGS } from '../feature-flags';
 import { DiagramPngMcpResourceHandler } from '../resources';
 
 /**
@@ -34,8 +33,6 @@ export class ExportMcpPngActionHandlerInitContribution implements ClientSessionI
     protected pngHandler: DiagramPngMcpResourceHandler;
 
     initialize(args?: Args): void {
-        if (FEATURE_FLAGS.resources.diagramPng) {
-            this.registry.registerHandler(this.pngHandler);
-        }
+        this.registry.registerHandler(this.pngHandler);
     }
 }

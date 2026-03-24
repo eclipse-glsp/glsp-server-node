@@ -19,5 +19,4 @@ export * from './handlers/diagram-png-handler';
 export * from './handlers/element-types-handler';
 export * from './handlers/sessions-list-handler';
 export * from './mcp-resource-contribution';
-export * from './resource-module.config';
 export * from './services/mcp-model-serializer';

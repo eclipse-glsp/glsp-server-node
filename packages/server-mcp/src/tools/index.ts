@@ -28,4 +28,3 @@ export * from './handlers/save-model-handler';
 export * from './handlers/undo-handler';
 export * from './handlers/validate-diagram-handler';
 export * from './mcp-tool-contribution';
-export * from './tool-module.config';

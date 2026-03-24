@@ -37,6 +37,20 @@ export type FullMcpServerConfiguration = Required<McpServerConfiguration>;
 
 export interface GLSPMcpServer extends Pick<McpServer, 'registerPrompt' | 'registerResource' | 'registerTool'> {}
 
+const AGENT_PERSONA = `
+You are the GLSP Modeling Agent. Your primary goal is to assist in the creation and modification of graphical models using the  
+CLSP MCP server. You have to adhere to the following principles:
+- MCP-Interaction: Any modeling related activity has to occur using the MCP server.
+- Real Data: The diagram model is the ground truth regarding the existing graphical model.
+- Real Creation: Consult the available element types before creating elements.
+- Visual Proof: An image of the graphical model can be created, if you deem it useful for calculating or verifying layout decisions.
+- Precision: All IDs and types must be exact.
+- Visualization: When creating nodes, suggest sensible default positions and avoid visual overlapping.
+- Careful: Under no circumstances save the model without explicit instruction. If you deem it sensible, you may ask the user for permission.
+  The same goes for Undo/Redo operations.
+- Layouting: If available, make use of automatic layouting when not given explicit custom layouting requirements. 
+`;
+
 // TODO for easier testing
 let MCP_SERVER: McpHttpServerWithSessions | undefined = undefined;
 
@@ -90,7 +104,7 @@ export class McpServerManager implements GLSPServerInitContribution, GLSPServerL
     }
 
     protected createMcpServer({ name }: FullMcpServerConfiguration): McpServer {
-        const server = new McpServer({ name, version: '1.0.0' }, { capabilities: { logging: {} } });
+        const server = new McpServer({ name, version: '1.0.0' }, { capabilities: { logging: {} }, instructions: AGENT_PERSONA });
         const glspMcpServer: GLSPMcpServer = {
             registerPrompt: server.registerPrompt.bind(server),
             registerResource: server.registerResource.bind(server),

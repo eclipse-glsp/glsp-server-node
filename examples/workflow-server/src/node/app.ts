@@ -19,7 +19,7 @@ import { configureELKLayoutModule } from '@eclipse-glsp/layout-elk';
 import { GModelStorage, Logger, SocketServerLauncher, WebSocketServerLauncher, createAppModule } from '@eclipse-glsp/server/node';
 import { Container } from 'inversify';
 
-import { configureMcpInitModule, configureMcpModules } from '@eclipse-glsp/server-mcp';
+import { configureMcpInitModule, configureMcpServerModule } from '@eclipse-glsp/server-mcp';
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
 import { configureWorfklowMcpModule } from '../common/mcp/workflow-mcp-module';
 import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-diagram-module';
@@ -46,14 +46,14 @@ async function launch(argv?: string[]): Promise<void> {
         elkLayoutModule,
         configureMcpInitModule() // needs to be part of `configureDiagramModule` to ensure correct initialization
     );
-    const mcpModules = configureMcpModules(); // must not be part of `configureDiagramModule` to ensure MCP server launch
+    const mcpModule = configureMcpServerModule(); // must not be part of `configureDiagramModule` to ensure MCP server launch
     if (options.webSocket) {
         const launcher = appContainer.resolve(WebSocketServerLauncher);
-        launcher.configure(serverModule, ...mcpModules, configureWorfklowMcpModule());
+        launcher.configure(serverModule, mcpModule, configureWorfklowMcpModule());
         await launcher.start({ port: options.port, host: options.host, path: 'workflow' });
     } else {
         const launcher = appContainer.resolve(SocketServerLauncher);
-        launcher.configure(serverModule, ...mcpModules, configureWorfklowMcpModule());
+        launcher.configure(serverModule, mcpModule, configureWorfklowMcpModule());
         await launcher.start({ port: options.port, host: options.host });
     }
 }

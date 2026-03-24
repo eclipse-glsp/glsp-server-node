@@ -19,9 +19,9 @@ import { ContainerModule } from 'inversify';
 import { ExportMcpPngActionHandlerInitContribution } from './export-png-action-handler-contribution';
 import { GetSelectionActionHandlerInitContribution } from './get-selection-action-handler-contribution';
 
-// TODO this only exists to inject additional action handlers without interfering too much with the given module hierarchy
-// however, as this is somewhat hacky, it is likely better to just extend `ServerModule` (e.g., `McpServerModule`) to register the handlers
-// it could even be completely unnecessary if all the action handlers registered are for useless features that are removed anyway
+/**
+ * This only exists to inject additional action handlers without interfering too much with the given module hierarchy.
+ */
 export function configureMcpInitModule(): ContainerModule {
     return new ContainerModule(bind => {
         bind(ExportMcpPngActionHandlerInitContribution).toSelf().inSingletonScope();

@@ -15,10 +15,9 @@
  ********************************************************************************/
 
 import { Action, ActionHandler, ClientSessionManager, ExportPngMcpAction, ExportPngMcpActionResult, Logger } from '@eclipse-glsp/server';
-import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp';
+import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { FEATURE_FLAGS } from '../../feature-flags';
 import { GLSPMcpServer, McpResourceHandler, ResourceHandlerResult } from '../../server';
 import { createResourceResult, extractResourceParam } from '../../util';
 
@@ -52,9 +51,6 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
     > = {};
 
     registerResource(server: GLSPMcpServer): void {
-        if (!FEATURE_FLAGS.resources.diagramPng) {
-            return;
-        }
         server.registerResource(
             'diagram-png',
             new ResourceTemplate('glsp://diagrams/{sessionId}/png', {
@@ -85,9 +81,6 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
     }
 
     registerTool(server: GLSPMcpServer): void {
-        if (!FEATURE_FLAGS.resources.diagramPng) {
-            return;
-        }
         server.registerTool(
             'diagram-png',
             {
