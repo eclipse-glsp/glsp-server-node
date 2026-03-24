@@ -26,8 +26,10 @@ import {
 } from './resources';
 import {
     DefaultMcpIdAliasService,
-    DummyMcpIdAliasService,
+    DefaultMcpOptionService,
     McpIdAliasService,
+    McpOptionService,
+    McpOptionServiceContribution,
     McpResourceHandler,
     McpServerContribution,
     McpServerManager,
@@ -48,7 +50,6 @@ import {
     UndoMcpToolHandler,
     ValidateDiagramMcpToolHandler
 } from './tools';
-import { FEATURE_FLAGS } from './feature-flags';
 
 export function configureMcpServerModule(): ContainerModule {
     return new ContainerModule(bind => {
@@ -56,11 +57,10 @@ export function configureMcpServerModule(): ContainerModule {
         bind(GLSPServerInitContribution).toService(McpServerManager);
         bind(GLSPServerListener).toService(McpServerManager);
 
-        if (FEATURE_FLAGS.aliasIds) {
-            bind(McpIdAliasService).to(DefaultMcpIdAliasService).inSingletonScope();
-        } else {
-            bind(McpIdAliasService).to(DummyMcpIdAliasService).inSingletonScope();
-        }
+        bindAsService(bind, McpOptionService, DefaultMcpOptionService);
+        bindAsService(bind, McpServerContribution, McpOptionServiceContribution);
+
+        bind(McpIdAliasService).to(DefaultMcpIdAliasService).inSingletonScope();
 
         bind(McpModelSerializer).to(DefaultMcpModelSerializer).inSingletonScope();
 

@@ -14,9 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { injectable } from 'inversify';
-
-// TODO entire feature depends on FEATURE_FLAG.aliasIds
+import { inject, injectable } from 'inversify';
+import { McpOptionService } from './mcp-option-service';
 
 export const McpIdAliasService = Symbol('McpIdAliasService');
 
@@ -43,6 +42,9 @@ export interface McpIdAliasService {
 
 @injectable()
 export class DefaultMcpIdAliasService implements McpIdAliasService {
+    @inject(McpOptionService)
+    protected mcpOptionService: McpOptionService;
+
     // Map<sessionId, Map<uuid, alias>>
     protected idAliasMap = new Map<string, Map<string, string>>();
     // Map<sessionId, Map<alias, uuid>>
@@ -51,6 +53,10 @@ export class DefaultMcpIdAliasService implements McpIdAliasService {
     protected counter = 0;
 
     alias(sessionId: string, uuid: string): string {
+        if (!this.mcpOptionService.get('aliasIds')) {
+            return uuid;
+        }
+
         let idToAlias = this.idAliasMap.get(sessionId);
         let aliasToId = this.aliasIdMap.get(sessionId);
 
@@ -75,6 +81,10 @@ export class DefaultMcpIdAliasService implements McpIdAliasService {
     }
 
     lookup(sessionId: string, alias: string): string {
+        if (!this.mcpOptionService.get('aliasIds')) {
+            return alias;
+        }
+
         const aliasToUuid = this.aliasIdMap.get(sessionId);
         const uuid = aliasToUuid?.get(alias);
 
@@ -83,16 +93,5 @@ export class DefaultMcpIdAliasService implements McpIdAliasService {
         }
 
         return uuid;
-    }
-}
-
-@injectable()
-export class DummyMcpIdAliasService implements McpIdAliasService {
-    alias(sessionId: string, id: string): string {
-        return id;
-    }
-
-    lookup(sessionId: string, alias: string): string {
-        return alias;
     }
 }

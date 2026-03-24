@@ -15,7 +15,6 @@
  ********************************************************************************/
 
 import { injectable, multiInject } from 'inversify';
-import { FEATURE_FLAGS } from '../feature-flags';
 import { GLSPMcpServer, McpResourceHandler, McpServerContribution } from '../server';
 
 /**
@@ -33,9 +32,7 @@ export class McpResourceContribution implements McpServerContribution {
     protected mcpResourceHandlers: McpResourceHandler[];
 
     configure(server: GLSPMcpServer): void {
-        // TODO currently only development tool
-        // think of nice switching mechanism for starting MCP servers with only tools or tools + resources
-        if (FEATURE_FLAGS.useResources) {
+        if (server.options.resources) {
             this.mcpResourceHandlers.forEach(handler => handler.registerResource(server));
         } else {
             this.mcpResourceHandlers.forEach(handler => handler.registerTool(server));

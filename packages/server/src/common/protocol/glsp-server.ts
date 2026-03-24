@@ -106,7 +106,6 @@ export class DefaultGLSPServer implements GLSPServer {
 
         let result = { protocolVersion: DefaultGLSPServer.PROTOCOL_VERSION, serverActions };
 
-        // TODO handle via parameter or something
         // This server is generated as response on diagram request,
         // i.e., the WebSocketServerLauncher starts DefaultGLSPServer per WS connection and this starts the McpServerManager
         // For the simple browser "client", this means every client has a new GLSP Server and MCP Server, but this does not generally hold

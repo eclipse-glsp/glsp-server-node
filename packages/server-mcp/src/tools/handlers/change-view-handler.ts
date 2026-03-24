@@ -93,8 +93,8 @@ export class ChangeViewMcpToolHandler implements McpToolHandler {
                 action = CenterAction.create(elementIds, { animate: true, retainZoom: true });
                 break;
             case 'reset-viewport':
-                // TODO `OriginViewportAction` is not available, because it lives in feature space, not protocol space
-                // TODO should this be removed?
+                // `OriginViewportAction` is not available, because it lives in feature space, not protocol space
+                // should this be removed?
                 action = { kind: 'originViewport', animate: true } as Action;
                 break;
         }
