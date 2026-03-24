@@ -18,8 +18,6 @@ import { ClientSessionManager, Logger, ModelState } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 import { GLSPMcpServer, McpResourceHandler, ResourceHandlerResult } from '../../server';
 import { createResourceResult, createResourceToolResult, objectArrayToMarkdownTable } from '../../util';
-import { FEATURE_FLAGS } from '../../feature-flags';
-import * as z from 'zod/v4';
 
 /**
  * Lists the current sessions according to the {@link ClientSessionManager}. This includes not only
@@ -40,7 +38,7 @@ export class SessionsListMcpResourceHandler implements McpResourceHandler {
             {
                 title: 'GLSP Sessions List',
                 description: 'List all active GLSP client sessions across all diagram types',
-                mimeType: FEATURE_FLAGS.useJson ? 'application/json' : 'text/markdown'
+                mimeType: 'text/markdown'
             },
             async () => createResourceResult(await this.handle({}))
         );
@@ -51,19 +49,7 @@ export class SessionsListMcpResourceHandler implements McpResourceHandler {
             'sessions-list',
             {
                 title: 'GLSP Sessions List',
-                description: 'List all active GLSP client sessions across all diagram types',
-                outputSchema: FEATURE_FLAGS.useJson
-                    ? z.object({
-                          sessionsList: z.array(
-                              z.object({
-                                  sessionId: z.string(),
-                                  diagramType: z.string(),
-                                  sourceUri: z.string().optional(),
-                                  readOnly: z.boolean()
-                              })
-                          )
-                      })
-                    : undefined
+                description: 'List all active GLSP client sessions across all diagram types'
             },
             async () => createResourceToolResult(await this.handle({}))
         );
@@ -86,11 +72,10 @@ export class SessionsListMcpResourceHandler implements McpResourceHandler {
         return {
             content: {
                 uri: 'glsp://sessions',
-                mimeType: FEATURE_FLAGS.useJson ? 'application/json' : 'text/markdown',
-                text: FEATURE_FLAGS.useJson ? JSON.stringify(sessionsList) : objectArrayToMarkdownTable(sessionsList)
+                mimeType: 'text/markdown',
+                text: objectArrayToMarkdownTable(sessionsList)
             },
-            isError: false,
-            data: { sessionsList }
+            isError: false
         };
     }
 }

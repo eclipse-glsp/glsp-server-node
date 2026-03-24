@@ -19,8 +19,7 @@ import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
-import { createToolResult, createToolResultJson, objectArrayToMarkdownTable } from '../../util';
-import { FEATURE_FLAGS } from '../../feature-flags';
+import { createToolResult, objectArrayToMarkdownTable } from '../../util';
 
 /**
  * Validates the given session's model.
@@ -52,21 +51,7 @@ export class ValidateDiagramMcpToolHandler implements McpToolHandler {
                         .optional()
                         .default(MarkersReason.LIVE)
                         .describe('Validation reason: "batch" for thorough validation, "live" for quick incremental checks')
-                },
-                outputSchema: FEATURE_FLAGS.useJson
-                    ? z.object({
-                          markers: z
-                              .array(
-                                  z.object({
-                                      label: z.string(),
-                                      description: z.string(),
-                                      elementId: z.string(),
-                                      kind: z.string()
-                                  })
-                              )
-                              .describe('List of validation results.')
-                      })
-                    : undefined
+                }
             },
             params => this.handle(params)
         );
@@ -115,10 +100,6 @@ export class ValidateDiagramMcpToolHandler implements McpToolHandler {
             ...marker,
             elementId: mcpIdAliasService.alias(sessionId, marker.elementId)
         }));
-
-        if (FEATURE_FLAGS.useJson) {
-            return createToolResultJson({ markers });
-        }
 
         return createToolResult(objectArrayToMarkdownTable(markers), false);
     }

@@ -29,8 +29,6 @@ export const FEATURE_FLAGS = {
      * false -> MCP tools
      */
     useResources: false,
-    /** Changes whether structured data should be returned as JSON or Markdown. */
-    useJson: false,
     /** Changes string-based IDs to integer strings for MCP communication */
     aliasIds: true
 };

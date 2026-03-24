@@ -18,7 +18,6 @@ import { DefaultTypes } from '@eclipse-glsp/server';
 import {
     createResourceToolResult,
     ElementTypesMcpResourceHandler,
-    FEATURE_FLAGS,
     GLSPMcpServer,
     objectArrayToMarkdownTable,
     ResourceHandlerResult
@@ -93,20 +92,13 @@ const WORKFLOW_EDGE_ELEMENT_TYPES: ElementType[] = [
     }
 ];
 
-const WORKFLOW_ELEMENTS_OBJ = {
-    diagramType: 'workflow-diagram',
-    nodeTypes: WORKFLOW_NODE_ELEMENT_TYPES,
-    edgeTypes: WORKFLOW_EDGE_ELEMENT_TYPES
-};
-const WORKFLOW_ELEMENT_TYPES_STRING = FEATURE_FLAGS.useJson
-    ? JSON.stringify(WORKFLOW_ELEMENTS_OBJ)
-    : [
-          '# Creatable element types for diagram type "workflow-diagram"',
-          '## Node Types',
-          objectArrayToMarkdownTable(WORKFLOW_NODE_ELEMENT_TYPES),
-          '## Edge Types',
-          objectArrayToMarkdownTable(WORKFLOW_EDGE_ELEMENT_TYPES)
-      ].join('\n');
+const WORKFLOW_ELEMENT_TYPES_STRING = [
+    '# Creatable element types for diagram type "workflow-diagram"',
+    '## Node Types',
+    objectArrayToMarkdownTable(WORKFLOW_NODE_ELEMENT_TYPES),
+    '## Edge Types',
+    objectArrayToMarkdownTable(WORKFLOW_EDGE_ELEMENT_TYPES)
+].join('\n');
 
 /**
  * The default {@link ElementTypesMcpResourceHandler} extracts a list of operations generically from
@@ -130,28 +122,7 @@ export class WorkflowElementTypesMcpResourceHandler extends ElementTypesMcpResou
                     'Use this to discover valid elementTypeId values for creation tools.',
                 inputSchema: {
                     diagramType: z.string().describe('Diagram type whose elements should be discovered')
-                },
-                outputSchema: FEATURE_FLAGS.useJson
-                    ? z.object({
-                          diagramType: z.string(),
-                          nodeTypes: z.array(
-                              z.object({
-                                  id: z.string(),
-                                  label: z.string(),
-                                  description: z.string(),
-                                  hasLabel: z.boolean()
-                              })
-                          ),
-                          edgeTypes: z.array(
-                              z.object({
-                                  id: z.string(),
-                                  label: z.string(),
-                                  description: z.string(),
-                                  hasLabel: z.boolean()
-                              })
-                          )
-                      })
-                    : undefined
+                }
             },
             async params => createResourceToolResult(await this.handle(params))
         );
@@ -175,11 +146,10 @@ export class WorkflowElementTypesMcpResourceHandler extends ElementTypesMcpResou
         return {
             content: {
                 uri: `glsp://types/${diagramType}/elements`,
-                mimeType: FEATURE_FLAGS.useJson ? 'application/json' : 'text/markdown',
+                mimeType: 'text/markdown',
                 text: WORKFLOW_ELEMENT_TYPES_STRING
             },
-            isError: false,
-            data: WORKFLOW_ELEMENTS_OBJ
+            isError: false
         };
     }
 }

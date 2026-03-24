@@ -20,7 +20,6 @@ import { ContainerModule, inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { GLSPMcpServer, McpResourceHandler, ResourceHandlerResult } from '../../server';
 import { createResourceResult, createResourceToolResult, extractResourceParam, objectArrayToMarkdownTable } from '../../util';
-import { FEATURE_FLAGS } from '../../feature-flags';
 
 /**
  * Lists the available element types for a given diagram type. This should likely include not only their id but also some description.
@@ -48,7 +47,7 @@ export class ElementTypesMcpResourceHandler implements McpResourceHandler {
                             uri: `glsp://types/${type}/elements`,
                             name: `Element Types: ${type}`,
                             description: `Creatable element types for ${type} diagrams`,
-                            mimeType: FEATURE_FLAGS.useJson ? 'application/json' : 'text/markdown'
+                            mimeType: 'text/markdown'
                         }))
                     };
                 },
@@ -61,7 +60,7 @@ export class ElementTypesMcpResourceHandler implements McpResourceHandler {
                 description:
                     'List all element types (nodes and edges) that can be created for a specific diagram type. ' +
                     'Use this to discover valid elementTypeId values for creation tools.',
-                mimeType: FEATURE_FLAGS.useJson ? 'application/json' : 'text/markdown'
+                mimeType: 'text/markdown'
             },
             async (_uri, params) => createResourceResult(await this.handle({ diagramType: extractResourceParam(params, 'diagramType') }))
         );
@@ -77,24 +76,7 @@ export class ElementTypesMcpResourceHandler implements McpResourceHandler {
                     'Use this to discover valid elementTypeId values for creation tools.',
                 inputSchema: {
                     diagramType: z.string().describe('Diagram type whose elements should be discovered')
-                },
-                outputSchema: FEATURE_FLAGS.useJson
-                    ? z.object({
-                          diagramType: z.string(),
-                          nodeTypes: z.array(
-                              z.object({
-                                  id: z.string(),
-                                  label: z.string()
-                              })
-                          ),
-                          edgeTypes: z.array(
-                              z.object({
-                                  id: z.string(),
-                                  label: z.string()
-                              })
-                          )
-                      })
-                    : undefined
+                }
             },
             async params => createResourceToolResult(await this.handle(params))
         );
@@ -147,25 +129,21 @@ export class ElementTypesMcpResourceHandler implements McpResourceHandler {
             }
         }
 
-        const elementTypesObj = { diagramType, nodeTypes, edgeTypes };
-        const result = FEATURE_FLAGS.useJson
-            ? JSON.stringify(elementTypesObj)
-            : [
-                  `# Creatable element types for diagram type "${diagramType}"`,
-                  '## Node Types',
-                  objectArrayToMarkdownTable(nodeTypes),
-                  '## Edge Types',
-                  objectArrayToMarkdownTable(edgeTypes)
-              ].join('\n');
+        const result = [
+            `# Creatable element types for diagram type "${diagramType}"`,
+            '## Node Types',
+            objectArrayToMarkdownTable(nodeTypes),
+            '## Edge Types',
+            objectArrayToMarkdownTable(edgeTypes)
+        ].join('\n');
 
         return {
             content: {
                 uri: `glsp://types/${diagramType}/elements`,
-                mimeType: FEATURE_FLAGS.useJson ? 'application/json' : 'text/markdown',
+                mimeType: 'text/markdown',
                 text: result
             },
-            isError: false,
-            data: elementTypesObj
+            isError: false
         };
     }
 

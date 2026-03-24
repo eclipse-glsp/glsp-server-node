@@ -21,7 +21,6 @@ import * as z from 'zod/v4';
 import { GLSPMcpServer, McpIdAliasService, McpResourceHandler, ResourceHandlerResult } from '../../server';
 import { createResourceResult, createResourceToolResult, extractResourceParam } from '../../util';
 import { McpModelSerializer } from '../services/mcp-model-serializer';
-import { FEATURE_FLAGS } from '../../feature-flags';
 
 /**
  * Creates a serialized representation of a given session's model state.
@@ -45,7 +44,7 @@ export class DiagramModelMcpResourceHandler implements McpResourceHandler {
                             uri: `glsp://diagrams/${sessionId}/model`,
                             name: `Diagram Model: ${sessionId}`,
                             description: `Complete GLSP model structure for session ${sessionId}`,
-                            mimeType: FEATURE_FLAGS.useJson ? 'application/json' : 'text/markdown'
+                            mimeType: 'text/markdown'
                         }))
                     };
                 },
@@ -58,7 +57,7 @@ export class DiagramModelMcpResourceHandler implements McpResourceHandler {
                 description:
                     'Get the complete GLSP model for a session as a markdown structure. ' +
                     'Includes all nodes, edges, and their relevant properties.',
-                mimeType: FEATURE_FLAGS.useJson ? 'application/json' : 'text/markdown'
+                mimeType: 'text/markdown'
             },
             async (_uri, params) => createResourceResult(await this.handle({ sessionId: extractResourceParam(params, 'sessionId') }))
         );
@@ -74,10 +73,7 @@ export class DiagramModelMcpResourceHandler implements McpResourceHandler {
                     'Includes all nodes, edges, and their relevant properties.',
                 inputSchema: {
                     sessionId: z.string().describe('Session ID for which to query the model.')
-                },
-                outputSchema: FEATURE_FLAGS.useJson
-                    ? z.object().describe('Dictionary of diagram element type to a list of elements.')
-                    : undefined
+                }
             },
             async params => createResourceToolResult(await this.handle(params))
         );
@@ -115,16 +111,15 @@ export class DiagramModelMcpResourceHandler implements McpResourceHandler {
         const aliasFn = mcpIdAliasService.alias.bind(mcpIdAliasService, sessionId);
 
         const mcpSerializer = session.container.get<McpModelSerializer>(McpModelSerializer);
-        const [mcpString, flattenedGraph] = mcpSerializer.serialize(modelState.root, aliasFn);
+        const [mcpString] = mcpSerializer.serialize(modelState.root, aliasFn);
 
         return {
             content: {
                 uri: `glsp://diagrams/${sessionId}/model`,
-                mimeType: FEATURE_FLAGS.useJson ? 'application/json' : 'text/markdown',
+                mimeType: 'text/markdown',
                 text: mcpString
             },
-            isError: false,
-            data: flattenedGraph
+            isError: false
         };
     }
 

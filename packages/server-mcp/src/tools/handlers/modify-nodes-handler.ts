@@ -27,8 +27,7 @@ import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
-import { createToolResult, createToolResultJson } from '../../util';
-import { FEATURE_FLAGS } from '../../feature-flags';
+import { createToolResult } from '../../util';
 
 /**
  * Modifies onr or more nodes in the given session's model.
@@ -79,13 +78,7 @@ export class ModifyNodesMcpToolHandler implements McpToolHandler {
                         .describe(
                             'Array of change objects containing an element ID and their intended changes. Must include at least one change.'
                         )
-                },
-                outputSchema: FEATURE_FLAGS.useJson
-                    ? z.object({
-                          nrOfSuccesses: z.number().describe('The number of successful modifications.'),
-                          nrOfCommands: z.number().describe('The number of commands executed in the course of this tool call.')
-                      })
-                    : undefined
+                }
             },
             params => this.handle(params)
         );
@@ -157,13 +150,6 @@ export class ModifyNodesMcpToolHandler implements McpToolHandler {
 
         // Wait for all dispatches to finish before notifying the caller
         await Promise.all(promises);
-
-        if (FEATURE_FLAGS.useJson) {
-            return createToolResultJson({
-                nrOfSuccesses: changes.length,
-                nrOfCommands: promises.length
-            });
-        }
 
         return createToolResult(`Succesfully modified ${changes.length} node(s) (in ${promises.length} commands)`, false);
     }

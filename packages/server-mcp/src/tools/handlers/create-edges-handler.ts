@@ -19,8 +19,7 @@ import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
-import { createToolResult, createToolResultJson } from '../../util';
-import { FEATURE_FLAGS } from '../../feature-flags';
+import { createToolResult } from '../../util';
 
 /**
  * Creates one or multiple new edges in the given session's model.
@@ -70,14 +69,7 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
                         )
                         .min(1)
                         .describe('Array of edges to create. Must include at least one node.')
-                },
-                outputSchema: FEATURE_FLAGS.useJson
-                    ? z.object({
-                          edgeIds: z.array(z.string()).describe('List of IDs of the created edges.'),
-                          errors: z.array(z.string()).optional().describe('List of errors encountered.'),
-                          nrOfCommands: z.number().describe('The number of commands executed in the course of this tool call.')
-                      })
-                    : undefined
+                }
             },
             params => this.handle(params)
         );
@@ -175,16 +167,6 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
             }
 
             successIds.push(mcpIdAliasService.alias(sessionId, newElementId));
-        }
-
-        if (FEATURE_FLAGS.useJson) {
-            const content = {
-                edgeIds: successIds,
-                errors: errors.length ? errors : undefined,
-                nrOfCommands: dispatchedOperations
-            };
-
-            return createToolResultJson(content);
         }
 
         // Create a failure string if any errors occurred

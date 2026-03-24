@@ -16,7 +16,6 @@
 
 import { CallToolResult, ReadResourceResult } from '@modelcontextprotocol/sdk/types';
 import { ResourceHandlerResult } from '../server';
-import { FEATURE_FLAGS } from '../feature-flags';
 
 /**
  * Extracts a single parameter value from MCP resource template parameters.
@@ -54,8 +53,7 @@ export function createResourceToolResult(result: ResourceHandlerResult): CallToo
                 type: 'text',
                 text: (result.content as any).text
             }
-        ],
-        structuredContent: FEATURE_FLAGS.useJson ? result.data : undefined
+        ]
     };
 }
 
@@ -71,19 +69,5 @@ export function createToolResult(text: string, isError: boolean): CallToolResult
                 text
             }
         ]
-    };
-}
-
-// TODO relevant for FEATURE_FLAGS.useJson
-export function createToolResultJson(content: Record<string, any>): CallToolResult {
-    return {
-        isError: false,
-        content: [
-            {
-                type: 'text',
-                text: JSON.stringify(content)
-            }
-        ],
-        structuredContent: content
     };
 }

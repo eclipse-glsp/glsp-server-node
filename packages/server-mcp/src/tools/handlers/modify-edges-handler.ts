@@ -26,8 +26,7 @@ import { CallToolResult } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
-import { createToolResult, createToolResultJson } from '../../util';
-import { FEATURE_FLAGS } from '../../feature-flags';
+import { createToolResult } from '../../util';
 
 /**
  * Modifies onr or more edges in the given session's model.
@@ -73,14 +72,7 @@ export class ModifyEdgesMcpToolHandler implements McpToolHandler {
                         .describe(
                             'Array of change objects containing an element ID and their intended changes. Must include at least one change.'
                         )
-                },
-                outputSchema: FEATURE_FLAGS.useJson
-                    ? z.object({
-                          nrOfSuccesses: z.number().describe('The number of successful modifications.'),
-                          nrOfCommands: z.number().describe('The number of commands executed in the course of this tool call.'),
-                          errors: z.array(z.string()).optional().describe('List of errors encountered.')
-                      })
-                    : undefined
+                }
             },
             params => this.handle(params)
         );
@@ -170,14 +162,6 @@ export class ModifyEdgesMcpToolHandler implements McpToolHandler {
 
         // Wait for all dispatches to finish before notifying the caller
         await Promise.all(promises);
-
-        if (FEATURE_FLAGS.useJson) {
-            return createToolResultJson({
-                nrOfSuccesses: changes.length - errors.length,
-                nrOfCommands: promises.length,
-                errors: errors.length ? errors : undefined
-            });
-        }
 
         // Create a failure string if any errors occurred
         let failureStr = '';

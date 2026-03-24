@@ -18,7 +18,6 @@ import { GModelElement } from '@eclipse-glsp/graph';
 import { GModelSerializer } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 import { objectArrayToMarkdownTable } from '../../util';
-import { FEATURE_FLAGS } from '../../feature-flags';
 
 export const McpModelSerializer = Symbol('McpModelSerializer');
 
@@ -88,10 +87,6 @@ export class DefaultMcpModelSerializer implements McpModelSerializer {
 
             result[key] = Array.from(new Map(combined.map(item => [item.id, item])).values()).map(item => this.applyAlias(item, aliasFn));
         });
-
-        if (FEATURE_FLAGS.useJson) {
-            return [JSON.stringify(result), result];
-        }
 
         return [
             Object.entries(result)
