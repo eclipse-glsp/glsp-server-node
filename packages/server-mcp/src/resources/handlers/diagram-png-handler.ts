@@ -19,7 +19,7 @@ import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { GLSPMcpServer, McpResourceHandler, ResourceHandlerResult } from '../../server';
-import { createResourceResult, extractResourceParam } from '../../util';
+import { createResourceResult, createToolResult, extractResourceParam } from '../../util';
 
 /**
  * Creates a base64-encoded PNG of the given session's model state.
@@ -94,6 +94,10 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
             },
             async params => {
                 const result = await this.handle(params);
+                if (result.isError) {
+                    return createToolResult((result.content as any).text, true);
+                }
+
                 return {
                     isError: result.isError,
                     content: [

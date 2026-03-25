@@ -73,9 +73,13 @@ export class DeleteElementsMcpToolHandler implements McpToolHandler {
 
         // Validate elements exist
         const missingIds: string[] = [];
+        const realIds: string[] = [];
         for (const elementId of elementIds) {
-            const element = modelState.index.find(mcpIdAliasService.lookup(sessionId, elementId));
-            if (!element) {
+            const realId = mcpIdAliasService.lookup(sessionId, elementId);
+            const element = modelState.index.find(realId);
+            if (element) {
+                realIds.push(realId);
+            } else {
                 missingIds.push(elementId);
             }
         }
@@ -88,7 +92,7 @@ export class DeleteElementsMcpToolHandler implements McpToolHandler {
         const beforeCount = modelState.index.allIds().length;
 
         // Create and dispatch delete operation
-        const operation = DeleteElementOperation.create(elementIds);
+        const operation = DeleteElementOperation.create(realIds);
         await session.actionDispatcher.dispatch(operation);
 
         // Calculate how many elements were deleted (including dependents)

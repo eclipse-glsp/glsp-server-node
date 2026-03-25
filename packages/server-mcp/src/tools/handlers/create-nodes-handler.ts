@@ -141,11 +141,17 @@ export class CreateNodesMcpToolHandler implements McpToolHandler {
             // Snapshot element IDs after operation
             const afterIds = modelState.index.allIds();
 
-            // Find new element ID by filtering only the newly added ones...
+            // Find new element ID by filtering only the newly added ones,...
             const newIds = afterIds.filter(id => !beforeIds.includes(id));
-            // ...and in case that multiple exist (i.e., derived elements were created as well),
-            // assume that the first new ID represents the actually relevant element
-            const newElementId = newIds.length > 0 ? newIds[0] : undefined;
+            // ...find the new elements that are of the same type as the created element,
+            const newElements = newIds.map(id => modelState.index.find(id)).filter(element => element?.type === elementTypeId);
+            // ...and in case that multiple exist (which should never be the case),
+            // assume that the first new element represents the actually relevant element
+            const newElementId = newElements.length > 0 ? newElements[0]?.id : undefined;
+            // Log a warning in case that multiple elements of the same type were created
+            if (newElements.length > 1) {
+                this.logger.warn('More than 1 new element created');
+            }
 
             // For the next iteration, use the new snapshot as the baseline
             beforeIds = afterIds;
