@@ -25,6 +25,6 @@ export class CreateMergeNodeHandler extends CreateActivityNodeHandler {
     label = 'Merge Node';
 
     protected override builder(point: Point | undefined): ActivityNodeBuilder {
-        return super.builder(point).addCssClass('merge').resizeLocations(GResizeLocation.CROSS);
+        return super.builder(point).addCssClass('merge').resizeLocations(GResizeLocation.CROSS).size(32, 32);
     }
 }

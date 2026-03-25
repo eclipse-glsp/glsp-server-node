@@ -19,8 +19,9 @@ import { configureELKLayoutModule } from '@eclipse-glsp/layout-elk';
 import { GModelStorage, Logger, SocketServerLauncher, WebSocketServerLauncher, createAppModule } from '@eclipse-glsp/server/node';
 import { Container } from 'inversify';
 
-import { configureMcpModule } from '@eclipse-glsp/server-mcp';
+import { configureMcpInitModule, configureMcpServerModule } from '@eclipse-glsp/server-mcp';
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
+import { configureWorfklowMcpModule } from '../common/mcp/workflow-mcp-module';
 import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-diagram-module';
 import { createWorkflowCliParser } from './workflow-cli-parser';
 
@@ -40,15 +41,19 @@ async function launch(argv?: string[]): Promise<void> {
     });
 
     const elkLayoutModule = configureELKLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator });
-    const serverModule = new WorkflowServerModule().configureDiagramModule(new WorkflowDiagramModule(() => GModelStorage), elkLayoutModule);
-    const mcpModule = configureMcpModule();
+    const serverModule = new WorkflowServerModule().configureDiagramModule(
+        new WorkflowDiagramModule(() => GModelStorage),
+        elkLayoutModule,
+        configureMcpInitModule() // needs to be part of `configureDiagramModule` to ensure correct initialization
+    );
+    const mcpModule = configureMcpServerModule(); // must not be part of `configureDiagramModule` to ensure MCP server launch
     if (options.webSocket) {
         const launcher = appContainer.resolve(WebSocketServerLauncher);
-        launcher.configure(serverModule, mcpModule);
+        launcher.configure(serverModule, mcpModule, configureWorfklowMcpModule());
         await launcher.start({ port: options.port, host: options.host, path: 'workflow' });
     } else {
         const launcher = appContainer.resolve(SocketServerLauncher);
-        launcher.configure(serverModule, mcpModule);
+        launcher.configure(serverModule, mcpModule, configureWorfklowMcpModule());
         await launcher.start({ port: options.port, host: options.host });
     }
 }

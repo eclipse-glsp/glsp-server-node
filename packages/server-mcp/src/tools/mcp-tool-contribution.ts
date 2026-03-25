@@ -13,9 +13,25 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-export * from './di.config';
-export * from './init';
-export * from './resources';
-export * from './server';
-export * from './tools';
-export * from './util';
+
+import { injectable, multiInject } from 'inversify';
+import { GLSPMcpServer, McpServerContribution, McpToolHandler } from '../server';
+
+/**
+ * MCP server contribution that provides tools for performing actions on
+ * GLSP diagrams, including validation and element creation.
+ *
+ * This contribution should not be overriden or extended if another resource is required.
+ * Instead, a new {@link McpToolHandler} should be registered like:
+ * @example
+ * bindAsService(bind, McpToolHandler, CreateNodeMcpToolHandler);
+ */
+@injectable()
+export class McpToolContribution implements McpServerContribution {
+    @multiInject(McpToolHandler)
+    protected mcpToolHandlers: McpToolHandler[];
+
+    configure(server: GLSPMcpServer): void {
+        this.mcpToolHandlers.forEach(handler => handler.registerTool(server));
+    }
+}

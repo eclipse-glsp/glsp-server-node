@@ -13,21 +13,79 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPServerInitContribution, GLSPServerListener, bindAsService } from '@eclipse-glsp/server';
+import { bindAsService, GLSPServerInitContribution, GLSPServerListener } from '@eclipse-glsp/server';
 import { ContainerModule } from 'inversify';
-import { DefaultMcpResourceContribution } from './default-mcp-resource-contribution';
-import { DefaultMcpToolContribution } from './default-mcp-tool-contribution';
-import { McpServerContribution } from './mcp-server-contribution';
-import { McpServerManager } from './mcp-server-manager';
+import {
+    DefaultMcpModelSerializer,
+    DiagramModelMcpResourceHandler,
+    DiagramPngMcpResourceHandler,
+    ElementTypesMcpResourceHandler,
+    McpModelSerializer,
+    McpResourceContribution,
+    SessionsListMcpResourceHandler
+} from './resources';
+import {
+    DefaultMcpIdAliasService,
+    DefaultMcpOptionService,
+    McpIdAliasService,
+    McpOptionService,
+    McpOptionServiceContribution,
+    McpResourceHandler,
+    McpServerContribution,
+    McpServerManager,
+    McpToolHandler
+} from './server';
+import {
+    ChangeViewMcpToolHandler,
+    CreateEdgesMcpToolHandler,
+    CreateNodesMcpToolHandler,
+    DeleteElementsMcpToolHandler,
+    DiagramElementsMcpToolHandler,
+    GetSelectionMcpToolHandler,
+    McpToolContribution,
+    ModifyEdgesMcpToolHandler,
+    ModifyNodesMcpToolHandler,
+    RedoMcpToolHandler,
+    SaveModelMcpToolHandler,
+    UndoMcpToolHandler,
+    ValidateDiagramMcpToolHandler
+} from './tools';
 
-export function configureMcpModule(): ContainerModule {
+export function configureMcpServerModule(): ContainerModule {
     return new ContainerModule(bind => {
         bind(McpServerManager).toSelf().inSingletonScope();
         bind(GLSPServerInitContribution).toService(McpServerManager);
         bind(GLSPServerListener).toService(McpServerManager);
 
-        // Register default MCP contributions for resources and tools
-        bindAsService(bind, McpServerContribution, DefaultMcpResourceContribution);
-        bindAsService(bind, McpServerContribution, DefaultMcpToolContribution);
+        bindAsService(bind, McpOptionService, DefaultMcpOptionService);
+        bindAsService(bind, McpServerContribution, McpOptionServiceContribution);
+
+        bind(McpIdAliasService).to(DefaultMcpIdAliasService).inSingletonScope();
+
+        bind(McpModelSerializer).to(DefaultMcpModelSerializer).inSingletonScope();
+
+        // Resources
+        bindAsService(bind, McpResourceHandler, SessionsListMcpResourceHandler);
+        bindAsService(bind, McpResourceHandler, ElementTypesMcpResourceHandler);
+        bindAsService(bind, McpResourceHandler, DiagramModelMcpResourceHandler);
+        bindAsService(bind, McpResourceHandler, DiagramPngMcpResourceHandler);
+
+        bindAsService(bind, McpServerContribution, McpResourceContribution);
+
+        // Tools
+        bindAsService(bind, McpToolHandler, CreateNodesMcpToolHandler);
+        bindAsService(bind, McpToolHandler, CreateEdgesMcpToolHandler);
+        bindAsService(bind, McpToolHandler, DeleteElementsMcpToolHandler);
+        bindAsService(bind, McpToolHandler, SaveModelMcpToolHandler);
+        bindAsService(bind, McpToolHandler, ValidateDiagramMcpToolHandler);
+        bindAsService(bind, McpToolHandler, DiagramElementsMcpToolHandler);
+        bindAsService(bind, McpToolHandler, ModifyNodesMcpToolHandler);
+        bindAsService(bind, McpToolHandler, ModifyEdgesMcpToolHandler);
+        bindAsService(bind, McpToolHandler, UndoMcpToolHandler);
+        bindAsService(bind, McpToolHandler, RedoMcpToolHandler);
+        bindAsService(bind, McpToolHandler, GetSelectionMcpToolHandler);
+        bindAsService(bind, McpToolHandler, ChangeViewMcpToolHandler);
+
+        bindAsService(bind, McpServerContribution, McpToolContribution);
     });
 }
