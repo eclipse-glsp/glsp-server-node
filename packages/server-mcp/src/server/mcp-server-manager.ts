@@ -54,9 +54,6 @@ CLSP MCP server. You have to adhere to the following principles:
 - Layouting: If available, make use of automatic layouting when not given explicit custom layouting requirements. 
 `;
 
-// TODO for easier testing
-let MCP_SERVER: McpHttpServerWithSessions | undefined = undefined;
-
 @injectable()
 export class McpServerManager implements GLSPServerInitContribution, GLSPServerListener, Disposable {
     @inject(Logger) protected logger: Logger;
@@ -72,11 +69,8 @@ export class McpServerManager implements GLSPServerInitContribution, GLSPServerL
             return result;
         }
 
-        // TODO for easier testing
-        MCP_SERVER?.dispose();
-        await new Promise(res => setTimeout(res, 500));
-
-        // TODO use fixed 60000 instead of 0 so that the MCP server need only be registered once and can thus be easier tested
+        // use a fixed default port instead of 0 so that the MCP server need only be registered once
+        // using 0, i.e., a random port, would require re-registering the MCP server each time
         const { port = 60000, host = '127.0.0.1', route = '/glsp-mcp', name = 'glspMcpServer', options = {} } = mcpServerParam;
         const optionsWithDefaults = { resources: options.resources ?? false, aliasIds: options.aliasIds ?? true };
         const mcpServerConfig: FullMcpServerConfiguration = { port, host, route, name, options: optionsWithDefaults };
@@ -84,8 +78,6 @@ export class McpServerManager implements GLSPServerInitContribution, GLSPServerL
         const httpServer = new McpHttpServerWithSessions(this.logger);
         httpServer.onSessionInitialized(client => this.onSessionInitialized(client, mcpServerConfig));
         this.toDispose.push(httpServer);
-        // TODO for easier testing
-        MCP_SERVER = httpServer;
 
         const address = await httpServer.start(mcpServerConfig);
         this.serverUrl = this.toServerUrl(address, route);
