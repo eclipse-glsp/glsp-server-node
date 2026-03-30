@@ -70,6 +70,7 @@ export * from './features/validation/model-validator';
 export * from './features/validation/request-markers-handler';
 export * from './gmodel/apply-label-edit-operation-handler';
 export * from './gmodel/change-bounds-operation-handler';
+export * from './gmodel/change-container-operation-handler';
 export * from './gmodel/change-routing-points-operation-handler';
 export * from './gmodel/cut-operation-handler';
 export * from './gmodel/delete-operation-handler';

@@ -25,6 +25,7 @@ import { DefaultModelState, ModelState } from '../features/model/model-state';
 import { OperationHandler, OperationHandlerConstructor } from '../operations/operation-handler';
 import { GModelApplyLabelEditOperationHandler } from './apply-label-edit-operation-handler';
 import { GModelChangeBoundsOperationHandler } from './change-bounds-operation-handler';
+import { GModelChangeContainerOperationHandler } from './change-container-operation-handler';
 import { GModelChangeRoutingPointsOperationHandler } from './change-routing-points-operation-handler';
 import { GModelCutOperationHandler } from './cut-operation-handler';
 import { GModelDeleteOperationHandler } from './delete-operation-handler';
@@ -67,6 +68,7 @@ export abstract class GModelDiagramModule extends DiagramModule {
         super.configureOperationHandlers(binding);
         binding.add(GModelApplyLabelEditOperationHandler);
         binding.add(GModelChangeBoundsOperationHandler);
+        binding.add(GModelChangeContainerOperationHandler);
         binding.add(GModelCutOperationHandler);
         binding.add(GModelDeleteOperationHandler);
         binding.add(GModelPasteOperationHandler);
