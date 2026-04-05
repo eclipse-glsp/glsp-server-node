@@ -66,7 +66,7 @@ export class ElementTypesMcpResourceHandler implements McpResourceHandler {
         );
     }
 
-    registerTool(server: GLSPMcpServer): void {
+    registerToolAlternative(server: GLSPMcpServer): void {
         server.registerTool(
             'element-types',
             {

@@ -44,7 +44,7 @@ export class SessionsListMcpResourceHandler implements McpResourceHandler {
         );
     }
 
-    registerTool(server: GLSPMcpServer): void {
+    registerToolAlternative(server: GLSPMcpServer): void {
         server.registerTool(
             'sessions-list',
             {

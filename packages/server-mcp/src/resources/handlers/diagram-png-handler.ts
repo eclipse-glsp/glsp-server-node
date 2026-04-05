@@ -80,7 +80,7 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
         );
     }
 
-    registerTool(server: GLSPMcpServer): void {
+    registerToolAlternative(server: GLSPMcpServer): void {
         server.registerTool(
             'diagram-png',
             {

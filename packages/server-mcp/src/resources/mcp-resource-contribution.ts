@@ -35,7 +35,7 @@ export class McpResourceContribution implements McpServerContribution {
         if (server.options.resources) {
             this.mcpResourceHandlers.forEach(handler => handler.registerResource(server));
         } else {
-            this.mcpResourceHandlers.forEach(handler => handler.registerTool(server));
+            this.mcpResourceHandlers.forEach(handler => handler.registerToolAlternative?.(server));
         }
     }
 }

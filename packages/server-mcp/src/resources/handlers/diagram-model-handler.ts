@@ -63,7 +63,7 @@ export class DiagramModelMcpResourceHandler implements McpResourceHandler {
         );
     }
 
-    registerTool(server: GLSPMcpServer): void {
+    registerToolAlternative(server: GLSPMcpServer): void {
         server.registerTool(
             'diagram-model',
             {

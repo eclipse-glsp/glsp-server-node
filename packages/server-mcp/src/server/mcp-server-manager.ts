@@ -20,9 +20,9 @@ import {
     GLSPServer,
     GLSPServerInitContribution,
     GLSPServerListener,
-    InitializeParameters,
     InitializeResult,
     Logger,
+    McpInitializeParameters,
     McpInitializeResult,
     McpServerConfiguration,
     McpServerOptions,
@@ -40,9 +40,9 @@ export interface GLSPMcpServer extends Pick<McpServer, 'registerPrompt' | 'regis
     options: McpServerOptions;
 }
 
-const AGENT_PERSONA = `
+const DEFAULT_AGENT_PERSONA = `
 You are the GLSP Modeling Agent. Your primary goal is to assist in the creation and modification of graphical models using the  
-CLSP MCP server. You have to adhere to the following principles:
+GLSP MCP server. You have to adhere to the following principles:
 - MCP-Interaction: Any modeling related activity has to occur using the MCP server.
 - Real Data: The diagram model is the ground truth regarding the existing graphical model. Always query it before modifying the diagram.
 - Real Creation: Consult the available element types before creating elements.
@@ -63,7 +63,7 @@ export class McpServerManager implements GLSPServerInitContribution, GLSPServerL
 
     constructor(@multiInject(McpServerContribution) @optional() protected contributions: McpServerContribution[] = []) {}
 
-    async initializeServer(server: GLSPServer, params: InitializeParameters, result: McpInitializeResult): Promise<InitializeResult> {
+    async initializeServer(server: GLSPServer, params: McpInitializeParameters, result: McpInitializeResult): Promise<InitializeResult> {
         const mcpServerParam = getMcpServerConfig(params);
         if (!mcpServerParam) {
             return result;
@@ -100,7 +100,10 @@ export class McpServerManager implements GLSPServerInitContribution, GLSPServerL
     }
 
     protected createMcpServer({ name, options }: FullMcpServerConfiguration): McpServer {
-        const server = new McpServer({ name, version: '1.0.0' }, { capabilities: { logging: {} }, instructions: AGENT_PERSONA });
+        const server = new McpServer(
+            { name, version: '1.0.0' },
+            { capabilities: { logging: {} }, instructions: options.agentPersona ?? DEFAULT_AGENT_PERSONA }
+        );
         const glspMcpServer: GLSPMcpServer = {
             registerPrompt: server.registerPrompt.bind(server),
             registerResource: server.registerResource.bind(server),

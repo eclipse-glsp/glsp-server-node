@@ -23,7 +23,7 @@ export const McpOptionService = Symbol('McpOptionService');
 
 export interface McpOptionService {
     set(options: McpServerOptions): void;
-    get(key: keyof McpServerOptions): boolean | undefined;
+    get(key: keyof McpServerOptions): string | boolean | undefined;
 }
 
 @injectable()
@@ -34,7 +34,7 @@ export class DefaultMcpOptionService implements McpOptionService {
         this.options = options;
     }
 
-    get(key: keyof McpServerOptions): boolean | undefined {
+    get(key: keyof McpServerOptions): string | boolean | undefined {
         if (!this.options) {
             return undefined;
         }

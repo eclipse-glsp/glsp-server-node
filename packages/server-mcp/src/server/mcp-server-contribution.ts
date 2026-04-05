@@ -47,8 +47,13 @@ export interface ResourceHandlerResult {
 export interface McpResourceHandler {
     /** Defines the endpoint and registers the resource with the given MCP server as a resource*/
     registerResource(server: GLSPMcpServer): void;
-    /** Defines the endpoint and registers the resource with the given MCP server as a tool */
-    registerTool(server: GLSPMcpServer): void;
+    /**
+     * Defines the endpoint and registers the resource with the given MCP server as a tool
+     *
+     * If `McpServerOptions.resources` is set to `false`, then this method must be implemented.
+     * Otherwise, the resource will just not be registered.
+     */
+    registerToolAlternative?(server: GLSPMcpServer): void;
     /** Executes the logic given the endpoints input and provides corresponding output */
     handle(params: Record<string, any>): Promise<ResourceHandlerResult>;
 }

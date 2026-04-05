@@ -56,11 +56,6 @@ export abstract class GModelCreateNodeOperationHandler extends GModelOperationHa
         const relativeLocation = this.getRelativeLocation(operation);
         const element = this.createNode(operation, relativeLocation);
         if (element) {
-            // When handling IDs that are not guaranteed unique, ensure no collisions
-            // Since this is a constant time access, the performance impact should be negligable
-            while (this.modelState.index.find(element.id)) {
-                element.id = `${element.id}-`;
-            }
             container.children.push(element);
             element.parent = container;
             this.actionDispatcher.dispatchAfterNextUpdate(SelectAction.create({ selectedElementsIDs: [element.id] }));

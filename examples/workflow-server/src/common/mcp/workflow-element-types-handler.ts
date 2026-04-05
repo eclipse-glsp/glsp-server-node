@@ -112,7 +112,7 @@ const WORKFLOW_ELEMENT_TYPES_STRING = [
  */
 @injectable()
 export class WorkflowElementTypesMcpResourceHandler extends ElementTypesMcpResourceHandler {
-    override registerTool(server: GLSPMcpServer): void {
+    override registerToolAlternative(server: GLSPMcpServer): void {
         server.registerTool(
             'element-types',
             {
