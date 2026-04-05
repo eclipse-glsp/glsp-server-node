@@ -29,7 +29,7 @@ import { WorkflowElementTypesMcpResourceHandler } from './workflow-element-types
 import { WorkflowMcpModelSerializer } from './workflow-mcp-model-serializer';
 import { WorkflowModifyNodesMcpToolHandler } from './workflow-modify-nodes-handler';
 
-export function configureWorfklowMcpModule(): ContainerModule {
+export function configureWorkflowMcpModule(): ContainerModule {
     return new ContainerModule((bind, unbind, isBound, rebind) => {
         rebind(McpModelSerializer).to(WorkflowMcpModelSerializer).inSingletonScope();
         rebind(ElementTypesMcpResourceHandler).to(WorkflowElementTypesMcpResourceHandler).inSingletonScope();

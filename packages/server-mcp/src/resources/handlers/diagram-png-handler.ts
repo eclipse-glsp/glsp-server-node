@@ -18,8 +18,9 @@ import { Action, ActionHandler, ClientSessionManager, ExportPngMcpAction, Export
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { GLSPMcpServer, McpResourceHandler, ResourceHandlerResult } from '../../server';
+import { GLSPMcpServer, McpOptionService, McpResourceHandler, ResourceHandlerResult } from '../../server';
 import { createResourceResult, createToolResult, extractResourceParam } from '../../util';
+import * as uuid from 'uuid';
 
 /**
  * Creates a base64-encoded PNG of the given session's model state.
@@ -44,6 +45,9 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
 
     @inject(ClientSessionManager)
     protected clientSessionManager: ClientSessionManager;
+
+    @inject(McpOptionService)
+    protected mcpOptionService: McpOptionService;
 
     protected resolvers: Record<
         string,
@@ -138,25 +142,25 @@ export class DiagramPngMcpResourceHandler implements McpResourceHandler, ActionH
             };
         }
 
-        const requestId = Math.trunc(Math.random() * 1000).toString();
+        const requestId = uuid.v4();
         this.logger.info(`ExportPngMcpAction dispatched with request ID '${requestId}'`);
         session.actionDispatcher.dispatch(ExportPngMcpAction.create(requestId));
 
+        const timeout = this.mcpOptionService.get('exportPngTimeout') ?? 5000;
         // Start a promise and save the resolve function to the class
         return new Promise(resolve => {
             this.resolvers[requestId] = { sessionId, resolve };
-            setTimeout(
-                () =>
-                    resolve({
-                        content: {
-                            uri: `glsp://diagrams/${sessionId}/png`,
-                            mimeType: 'text/plain',
-                            text: 'The generation of the PNG timed out.'
-                        },
-                        isError: true
-                    }),
-                5000
-            );
+            setTimeout(() => {
+                delete this.resolvers[requestId];
+                resolve({
+                    content: {
+                        uri: `glsp://diagrams/${sessionId}/png`,
+                        mimeType: 'text/plain',
+                        text: 'The generation of the PNG timed out.'
+                    },
+                    isError: true
+                });
+            }, timeout);
         });
     }
 

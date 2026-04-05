@@ -31,7 +31,7 @@ export function objectArrayToMarkdownTable(data: Record<string, any>[]): string 
             .map(header => {
                 const value = obj[header] ?? '';
                 if (typeof value === 'object') {
-                    return JSON.stringify(value).replace(/["{}]/g, '');
+                    return JSON.stringify(value).replace(/["{}|]/g, '');
                 }
                 return value;
             })

@@ -27,6 +27,7 @@ import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { GLSPMcpServer, McpIdAliasService, McpToolHandler } from '../../server';
 import { createToolResult } from '../../util';
+import * as uuid from 'uuid';
 
 /**
  * Queries the currently selected elements for a given session's diagram.
@@ -71,7 +72,7 @@ export class GetSelectionMcpToolHandler implements McpToolHandler, ActionHandler
             return createToolResult('No active session found for this session id.', true);
         }
 
-        const requestId = Math.trunc(Math.random() * 1000).toString();
+        const requestId = uuid.v4();
         this.logger.info(`GetSelectionMcpAction dispatched with request ID '${requestId}'`);
         session.actionDispatcher.dispatch(GetSelectionMcpAction.create(requestId));
 

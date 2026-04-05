@@ -85,7 +85,7 @@ export class ModifyEdgesMcpToolHandler implements McpToolHandler {
         sessionId: string;
         changes: { elementId: string; sourceElementId?: string; targetElementId?: string; routingPoints?: { x: number; y: number }[] }[];
     }): Promise<CallToolResult> {
-        this.logger.info(`'modify-nodes' invoked for session '${sessionId}' with ${changes.length} changes`);
+        this.logger.info(`'modify-edges' invoked for session '${sessionId}' with ${changes.length} changes`);
 
         if (!sessionId) {
             return createToolResult('No session id provided.', true);

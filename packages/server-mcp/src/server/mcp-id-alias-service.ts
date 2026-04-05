@@ -50,6 +50,8 @@ export class DefaultMcpIdAliasService implements McpIdAliasService {
     // Map<sessionId, Map<alias, uuid>>
     protected aliasIdMap = new Map<string, Map<string, string>>();
 
+    // TODO add cleanup logic; implement ClientSessionListener?
+
     protected counter = 0;
 
     alias(sessionId: string, uuid: string): string {

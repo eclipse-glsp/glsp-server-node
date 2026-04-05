@@ -186,7 +186,7 @@ export class CreateEdgesMcpToolHandler implements McpToolHandler {
         // Even if every input given yields an error, the MCP call was still successful technically (even if not semantically)
         // Otherwise, we would need some kind of transaction to rollback successful creations, which would be a great technical challenge
         return createToolResult(
-            `Sucessfully created ${successIds.length} edge(s) (in ${dispatchedOperations} commands) ` +
+            `Successfully created ${successIds.length} edge(s) (in ${dispatchedOperations} commands) ` +
                 `with element IDs:\n${successListStr}${failureStr}`,
             false
         );
