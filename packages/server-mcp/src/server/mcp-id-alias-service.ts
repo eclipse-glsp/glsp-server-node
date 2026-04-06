@@ -16,6 +16,7 @@
 
 import { inject, injectable } from 'inversify';
 import { McpOptionService } from './mcp-option-service';
+import { ClientSession, ClientSessionListener, ClientSessionManager, Logger } from '@eclipse-glsp/server';
 
 export const McpIdAliasService = Symbol('McpIdAliasService');
 
@@ -41,7 +42,10 @@ export interface McpIdAliasService {
 }
 
 @injectable()
-export class DefaultMcpIdAliasService implements McpIdAliasService {
+export class DefaultMcpIdAliasService implements McpIdAliasService, ClientSessionListener {
+    @inject(Logger)
+    protected logger: Logger;
+
     @inject(McpOptionService)
     protected mcpOptionService: McpOptionService;
 
@@ -50,9 +54,11 @@ export class DefaultMcpIdAliasService implements McpIdAliasService {
     // Map<sessionId, Map<alias, uuid>>
     protected aliasIdMap = new Map<string, Map<string, string>>();
 
-    // TODO add cleanup logic; implement ClientSessionListener?
+    protected counterMap = new Map<string, number>();
 
-    protected counter = 0;
+    constructor(@inject(ClientSessionManager) protected clientSessionManager: ClientSessionManager) {
+        clientSessionManager.addListener(this);
+    }
 
     alias(sessionId: string, uuid: string): string {
         if (!this.mcpOptionService.get('aliasIds')) {
@@ -74,7 +80,9 @@ export class DefaultMcpIdAliasService implements McpIdAliasService {
             return existingAlias;
         }
 
-        const newAlias = (++this.counter).toString();
+        const currentCounter = this.counterMap.get(sessionId) ?? 1;
+        const newAlias = currentCounter.toString();
+        this.counterMap.set(sessionId, currentCounter + 1);
 
         idToAlias.set(uuid, newAlias);
         aliasToId.set(newAlias, uuid);
@@ -95,5 +103,13 @@ export class DefaultMcpIdAliasService implements McpIdAliasService {
         }
 
         return uuid;
+    }
+
+    sessionDisposed(clientSession: ClientSession): void {
+        const sessionId = clientSession.id;
+        this.logger.info(`Cleared aliases for session '${sessionId}'`);
+        this.idAliasMap.delete(sessionId);
+        this.aliasIdMap.delete(sessionId);
+        this.counterMap.delete(sessionId);
     }
 }
