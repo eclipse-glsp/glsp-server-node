@@ -54,6 +54,6 @@ export class ClientActionForwarder {
         if (ClientAction.is(action)) {
             return false;
         }
-        return this.actionKinds.has(action.kind) || ResponseAction.is(action);
+        return this.actionKinds.has(action.kind) || ResponseAction.hasValidResponseId(action);
     }
 }

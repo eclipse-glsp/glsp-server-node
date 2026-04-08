@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, UpdateModelAction } from '@eclipse-glsp/protocol';
+import { Action, Deferred, RequestAction, ResponseAction, UpdateModelAction } from '@eclipse-glsp/protocol';
 import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
 import * as sinon from 'sinon';
@@ -41,14 +41,16 @@ describe('test DefaultActionDispatcher', () => {
     let registry_get_stub: sinon.SinonStub<[string], ActionHandler[]>;
     const sandbox = sinon.createSandbox();
 
+    const clientActionForwarderStub = sinon.createStubInstance(ClientActionForwarder);
+
     container.load(
         new ContainerModule(bind => {
             bind(Logger).toConstantValue(new mock.StubLogger());
             bind(ClientSessionManager).toConstantValue(new mock.StubClientSessionManager());
             bind(ClientId).toConstantValue(clientId);
             bind(ActionHandlerRegistry).toConstantValue(actionHandlerRegistry);
-            bind(ClientActionKinds).toConstantValue(['response', 'response1', 'response2']);
-            bind(ClientActionForwarder).toConstantValue(sinon.createStubInstance(ClientActionForwarder));
+            bind(ClientActionKinds).toConstantValue(new Set(['response', 'response1', 'response2']));
+            bind(ClientActionForwarder).toConstantValue(clientActionForwarderStub);
         })
     );
     const actionDispatcher = container.resolve(DefaultActionDispatcher);
@@ -286,6 +288,244 @@ describe('test DefaultActionDispatcher', () => {
             // Check that action does not get dispatched again
             await actionDispatcher.dispatch(updateModelAction);
             expect(spy_postUpdateHandler_execute.calledOnce);
+        });
+    });
+
+    describe('test request/response', () => {
+        it('request - resolves when matching response is dispatched', async () => {
+            const requestAction: RequestAction<ResponseAction> = {
+                kind: 'testRequest',
+                requestId: 'req_1'
+            };
+            const responseAction: ResponseAction = {
+                kind: 'testResponse',
+                responseId: 'req_1'
+            };
+
+            // Configure forwarder: testRequest is forwarded to the client
+            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
+            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
+            registry_get_stub.callsFake(() => []);
+
+            const responsePromise = actionDispatcher.request(requestAction);
+            await actionDispatcher.dispatch(responseAction);
+
+            const result = await responsePromise;
+            expect(result.responseId).to.equal('req_1');
+        });
+
+        it('request - response bypasses queue even when queue is busy', async () => {
+            const requestAction: RequestAction<ResponseAction> = {
+                kind: 'testRequest',
+                requestId: 'req_deadlock'
+            };
+            const responseAction: ResponseAction = {
+                kind: 'testResponse',
+                responseId: 'req_deadlock'
+            };
+
+            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
+            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
+
+            const handlerRunning = new Deferred<void>();
+
+            const slowAction = 'slowAction';
+            const slowHandler = new mock.StubActionHandler([slowAction]);
+            slowHandler.execute = async () => {
+                const resultPromise = actionDispatcher.request(requestAction);
+                handlerRunning.resolve();
+                const result = await resultPromise;
+                expect(result.responseId).to.equal('req_deadlock');
+                return [];
+            };
+            registry_get_stub.callsFake((kind: string) =>
+                kind === slowAction ? [slowHandler] : []
+            );
+
+            const dispatchPromise = actionDispatcher.dispatch({ kind: slowAction });
+            await handlerRunning.promise;
+
+            // Response must resolve even though the queue is busy
+            await actionDispatcher.dispatch(responseAction);
+            await dispatchPromise;
+        });
+
+        it('request - resolves for locally handled request (server→server)', async () => {
+            const localRequestKind = 'localRequest';
+            const localResponseKind = 'localResponse';
+
+            const handler = new mock.StubActionHandler([localRequestKind]);
+            sinon.stub(handler, 'execute').callsFake(() => {
+                const response: ResponseAction = { kind: localResponseKind, responseId: '' };
+                return [response];
+            });
+            registry_get_stub.callsFake((kind: string) =>
+                kind === localRequestKind ? [handler] : []
+            );
+
+            const requestAction: RequestAction<ResponseAction> = {
+                kind: localRequestKind,
+                requestId: ''
+            };
+
+            const result = await actionDispatcher.request(requestAction);
+            expect(result).to.exist;
+            expect(result.responseId).to.equal(requestAction.requestId);
+        });
+
+        it('request - resolves for locally handled request called from inside a handler', async () => {
+            const innerRequestKind = 'innerRequest';
+            const innerResponseKind = 'innerResponse';
+            const outerActionKind = 'outerAction';
+
+            const innerHandler = new mock.StubActionHandler([innerRequestKind]);
+            sinon.stub(innerHandler, 'execute').callsFake(() => {
+                const response: ResponseAction = { kind: innerResponseKind, responseId: '' };
+                return [response];
+            });
+
+            const outerHandler = new mock.StubActionHandler([outerActionKind]);
+            outerHandler.execute = async () => {
+                const innerRequest: RequestAction<ResponseAction> = {
+                    kind: innerRequestKind,
+                    requestId: ''
+                };
+                const result = await actionDispatcher.request(innerRequest);
+                expect(result).to.exist;
+                return [];
+            };
+
+            registry_get_stub.callsFake((kind: string) => {
+                if (kind === outerActionKind) return [outerHandler];
+                if (kind === innerRequestKind) return [innerHandler];
+                return [];
+            });
+
+            // This must not deadlock
+            await actionDispatcher.dispatch({ kind: outerActionKind });
+        });
+
+        it('requestUntil - rejects on timeout when rejectOnTimeout is true', async () => {
+            const requestAction: RequestAction<ResponseAction> = {
+                kind: 'testRequest',
+                requestId: 'req_hard'
+            };
+
+            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
+            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
+            registry_get_stub.callsFake(() => []);
+
+            try {
+                await actionDispatcher.requestUntil(requestAction, 100, true);
+                expect.fail('Should have thrown');
+            } catch (error: unknown) {
+                expect((error as Error).message).to.include('timed out');
+            }
+        });
+
+        it('requestUntil - resolves undefined on timeout when rejectOnTimeout is false', async () => {
+            const requestAction: RequestAction<ResponseAction> = {
+                kind: 'testRequest',
+                requestId: 'req_soft'
+            };
+
+            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
+            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
+            registry_get_stub.callsFake(() => []);
+
+            const result = await actionDispatcher.requestUntil(requestAction, 100, false);
+            expect(result).to.be.undefined;
+        });
+
+        it('request - auto-generates requestId when empty', async () => {
+            const requestAction: RequestAction<ResponseAction> = {
+                kind: 'testRequest',
+                requestId: ''
+            };
+
+            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
+            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
+            registry_get_stub.callsFake(() => []);
+
+            const responsePromise = actionDispatcher.request(requestAction);
+            expect(requestAction.requestId).to.match(/^server_.*_\d+$/);
+
+            await actionDispatcher.dispatch({
+                kind: 'testResponse',
+                responseId: requestAction.requestId
+            } as ResponseAction);
+
+            const result = await responsePromise;
+            expect(result).to.exist;
+        });
+
+        it('request - rejects when dispatch fails (no handler, not a client action)', async () => {
+            const requestAction: RequestAction<ResponseAction> = {
+                kind: 'unknownRequest',
+                requestId: 'req_fail'
+            };
+
+            // NOT forwarded to client, no handler registered → dispatch throws
+            clientActionForwarderStub.shouldForwardToClient.returns(false);
+            clientActionForwarderStub.handle.returns(false);
+            registry_get_stub.callsFake(() => []);
+
+            try {
+                await actionDispatcher.request(requestAction);
+                expect.fail('Should have thrown');
+            } catch (error: unknown) {
+                expect((error as Error).message).to.include('No handler registered');
+            }
+        });
+
+        it('requestUntil - late response after timeout has responseId cleared', async () => {
+            const requestAction: RequestAction<ResponseAction> = {
+                kind: 'testRequest',
+                requestId: 'req_late'
+            };
+
+            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
+            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
+            // Register a no-op handler for testResponse so the late response can be dispatched normally
+            const noopHandler = new mock.StubActionHandler(['testResponse']);
+            registry_get_stub.callsFake((kind: string) =>
+                kind === 'testResponse' ? [noopHandler] : []
+            );
+
+            // Request times out
+            try {
+                await actionDispatcher.requestUntil(requestAction, 50, true);
+                expect.fail('Should have thrown');
+            } catch (error: unknown) {
+                expect((error as Error).message).to.include('timed out');
+            }
+
+            // Late response arrives — responseId should be cleared, dispatched as normal action
+            const lateResponse: ResponseAction = { kind: 'testResponse', responseId: 'req_late' };
+            await actionDispatcher.dispatch(lateResponse);
+            expect(lateResponse.responseId).to.equal('');
+        });
+
+        it('dispose - rejects all pending requests', async () => {
+            const requestAction: RequestAction<ResponseAction> = {
+                kind: 'testRequest',
+                requestId: 'req_dispose'
+            };
+
+            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
+            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
+            registry_get_stub.callsFake(() => []);
+
+            const responsePromise = actionDispatcher.request(requestAction);
+            (actionDispatcher as any).dispose();
+
+            try {
+                await responsePromise;
+                expect.fail('Should have thrown');
+            } catch (error: unknown) {
+                expect((error as Error).message).to.include('cancelled');
+                expect((error as Error).message).to.include('req_dispose');
+            }
         });
     });
 });
