@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2025 EclipseSource and others.
+ * Copyright (c) 2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,14 +14,5 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { MaybePromise } from '@eclipse-glsp/server';
-import { CallToolResult, ReadResourceResult } from '@modelcontextprotocol/sdk/types';
-import { GLSPMcpServer } from './mcp-server-manager';
-
-export interface McpServerContribution {
-    configure(server: GLSPMcpServer): MaybePromise<void>;
-}
-export const McpServerContribution = Symbol('McpServerContribution');
-
-export type ToolResultContent = CallToolResult['content'][number];
-export type ResourceResultContent = ReadResourceResult['contents'][number];
+export * from './markdown-util';
+export * from './mcp-util';

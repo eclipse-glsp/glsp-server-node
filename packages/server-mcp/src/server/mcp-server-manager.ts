@@ -20,11 +20,12 @@ import {
     GLSPServer,
     GLSPServerInitContribution,
     GLSPServerListener,
-    InitializeParameters,
     InitializeResult,
     Logger,
+    McpInitializeParameters,
     McpInitializeResult,
     McpServerConfiguration,
+    McpServerOptions,
     getMcpServerConfig
 } from '@eclipse-glsp/server';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -35,7 +36,23 @@ import { McpServerContribution } from './mcp-server-contribution';
 
 export type FullMcpServerConfiguration = Required<McpServerConfiguration>;
 
-export interface GLSPMcpServer extends Pick<McpServer, 'registerPrompt' | 'registerResource' | 'registerTool'> {}
+export interface GLSPMcpServer extends Pick<McpServer, 'registerPrompt' | 'registerResource' | 'registerTool'> {
+    options: McpServerOptions;
+}
+
+const DEFAULT_AGENT_PERSONA = `
+You are the GLSP Modeling Agent. Your primary goal is to assist in the creation and modification of graphical models using the  
+GLSP MCP server. You have to adhere to the following principles:
+- MCP-Interaction: Any modeling related activity has to occur using the MCP server.
+- Real Data: The diagram model is the ground truth regarding the existing graphical model. Always query it before modifying the diagram.
+- Real Creation: Consult the available element types before creating elements.
+- Visual Proof: An image of the graphical model can be created, if you deem it useful for calculating or verifying layout decisions.
+- Precision: All IDs and types must be exact.
+- Visualization: When creating nodes, suggest sensible default positions and avoid visual overlapping.
+- Careful: Under no circumstances save the model without explicit instruction. If you deem it sensible, you may ask the user for permission.
+  The same goes for Undo/Redo operations.
+- Layouting: If available, make use of automatic layouting when not given explicit custom layouting requirements. 
+`;
 
 @injectable()
 export class McpServerManager implements GLSPServerInitContribution, GLSPServerListener, Disposable {
@@ -46,14 +63,17 @@ export class McpServerManager implements GLSPServerInitContribution, GLSPServerL
 
     constructor(@multiInject(McpServerContribution) @optional() protected contributions: McpServerContribution[] = []) {}
 
-    async initializeServer(server: GLSPServer, params: InitializeParameters, result: McpInitializeResult): Promise<InitializeResult> {
+    async initializeServer(server: GLSPServer, params: McpInitializeParameters, result: McpInitializeResult): Promise<InitializeResult> {
         const mcpServerParam = getMcpServerConfig(params);
         if (!mcpServerParam) {
             return result;
         }
 
-        const { port = 0, host = '127.0.0.1', route = '/glsp-mcp', name = 'glspMcpServer' } = mcpServerParam;
-        const mcpServerConfig: FullMcpServerConfiguration = { port, host, route, name };
+        // use a fixed default port instead of 0 so that the MCP server need only be registered once
+        // using 0, i.e., a random port, would require re-registering the MCP server each time
+        const { port = 60000, host = '127.0.0.1', route = '/glsp-mcp', name = 'glspMcpServer', options = {} } = mcpServerParam;
+        const optionsWithDefaults = { resources: options.resources ?? false, aliasIds: options.aliasIds ?? true };
+        const mcpServerConfig: FullMcpServerConfiguration = { port, host, route, name, options: optionsWithDefaults };
 
         const httpServer = new McpHttpServerWithSessions(this.logger);
         httpServer.onSessionInitialized(client => this.onSessionInitialized(client, mcpServerConfig));
@@ -79,12 +99,16 @@ export class McpServerManager implements GLSPServerInitContribution, GLSPServerL
         this.toDispose.push(Disposable.create(() => server.close()));
     }
 
-    protected createMcpServer({ name }: FullMcpServerConfiguration): McpServer {
-        const server = new McpServer({ name, version: '1.0.0' }, { capabilities: { logging: {} } });
+    protected createMcpServer({ name, options }: FullMcpServerConfiguration): McpServer {
+        const server = new McpServer(
+            { name, version: '1.0.0' },
+            { capabilities: { logging: {} }, instructions: options.agentPersona ?? DEFAULT_AGENT_PERSONA }
+        );
         const glspMcpServer: GLSPMcpServer = {
             registerPrompt: server.registerPrompt.bind(server),
             registerResource: server.registerResource.bind(server),
-            registerTool: server.registerTool.bind(server)
+            registerTool: server.registerTool.bind(server),
+            options
         };
         this.contributions.forEach(contribution => contribution.configure(glspMcpServer));
         return server;

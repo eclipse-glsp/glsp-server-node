@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2024 STMicroelectronics and others.
+ * Copyright (c) 2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,18 +13,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GResizeLocation, Point } from '@eclipse-glsp/server';
+
+import { GLabel, GShapeElement } from '@eclipse-glsp/server';
+import { ModifyNodesMcpToolHandler } from '@eclipse-glsp/server-mcp';
 import { injectable } from 'inversify';
-import { ActivityNodeBuilder } from '../graph-extension';
 import { ModelTypes } from '../util/model-types';
-import { CreateActivityNodeHandler } from './create-activity-node-handler';
 
 @injectable()
-export class CreateDecisionNodeHandler extends CreateActivityNodeHandler {
-    elementTypeIds = [ModelTypes.DECISION_NODE];
-    label = 'Decision Node';
+export class WorkflowModifyNodesMcpToolHandler extends ModifyNodesMcpToolHandler {
+    override getCorrespondingLabelId(element: GShapeElement): string | undefined {
+        // Category labels are nested in a header component
+        if (element.type === ModelTypes.CATEGORY) {
+            return element.children.find(child => child.type === ModelTypes.COMP_HEADER)?.children.find(child => child instanceof GLabel)
+                ?.id;
+        }
 
-    protected override builder(point?: Point): ActivityNodeBuilder {
-        return super.builder(point).addCssClass('decision').resizeLocations(GResizeLocation.CROSS).size(32, 32);
+        // Assume that generally, labelled nodes have those labels as direct children
+        return element.children.find(child => child instanceof GLabel)?.id;
     }
 }
