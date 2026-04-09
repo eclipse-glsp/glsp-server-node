@@ -1,5 +1,11 @@
 # Eclipse GLSP Server Changelog
 
+## v2.7.0 - active
+
+### Potentially Breaking Changes
+
+-   [node] Update minimum requirements for Node to >=22 [#128](https://github.com/eclipse-glsp/glsp-server-node/pull/128)
+
 ## [v2.6.0 - 10/02/2026](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.6.0)
 
 ### Changes
