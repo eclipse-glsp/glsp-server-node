@@ -135,6 +135,10 @@ export class StubActionDispatcher implements ActionDispatcher {
         return Promise.resolve();
     }
 
+    dispatchDirectly(action: Action): Promise<void> {
+        return Promise.resolve();
+    }
+
     dispatchAll(...actions: MaybeArray<Action>[]): Promise<void> {
         return Promise.resolve();
     }

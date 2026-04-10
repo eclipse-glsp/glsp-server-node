@@ -81,12 +81,12 @@ export class RequestModelActionHandler implements ActionHandler {
     }
 
     protected reportModelLoading(message: string): ProgressMonitor | undefined {
-        this.actionDispatcher.dispatch(StatusAction.create(message, { severity: 'INFO' }));
+        this.actionDispatcher.dispatchDirectly(StatusAction.create(message, { severity: 'INFO' }));
         return this.progressService.start(message);
     }
 
     protected reportModelLoadingFinished(monitor?: ProgressMonitor): void {
-        this.actionDispatcher.dispatch(StatusAction.create('', { severity: 'NONE' }));
+        this.actionDispatcher.dispatchDirectly(StatusAction.create('', { severity: 'NONE' }));
         monitor?.end();
     }
 

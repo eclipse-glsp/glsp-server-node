@@ -43,6 +43,8 @@ export const ActionDispatcher = Symbol('ActionDispatcher');
 export interface ActionDispatcher {
     /**
      * Processes the given action by dispatching it to all registered handlers.
+     * Actions are enqueued to preserve sequential ordering. Response actions
+     * produced by handlers are dispatched directly via {@link dispatchDirectly}.
      *
      * @param action The action that should be dispatched.
      * @returns A promise indicating when the action processing is complete.
@@ -57,6 +59,18 @@ export interface ActionDispatcher {
      */
     dispatchAll(actions: Action[]): Promise<void>;
     dispatchAll(...actions: Action[]): Promise<void>;
+
+    /**
+     * Dispatches an action directly, bypassing the action queue. Use this for actions that
+     * need to be processed immediately, e.g. progress notifications sent from inside a handler.
+     *
+     * Actions dispatched this way are not sequenced with other queued actions. Callers are
+     * responsible for ensuring that concurrent execution is safe.
+     *
+     * @param action The action to dispatch directly.
+     * @returns A promise indicating when the action processing is complete.
+     */
+    dispatchDirectly(action: Action): Promise<void>;
 
     /**
      * Processes all given actions, by dispatching them to the corresponding handlers, after the next model update.
@@ -74,9 +88,12 @@ export interface ActionDispatcher {
      * _not_ passed to the registered action handlers. Instead, it is the responsibility of the
      * caller of this method to handle the response properly.
      *
-     * If the request's `kind` is registered in `ClientActionKinds`, it is forwarded to the client
-     * via {@link ClientActionForwarder}. Otherwise it is dispatched locally through server-side
-     * handlers.
+     * The request is dispatched directly (bypassing the queue). If its `kind` is registered in
+     * `ClientActionKinds`, it is forwarded to the client via {@link ClientActionForwarder}.
+     * If server-side handlers are registered, they are also executed.
+     *
+     * Only the first matching response resolves the request. Any additional or late responses
+     * are dispatched as normal actions.
      *
      * The promise waits indefinitely until a response arrives or the dispatcher is disposed.
      * Use {@link requestUntil} if a timeout is needed.
@@ -137,18 +154,14 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
     }
 
     dispatch(action: Action): Promise<void> {
-        // Fast-path: resolve pending requests before the queue to prevent deadlock
-        // when request() is awaited inside a queued handler and the response
-        // arrives via process() -> dispatch().
         if (this.interceptPendingResponse(action)) {
             return Promise.resolve();
         }
-
-        // Dont queue actions that are just delegated to the client
-        if (this.clientActionForwarder.shouldForwardToClient(action)) {
-            return this.doDispatch(action);
-        }
         return this.actionQueue.enqueue(() => this.doDispatch(action));
+    }
+
+    dispatchDirectly(action: Action): Promise<void> {
+        return this.doDispatch(action);
     }
 
     protected async doDispatch(action: Action): Promise<void> {
@@ -183,12 +196,16 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
         return responseActions.map(action => respond(request, action));
     }
 
+    /**
+     * Dispatches response actions produced by handlers. Responses are dispatched directly
+     * (bypassing the queue) but sequenced relative to each other via an internal response queue.
+     */
     protected dispatchResponses(actions: Action[]): Promise<void> {
         if (actions.length === 0) {
             return Promise.resolve();
         }
         const responseQueue = new PromiseQueue();
-        const responses = actions.map(action => responseQueue.enqueue(() => this.doDispatch(action)));
+        const responses = actions.map(action => responseQueue.enqueue(() => this.dispatchDirectly(action)));
         return Promise.all(responses).then(() => Promise.resolve());
     }
 
@@ -254,12 +271,10 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
             this.timeouts.set(action.requestId, timeout);
         }
 
-        // When the queue is busy (request() called from inside a handler),
-        // bypass it via doDispatch() to avoid deadlock.
-        // When idle, go through dispatch() to preserve action ordering.
-        const dispatchPromise = this.actionQueue.isBusy
-            ? this.doDispatch(action)
-            : this.dispatch(action);
+        // Always dispatch directly to avoid deadlock when request() is called
+        // from inside a queued handler. The response is intercepted before
+        // normal dispatch, so queue ordering is not affected.
+        const dispatchPromise = this.dispatchDirectly(action);
 
         dispatchPromise.catch(error => {
             if (this.pendingRequests.delete(action.requestId)) {
@@ -301,8 +316,8 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
      * by {@link ClientActionForwarder}. If no stale entry exists, the `responseId` is left intact
      * for normal forwarding.
      *
-     * Called from both `dispatch()` (for responses arriving from the client) and `doDispatch()`
-     * (for responses produced by local handlers).
+     * Called from `dispatch()` (for responses arriving from the client, before the queue) and
+     * from `doDispatch()` (for responses produced by local handlers via `dispatchDirectly`).
      */
     protected interceptPendingResponse(action: Action): boolean {
         if (!ResponseAction.hasValidResponseId(action)) {
@@ -317,8 +332,9 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
                 clearTimeout(timeout);
                 this.timeouts.delete(action.responseId);
             }
-            // Drain post-update actions before resolving — in the intercept path
-            // there's no responses array, so dispatch them directly.
+            // Drain post-update actions. A RejectAction won't trigger a drain,
+            // so pending post-update actions remain queued until the next
+            // successful model update.
             const postUpdateActions = this.drainPostUpdateQueue(action);
             if (RejectAction.is(action)) {
                 deferred.reject(new Error(`${action.message}${action.detail ? ': ' + action.detail : ''}`));
@@ -326,7 +342,7 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
                 deferred.resolve(action);
             }
             if (postUpdateActions.length > 0) {
-                this.dispatchAll(postUpdateActions);
+                this.dispatchResponses(postUpdateActions);
             }
             return true;
         }

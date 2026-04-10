@@ -65,10 +65,10 @@ export class DefaultProgressService implements ProgressService {
 
     start(title: string, options?: ProgressOptions): ProgressMonitor {
         const progressId = uuid.v4();
-        this.actionDispatcher.dispatch(StartProgressAction.create({ progressId, title, ...options }));
+        this.actionDispatcher.dispatchDirectly(StartProgressAction.create({ progressId, title, ...options }));
         return {
-            update: updateOptions => this.actionDispatcher.dispatch(UpdateProgressAction.create(progressId, updateOptions)),
-            end: () => this.actionDispatcher.dispatch(EndProgressAction.create(progressId))
+            update: updateOptions => this.actionDispatcher.dispatchDirectly(UpdateProgressAction.create(progressId, updateOptions)),
+            end: () => this.actionDispatcher.dispatchDirectly(EndProgressAction.create(progressId))
         };
     }
 }
