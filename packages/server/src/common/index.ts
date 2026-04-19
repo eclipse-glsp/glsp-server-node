@@ -95,6 +95,7 @@ export * from './session/client-session-factory';
 export * from './session/client-session-initializer';
 export * from './session/client-session-listener';
 export * from './session/client-session-manager';
+export * from './utils/action-channel';
 export * from './utils/args-util';
 export * from './utils/client-options-util';
 export * from './utils/console-logger';

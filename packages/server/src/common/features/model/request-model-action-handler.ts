@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2025 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -81,12 +81,12 @@ export class RequestModelActionHandler implements ActionHandler {
     }
 
     protected reportModelLoading(message: string): ProgressMonitor | undefined {
-        this.actionDispatcher.dispatchDirectly(StatusAction.create(message, { severity: 'INFO' }));
+        this.actionDispatcher.dispatch(StatusAction.create(message, { severity: 'INFO' }));
         return this.progressService.start(message);
     }
 
     protected reportModelLoadingFinished(monitor?: ProgressMonitor): void {
-        this.actionDispatcher.dispatchDirectly(StatusAction.create('', { severity: 'NONE' }));
+        this.actionDispatcher.dispatch(StatusAction.create('', { severity: 'NONE' }));
         monitor?.end();
     }
 

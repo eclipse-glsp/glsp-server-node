@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -338,9 +338,7 @@ describe('test DefaultActionDispatcher', () => {
                 expect(result.responseId).to.equal('req_deadlock');
                 return [];
             };
-            registry_get_stub.callsFake((kind: string) =>
-                kind === slowAction ? [slowHandler] : []
-            );
+            registry_get_stub.callsFake((kind: string) => (kind === slowAction ? [slowHandler] : []));
 
             const dispatchPromise = actionDispatcher.dispatch({ kind: slowAction });
             await handlerRunning.promise;
@@ -359,9 +357,7 @@ describe('test DefaultActionDispatcher', () => {
                 const response: ResponseAction = { kind: localResponseKind, responseId: '' };
                 return [response];
             });
-            registry_get_stub.callsFake((kind: string) =>
-                kind === localRequestKind ? [handler] : []
-            );
+            registry_get_stub.callsFake((kind: string) => (kind === localRequestKind ? [handler] : []));
 
             const requestAction: RequestAction<ResponseAction> = {
                 kind: localRequestKind,
@@ -488,9 +484,7 @@ describe('test DefaultActionDispatcher', () => {
             clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
             // Register a no-op handler for testResponse so the late response can be dispatched normally
             const noopHandler = new mock.StubActionHandler(['testResponse']);
-            registry_get_stub.callsFake((kind: string) =>
-                kind === 'testResponse' ? [noopHandler] : []
-            );
+            registry_get_stub.callsFake((kind: string) => (kind === 'testResponse' ? [noopHandler] : []));
 
             // Request times out
             try {
@@ -506,6 +500,100 @@ describe('test DefaultActionDispatcher', () => {
             expect(lateResponse.responseId).to.equal('');
         });
 
+        it('request - resolves when response intercept happens from inside doDispatch', async () => {
+            // A local handler for the request kind returns the matching response action directly.
+            // The response is dispatched via dispatchResponses() -> dispatch() and intercepted
+            // via the reentrant path (not via the external dispatch() entry).
+            const requestKind = 'inlineRequest';
+            const responseKind = 'inlineResponse';
+
+            const handler = new mock.StubActionHandler([requestKind]);
+            sinon.stub(handler, 'execute').callsFake(() => [{ kind: responseKind, responseId: '' } as ResponseAction]);
+            registry_get_stub.callsFake((kind: string) => (kind === requestKind ? [handler] : []));
+
+            const requestAction: RequestAction<ResponseAction> = { kind: requestKind, requestId: '' };
+            const result = await actionDispatcher.request(requestAction);
+
+            expect(result.responseId).to.equal(requestAction.requestId);
+        });
+    });
+
+    describe('test reentrancy and ordering', () => {
+        it('dispatch from within a handler runs inline before the next queued action', async () => {
+            const outerKind = 'reentrantOuter';
+            const innerKind = 'reentrantInner';
+            const followerKind = 'reentrantFollower';
+
+            const events: string[] = [];
+
+            const innerHandler = new mock.StubActionHandler([innerKind]);
+            sinon.stub(innerHandler, 'execute').callsFake(() => {
+                events.push('inner');
+                return [];
+            });
+
+            const outerHandler = new mock.StubActionHandler([outerKind]);
+            outerHandler.execute = async () => {
+                events.push('outer-start');
+                await actionDispatcher.dispatch({ kind: innerKind });
+                events.push('outer-end');
+                return [];
+            };
+
+            const followerHandler = new mock.StubActionHandler([followerKind]);
+            sinon.stub(followerHandler, 'execute').callsFake(() => {
+                events.push('follower');
+                return [];
+            });
+
+            registry_get_stub.callsFake((kind: string) => {
+                if (kind === outerKind) return [outerHandler];
+                if (kind === innerKind) return [innerHandler];
+                if (kind === followerKind) return [followerHandler];
+                return [];
+            });
+
+            actionDispatcher.dispatch({ kind: outerKind });
+            await actionDispatcher.dispatch({ kind: followerKind });
+
+            expect(events).to.deep.equal(['outer-start', 'inner', 'outer-end', 'follower']);
+        });
+
+        it('handler response actions are dispatched in order without an ephemeral queue', async () => {
+            const requestKind = 'orderedRequest';
+            const firstResponse = 'orderedResponse1';
+            const secondResponse = 'orderedResponse2';
+            const order: string[] = [];
+
+            const requestHandler = new mock.StubActionHandler([requestKind]);
+            sinon.stub(requestHandler, 'execute').callsFake(() => [{ kind: firstResponse }, { kind: secondResponse }]);
+
+            const firstHandler = new mock.StubActionHandler([firstResponse]);
+            sinon.stub(firstHandler, 'execute').callsFake(async () => {
+                await mock.delay(20);
+                order.push(firstResponse);
+                return [];
+            });
+
+            const secondHandler = new mock.StubActionHandler([secondResponse]);
+            sinon.stub(secondHandler, 'execute').callsFake(() => {
+                order.push(secondResponse);
+                return [];
+            });
+
+            registry_get_stub.callsFake((kind: string) => {
+                if (kind === requestKind) return [requestHandler];
+                if (kind === firstResponse) return [firstHandler];
+                if (kind === secondResponse) return [secondHandler];
+                return [];
+            });
+
+            await actionDispatcher.dispatch({ kind: requestKind });
+            expect(order).to.deep.equal([firstResponse, secondResponse]);
+        });
+    });
+
+    describe('test dispose', () => {
         it('dispose - rejects all pending requests', async () => {
             const requestAction: RequestAction<ResponseAction> = {
                 kind: 'testRequest',
@@ -517,7 +605,7 @@ describe('test DefaultActionDispatcher', () => {
             registry_get_stub.callsFake(() => []);
 
             const responsePromise = actionDispatcher.request(requestAction);
-            (actionDispatcher as any).dispose();
+            actionDispatcher.dispose();
 
             try {
                 await responsePromise;
@@ -526,6 +614,41 @@ describe('test DefaultActionDispatcher', () => {
                 expect((error as Error).message).to.include('cancelled');
                 expect((error as Error).message).to.include('req_dispose');
             }
+        });
+
+        it('dispose - rejects queued dispatch() promises instead of orphaning them', async () => {
+            // Use a fresh dispatcher so the shared one is not affected.
+            const localDispatcher = container.resolve(DefaultActionDispatcher);
+            const slowKind = 'slowDispose';
+            const queuedKind = 'queuedDispose';
+
+            const slowHandler = new mock.StubActionHandler([slowKind]);
+            const slowStarted = new Deferred<void>();
+            const releaseSlow = new Deferred<void>();
+            slowHandler.execute = async () => {
+                slowStarted.resolve();
+                await releaseSlow.promise;
+                return [];
+            };
+
+            registry_get_stub.callsFake((kind: string) => (kind === slowKind ? [slowHandler] : []));
+
+            const slowPromise = localDispatcher.dispatch({ kind: slowKind });
+            await slowStarted.promise;
+            const queuedPromise = localDispatcher.dispatch({ kind: queuedKind });
+
+            localDispatcher.dispose();
+
+            try {
+                await queuedPromise;
+                expect.fail('Queued dispatch should have rejected');
+            } catch (error: unknown) {
+                expect((error as Error).message).to.include('ActionDispatcher disposed');
+            }
+
+            // Let the slow handler finish so the local dispatcher's consumer loop can exit cleanly.
+            releaseSlow.resolve();
+            await slowPromise;
         });
     });
 });

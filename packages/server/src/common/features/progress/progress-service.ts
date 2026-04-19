@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 EclipseSource and others.
+ * Copyright (c) 2023-2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -65,10 +65,10 @@ export class DefaultProgressService implements ProgressService {
 
     start(title: string, options?: ProgressOptions): ProgressMonitor {
         const progressId = uuid.v4();
-        this.actionDispatcher.dispatchDirectly(StartProgressAction.create({ progressId, title, ...options }));
+        this.actionDispatcher.dispatch(StartProgressAction.create({ progressId, title, ...options }));
         return {
-            update: updateOptions => this.actionDispatcher.dispatchDirectly(UpdateProgressAction.create(progressId, updateOptions)),
-            end: () => this.actionDispatcher.dispatchDirectly(EndProgressAction.create(progressId))
+            update: updateOptions => this.actionDispatcher.dispatch(UpdateProgressAction.create(progressId, updateOptions)),
+            end: () => this.actionDispatcher.dispatch(EndProgressAction.create(progressId))
         };
     }
 }

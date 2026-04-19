@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -25,11 +25,12 @@ import {
     UpdateModelAction,
     flatPush
 } from '@eclipse-glsp/protocol';
-import { inject, injectable } from 'inversify';
+import { AsyncLocalStorage } from 'async_hooks';
+import { inject, injectable, postConstruct } from 'inversify';
 import { ClientId } from '../di/service-identifiers';
 import { GLSPServerError } from '../utils/glsp-server-error';
+import { ActionChannel } from '../utils/action-channel';
 import { Logger } from '../utils/logger';
-import { PromiseQueue } from '../utils/promise-queue';
 import { ActionHandler } from './action-handler';
 import { ActionHandlerRegistry } from './action-handler-registry';
 import { ClientActionForwarder } from './client-action-handler';
@@ -43,8 +44,15 @@ export const ActionDispatcher = Symbol('ActionDispatcher');
 export interface ActionDispatcher {
     /**
      * Processes the given action by dispatching it to all registered handlers.
-     * Actions are enqueued to preserve sequential ordering. Response actions
-     * produced by handlers are dispatched directly via {@link dispatchDirectly}.
+     *
+     * External callers (e.g. the transport layer or background jobs) are serialized through the
+     * internal channel. Dispatches that originate from within an action handler are recognized
+     * via the {@link AsyncLocalStorage} dispatch context and run inline to preserve ordering
+     * with the containing action. This mirrors the Java dispatcher's `Thread.currentThread()`
+     * check.
+     *
+     * Responses to pending {@link request} calls short-circuit at the entry and resolve the
+     * corresponding deferred without going through the queue or handlers.
      *
      * @param action The action that should be dispatched.
      * @returns A promise indicating when the action processing is complete.
@@ -59,18 +67,6 @@ export interface ActionDispatcher {
      */
     dispatchAll(actions: Action[]): Promise<void>;
     dispatchAll(...actions: Action[]): Promise<void>;
-
-    /**
-     * Dispatches an action directly, bypassing the action queue. Use this for actions that
-     * need to be processed immediately, e.g. progress notifications sent from inside a handler.
-     *
-     * Actions dispatched this way are not sequenced with other queued actions. Callers are
-     * responsible for ensuring that concurrent execution is safe.
-     *
-     * @param action The action to dispatch directly.
-     * @returns A promise indicating when the action processing is complete.
-     */
-    dispatchDirectly(action: Action): Promise<void>;
 
     /**
      * Processes all given actions, by dispatching them to the corresponding handlers, after the next model update.
@@ -88,9 +84,9 @@ export interface ActionDispatcher {
      * _not_ passed to the registered action handlers. Instead, it is the responsibility of the
      * caller of this method to handle the response properly.
      *
-     * The request is dispatched directly (bypassing the queue). If its `kind` is registered in
-     * `ClientActionKinds`, it is forwarded to the client via {@link ClientActionForwarder}.
-     * If server-side handlers are registered, they are also executed.
+     * If the request's `kind` is registered in `ClientActionKinds`, it is forwarded to the client
+     * via {@link ClientActionForwarder}. If server-side handlers are registered, they are also
+     * executed.
      *
      * Only the first matching response resolves the request. Any additional or late responses
      * are dispatched as normal actions.
@@ -139,11 +135,19 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
     @inject(ClientId)
     protected clientId: string;
 
-    protected actionQueue = new PromiseQueue();
+    protected channel = new ActionChannel<Action>();
+    protected dispatchContext = new AsyncLocalStorage<boolean>();
+    protected consumerLoop: Promise<void> | undefined;
+
     protected postUpdateQueue: Action[] = [];
     protected readonly pendingRequests = new Map<string, Deferred<ResponseAction | undefined>>();
     protected readonly timeouts = new Map<string, NodeJS.Timeout>();
     protected nextRequestId = 1;
+
+    @postConstruct()
+    protected initialize(): void {
+        this.consumerLoop = this.runConsumerLoop();
+    }
 
     /**
      * Generates a unique request ID for this dispatcher. The `clientId` prefix makes IDs
@@ -154,23 +158,35 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
     }
 
     dispatch(action: Action): Promise<void> {
+        // Order matters:
+        // 1. Responses to pending request() calls must short-circuit here; queueing would
+        //    deadlock if the awaiting handler is the action the consumer is currently running.
+        // 2. Reentrant dispatches from inside a handler run inline via the AsyncLocalStorage
+        //    context. Equivalent to the Java thread-identity check.
+        // 3. Everything else is external and is queued to the channel.
         if (this.interceptPendingResponse(action)) {
             return Promise.resolve();
         }
-        return this.actionQueue.enqueue(() => this.doDispatch(action));
+        if (this.dispatchContext.getStore()) {
+            return this.doDispatch(action);
+        }
+        return this.channel.push(action);
     }
 
-    dispatchDirectly(action: Action): Promise<void> {
-        return this.doDispatch(action);
+    protected async runConsumerLoop(): Promise<void> {
+        // Enter the dispatch context for each dequeued action so nested dispatch() calls from
+        // handlers and their awaited continuations are recognized as reentrant.
+        for await (const entry of this.channel.consume()) {
+            try {
+                await this.dispatchContext.run(true, () => this.doDispatch(entry.item));
+                entry.resolve();
+            } catch (error) {
+                entry.reject(error);
+            }
+        }
     }
 
     protected async doDispatch(action: Action): Promise<void> {
-        // Intercept responses to pending requests produced by local handlers
-        // (via dispatchResponses). This enables server→server requests.
-        if (this.interceptPendingResponse(action)) {
-            return;
-        }
-
         this.logger.debug('Dispatch action:', action.kind);
         const handledOnClient = this.clientActionForwarder.handle(action);
 
@@ -185,7 +201,8 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
             responses.push(...response);
         }
 
-        // Append post-update actions to responses (preserves original dispatch ordering)
+        // Append post-update actions to responses so they are dispatched in the same inline
+        // batch as the handler responses, preserving sequential order.
         responses.push(...this.drainPostUpdateQueue(action));
 
         await this.dispatchResponses(responses);
@@ -196,17 +213,12 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
         return responseActions.map(action => respond(request, action));
     }
 
-    /**
-     * Dispatches response actions produced by handlers. Responses are dispatched directly
-     * (bypassing the queue) but sequenced relative to each other via an internal response queue.
-     */
-    protected dispatchResponses(actions: Action[]): Promise<void> {
-        if (actions.length === 0) {
-            return Promise.resolve();
+    protected async dispatchResponses(actions: Action[]): Promise<void> {
+        // Sequential dispatch inside the current dispatch context. Each response goes inline via
+        // the reentrant path, or is intercepted if it resolves a pending request().
+        for (const action of actions) {
+            await this.dispatch(action);
         }
-        const responseQueue = new PromiseQueue();
-        const responses = actions.map(action => responseQueue.enqueue(() => this.dispatchDirectly(action)));
-        return Promise.all(responses).then(() => Promise.resolve());
     }
 
     dispatchAll(...actions: MaybeArray<Action>[]): Promise<void> {
@@ -271,10 +283,10 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
             this.timeouts.set(action.requestId, timeout);
         }
 
-        // Always dispatch directly to avoid deadlock when request() is called
-        // from inside a queued handler. The response is intercepted before
-        // normal dispatch, so queue ordering is not affected.
-        const dispatchPromise = this.dispatchDirectly(action);
+        // dispatch() routes correctly on its own: external callers queue, handler-internal
+        // callers run inline via the AsyncLocalStorage context. The matching response resolves
+        // the deferred out-of-band via interceptPendingResponse().
+        const dispatchPromise = this.dispatch(action);
 
         dispatchPromise.catch(error => {
             if (this.pendingRequests.delete(action.requestId)) {
@@ -292,8 +304,7 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
 
     /**
      * If the given action is a {@link SetModelAction} or {@link UpdateModelAction} and there are actions
-     * queued via {@link dispatchAfterNextUpdate}, drain and return them. Used in both the normal
-     * `doDispatch()` path and the `interceptPendingResponse()` short-circuit path.
+     * queued via {@link dispatchAfterNextUpdate}, drain and return them.
      *
      * @returns The drained actions, or an empty array if nothing to drain.
      */
@@ -315,15 +326,13 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
      * timeout entry (timed-out request) and clears the `responseId` so the action is not forwarded
      * by {@link ClientActionForwarder}. If no stale entry exists, the `responseId` is left intact
      * for normal forwarding.
-     *
-     * Called from `dispatch()` (for responses arriving from the client, before the queue) and
-     * from `doDispatch()` (for responses produced by local handlers via `dispatchDirectly`).
      */
     protected interceptPendingResponse(action: Action): boolean {
         if (!ResponseAction.hasValidResponseId(action)) {
             return false;
         }
-        // Resolve pending request
+        // Node-only: responses to server-initiated requests are resolved here instead of going
+        // through action handlers. No Java equivalent.
         const deferred = this.pendingRequests.get(action.responseId);
         if (deferred !== undefined) {
             this.pendingRequests.delete(action.responseId);
@@ -332,9 +341,9 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
                 clearTimeout(timeout);
                 this.timeouts.delete(action.responseId);
             }
-            // Drain post-update actions. A RejectAction won't trigger a drain,
-            // so pending post-update actions remain queued until the next
-            // successful model update.
+            // Intercepted responses skip doDispatch, so drain post-update actions here when the
+            // response is an UpdateModel/SetModel. RejectAction does not trigger a drain; pending
+            // post-update actions stay queued until the next successful update.
             const postUpdateActions = this.drainPostUpdateQueue(action);
             if (RejectAction.is(action)) {
                 deferred.reject(new Error(`${action.message}${action.detail ? ': ' + action.detail : ''}`));
@@ -346,8 +355,8 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
             }
             return true;
         }
-        // No matching pending request — check for stale timeout (timed-out request).
-        // Only clear responseId if this response was tracked by request().
+        // Late response for a timed-out request: clear responseId so ClientActionForwarder does
+        // not re-emit it to the client.
         const staleTimeout = this.timeouts.get(action.responseId);
         if (staleTimeout !== undefined) {
             clearTimeout(staleTimeout);
@@ -358,14 +367,21 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
         return false;
     }
 
+    /**
+     * Shuts down the dispatcher. Stops the channel, rejects queued actions and pending request()
+     * deferreds, and clears timers and the post-update queue. The action currently being
+     * processed runs to completion.
+     */
     dispose(): void {
-        this.actionQueue.clear();
-        this.pendingRequests.forEach((deferred, id) =>
-            deferred.reject(new Error(`Request '${id}' cancelled: dispatcher disposed`))
-        );
+        // No graceful drain: Disposable.dispose() is synchronous so we cannot await the consumer
+        // loop. Java's JoinAction/.join() pattern has no equivalent.
+        this.channel.rejectPending(new Error('ActionDispatcher disposed'));
+        this.channel.stop();
+        this.pendingRequests.forEach((deferred, id) => deferred.reject(new Error(`Request '${id}' cancelled: dispatcher disposed`)));
         this.pendingRequests.clear();
         this.timeouts.forEach(timeout => clearTimeout(timeout));
         this.timeouts.clear();
+        this.postUpdateQueue = [];
     }
 }
 

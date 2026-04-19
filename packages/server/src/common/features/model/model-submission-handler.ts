@@ -180,7 +180,7 @@ export class ModelSubmissionHandler {
     }
 
     protected async performLiveValidation(validator: ModelValidator): Promise<void> {
-        this.actionDispatcher.dispatchDirectly(StatusAction.create('Validate Model...'));
+        this.actionDispatcher.dispatch(StatusAction.create('Validate Model...'));
         const markers = await validator.validate([this.modelState.root], MarkersReason.LIVE);
         return this.actionDispatcher.dispatchAll(
             SetMarkersAction.create(markers, { reason: MarkersReason.LIVE }),

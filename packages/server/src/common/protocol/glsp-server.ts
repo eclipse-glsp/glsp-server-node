@@ -167,19 +167,20 @@ export class DefaultGLSPServer implements GLSPServer {
         clientId: string
     ): Promise<void> {
         try {
-            const response = action.timeout !== undefined
-                ? await clientSession.actionDispatcher.requestUntil(action, action.timeout, true)
-                : await clientSession.actionDispatcher.request(action);
+            const response =
+                action.timeout !== undefined
+                    ? await clientSession.actionDispatcher.requestUntil(action, action.timeout, true)
+                    : await clientSession.actionDispatcher.request(action);
             if (response) {
                 this.sendResponseToClient(clientId, response);
             }
         } catch (error) {
             const detail = error instanceof GLSPServerError ? error.cause?.toString?.() : error?.toString?.();
             this.logger.error(`Failed to handle request '${action.kind}' (${action.requestId}):`, detail);
-            const reject = RejectAction.create(
-                `Failed to handle request '${action.kind}' (${action.requestId})`,
-                { responseId: action.requestId, detail }
-            );
+            const reject = RejectAction.create(`Failed to handle request '${action.kind}' (${action.requestId})`, {
+                responseId: action.requestId,
+                detail
+            });
             this.sendResponseToClient(clientId, reject);
         }
     }

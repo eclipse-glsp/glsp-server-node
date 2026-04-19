@@ -29,6 +29,10 @@ export interface PromiseQueueElement<T = void> {
  * of promises. Promises that are put in this queue are processed one by one.
  * i.e. After the first promise in the queue is resolved, it will be removed from the queue and the resolving of the
  * the next promise (if present) will start. The queue can only resolve one promise at a given time.
+ *
+ * @deprecated Since 2.7. The `DefaultActionDispatcher` no longer uses this queue. Kept for
+ * backwards compatibility; will be removed in a future release. New code should use
+ * {@link ActionChannel} or native async patterns instead.
  */
 export class PromiseQueue<T = void> {
     protected queue: PromiseQueueElement<T>[] = [];
