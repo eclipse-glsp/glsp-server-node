@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -37,3 +37,14 @@ export const NavigationTargetProviders = Symbol('NavigationTargetProviders');
 export type ValidateLabelEditAdapterFactory = (validator: LabelEditValidator) => ValidateLabelEditAdapter;
 
 export const Operations = Symbol('Operations');
+
+/**
+ * Scope marker that lets the {@link ActionDispatcher} know whether a call to `dispatch()`
+ * originates from inside a running handler (reentrant) or from outside (external).
+ */
+export interface ActionDispatchContext {
+    run<R>(store: boolean, callback: () => R): R;
+    getStore(): boolean | undefined;
+}
+
+export const ActionDispatchContext = Symbol('ActionDispatchContext');

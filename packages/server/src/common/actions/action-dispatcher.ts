@@ -25,11 +25,10 @@ import {
     UpdateModelAction,
     flatPush
 } from '@eclipse-glsp/protocol';
-import { AsyncLocalStorage } from 'async_hooks';
 import { inject, injectable, postConstruct } from 'inversify';
-import { ClientId } from '../di/service-identifiers';
-import { GLSPServerError } from '../utils/glsp-server-error';
+import { ActionDispatchContext, ClientId } from '../di/service-identifiers';
 import { ActionChannel } from '../utils/action-channel';
+import { GLSPServerError } from '../utils/glsp-server-error';
 import { Logger } from '../utils/logger';
 import { ActionHandler } from './action-handler';
 import { ActionHandlerRegistry } from './action-handler-registry';
@@ -132,8 +131,10 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
     @inject(ClientId)
     protected clientId: string;
 
+    @inject(ActionDispatchContext)
+    protected dispatchContext: ActionDispatchContext;
+
     protected channel = new ActionChannel<Action>();
-    protected dispatchContext = new AsyncLocalStorage<boolean>();
 
     protected postUpdateQueue: Action[] = [];
     protected readonly pendingRequests = new Map<string, Deferred<ResponseAction | undefined>>();

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2025 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,15 +14,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
+import { AsyncLocalStorage } from 'async_hooks';
 import { ContainerModule } from 'inversify';
 import * as winston from 'winston';
-import { InjectionContainer, LogLevel, Logger, LoggerFactory, NullLogger, getRequestParentName } from '../../common';
+import { ActionDispatchContext, InjectionContainer, LogLevel, Logger, LoggerFactory, NullLogger, getRequestParentName } from '../../common';
 import { LaunchOptions } from '../launch/cli-parser';
 import { WinstonLogger } from './winston-logger';
 
 export function createAppModule(options: LaunchOptions): ContainerModule {
     return new ContainerModule((bind, unbind, isBound, rebind) => {
         bind(InjectionContainer).toDynamicValue(dynamicContext => dynamicContext.container);
+        bind(ActionDispatchContext).toDynamicValue(() => new AsyncLocalStorage<boolean>());
         const context = { bind, unbind, isBound, rebind };
         configureWinstonLogger(context, options);
     });

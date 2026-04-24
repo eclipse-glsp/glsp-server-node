@@ -14,17 +14,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { Action, Deferred, RequestAction, ResponseAction, UpdateModelAction } from '@eclipse-glsp/protocol';
+import { AsyncLocalStorage } from 'async_hooks';
 import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
 import * as sinon from 'sinon';
-import { ClientActionKinds, ClientId } from '../di/service-identifiers';
-import { ClientSessionManager } from '../session/client-session-manager';
-import * as mock from '../test/mock-util';
-import { Logger } from '../utils/logger';
-import { DefaultActionDispatcher } from './action-dispatcher';
-import { ActionHandler } from './action-handler';
-import { ActionHandlerRegistry } from './action-handler-registry';
-import { ClientActionForwarder } from './client-action-handler';
+import { DefaultActionDispatcher } from '../../common/actions/action-dispatcher';
+import { ActionHandler } from '../../common/actions/action-handler';
+import { ActionHandlerRegistry } from '../../common/actions/action-handler-registry';
+import { ClientActionForwarder } from '../../common/actions/client-action-handler';
+import { ActionDispatchContext, ClientActionKinds, ClientId } from '../../common/di/service-identifiers';
+import { ClientSessionManager } from '../../common/session/client-session-manager';
+import * as mock from '../../common/test/mock-util';
+import { Logger } from '../../common/utils/logger';
 
 function waitSync(timeInMillis: number): void {
     const start = Date.now();
@@ -51,6 +52,7 @@ describe('test DefaultActionDispatcher', () => {
             bind(ActionHandlerRegistry).toConstantValue(actionHandlerRegistry);
             bind(ClientActionKinds).toConstantValue(new Set(['response', 'response1', 'response2']));
             bind(ClientActionForwarder).toConstantValue(clientActionForwarderStub);
+            bind(ActionDispatchContext).toDynamicValue(() => new AsyncLocalStorage<boolean>());
         })
     );
     const actionDispatcher = container.resolve(DefaultActionDispatcher);
