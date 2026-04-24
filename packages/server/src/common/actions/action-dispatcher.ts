@@ -44,15 +44,8 @@ export const ActionDispatcher = Symbol('ActionDispatcher');
 export interface ActionDispatcher {
     /**
      * Processes the given action by dispatching it to all registered handlers.
-     *
-     * External callers (e.g. the transport layer or background jobs) are serialized through the
-     * internal channel. Dispatches that originate from within an action handler are recognized
-     * via the {@link AsyncLocalStorage} dispatch context and run inline to preserve ordering
-     * with the containing action. This mirrors the Java dispatcher's `Thread.currentThread()`
-     * check.
-     *
-     * Responses to pending {@link request} calls short-circuit at the entry and resolve the
-     * corresponding deferred without going through the queue or handlers.
+     * Responses matching a pending {@link request} short-circuit and resolve that
+     * request without being passed to handlers.
      *
      * @param action The action that should be dispatched.
      * @returns A promise indicating when the action processing is complete.
@@ -121,6 +114,10 @@ export interface ActionDispatcher {
     ): Promise<Res | undefined>;
 }
 
+/**
+ * Default {@link ActionDispatcher}. External dispatches are queued and processed one at a
+ * time; dispatches made from within a running handler run inline with the containing action.
+ */
 @injectable()
 export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
     @inject(ActionHandlerRegistry)
@@ -137,7 +134,6 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
 
     protected channel = new ActionChannel<Action>();
     protected dispatchContext = new AsyncLocalStorage<boolean>();
-    protected consumerLoop: Promise<void> | undefined;
 
     protected postUpdateQueue: Action[] = [];
     protected readonly pendingRequests = new Map<string, Deferred<ResponseAction | undefined>>();
@@ -146,36 +142,28 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
 
     @postConstruct()
     protected initialize(): void {
-        this.consumerLoop = this.runConsumerLoop();
+        this.runConsumerLoop();
     }
 
-    /**
-     * Generates a unique request ID for this dispatcher. The `clientId` prefix makes IDs
-     * distinguishable across sessions in logs.
-     */
     protected generateRequestId(): string {
         return `server_${this.clientId}_${this.nextRequestId++}`;
     }
 
     dispatch(action: Action): Promise<void> {
-        // Order matters:
-        // 1. Responses to pending request() calls must short-circuit here; queueing would
-        //    deadlock if the awaiting handler is the action the consumer is currently running.
-        // 2. Reentrant dispatches from inside a handler run inline via the AsyncLocalStorage
-        //    context. Equivalent to the Java thread-identity check.
-        // 3. Everything else is external and is queued to the channel.
+        // Intercept first to avoid deadlock: a handler may be awaiting this response.
         if (this.interceptPendingResponse(action)) {
             return Promise.resolve();
         }
+        // Reentrant dispatches run inline to preserve ordering with the containing action.
         if (this.dispatchContext.getStore()) {
             return this.doDispatch(action);
         }
+        // External dispatches are queued and processed sequentially.
         return this.channel.push(action);
     }
 
     protected async runConsumerLoop(): Promise<void> {
-        // Enter the dispatch context for each dequeued action so nested dispatch() calls from
-        // handlers and their awaited continuations are recognized as reentrant.
+        // Run each action inside the dispatch context so reentrant dispatch() calls are recognized.
         for await (const entry of this.channel.consume()) {
             try {
                 await this.dispatchContext.run(true, () => this.doDispatch(entry.item));
@@ -367,14 +355,8 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
         return false;
     }
 
-    /**
-     * Shuts down the dispatcher. Stops the channel, rejects queued actions and pending request()
-     * deferreds, and clears timers and the post-update queue. The action currently being
-     * processed runs to completion.
-     */
     dispose(): void {
-        // No graceful drain: Disposable.dispose() is synchronous so we cannot await the consumer
-        // loop. Java's JoinAction/.join() pattern has no equivalent.
+        // Reject queued actions: no further processing should happen after dispose.
         this.channel.rejectPending(new Error('ActionDispatcher disposed'));
         this.channel.stop();
         this.pendingRequests.forEach((deferred, id) => deferred.reject(new Error(`Request '${id}' cancelled: dispatcher disposed`)));

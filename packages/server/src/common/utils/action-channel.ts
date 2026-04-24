@@ -25,21 +25,17 @@ export interface ActionChannelEntry<T> {
 }
 
 /**
- * Producer/consumer channel with a single async consumer loop. Mirrors the Java
- * dispatcher's `BlockingQueue` + consumer thread architecture.
- *
- * Items pushed via {@link push} are yielded by {@link consume} in FIFO order.
- * The promise returned by `push()` resolves or rejects when the consumer finishes
- * processing the item (so producers can propagate errors back to callers).
+ * Producer/consumer channel with a single async consumer loop. Items are processed in FIFO order.
  */
 export class ActionChannel<T> {
     protected queue: ActionChannelEntry<T>[] = [];
     protected notify: (() => void) | undefined;
     protected stopped = false;
+    protected consuming = false;
 
     /**
-     * Enqueues an item and returns a promise that settles when the consumer processes it.
-     * Rejects immediately if the channel has been stopped.
+     * Enqueues an item. The returned promise settles when the consumer finishes processing it,
+     * propagating results back to the producer. Rejects immediately if the channel has been stopped.
      */
     push(item: T): Promise<void> {
         if (this.stopped) {
@@ -52,21 +48,31 @@ export class ActionChannel<T> {
     }
 
     /**
-     * Yields pending entries in FIFO order, blocking on a notification promise when empty.
-     * Exits once the channel is stopped and the queue has been drained.
+     * Yields pending entries, suspending until the next {@link push} when the queue is empty. Exits
+     * once the channel is stopped and the queue has been drained.
+     *
+     * Single-consumer: calling `consume()` a second time throws an error.
      */
     async *consume(): AsyncGenerator<ActionChannelEntry<T>> {
-        while (!this.stopped || this.queue.length > 0) {
-            while (this.queue.length > 0) {
-                yield this.queue.shift()!;
+        if (this.consuming) {
+            throw new Error('ActionChannel supports only a single consumer');
+        }
+        this.consuming = true;
+        try {
+            while (!this.stopped || this.queue.length > 0) {
+                while (this.queue.length > 0) {
+                    yield this.queue.shift()!;
+                }
+                if (this.stopped) {
+                    return;
+                }
+                await new Promise<void>(resolve => {
+                    this.notify = resolve;
+                });
+                this.notify = undefined;
             }
-            if (this.stopped) {
-                return;
-            }
-            await new Promise<void>(resolve => {
-                this.notify = resolve;
-            });
-            this.notify = undefined;
+        } finally {
+            this.consuming = false;
         }
     }
 

@@ -117,4 +117,17 @@ describe('ActionChannel', () => {
         channel.push(3);
         expect(channel.size).to.equal(3);
     });
+
+    it('throws when a second consumer is started', async () => {
+        const channel = new ActionChannel<number>();
+        const first = channel.consume();
+        // Kick off the first consumer so it registers as the active consumer.
+        const firstStep = first.next();
+
+        const second = channel.consume();
+        await expectToThrowAsync(() => second.next().then(() => undefined), 'ActionChannel supports only a single consumer');
+
+        channel.stop();
+        await firstStep;
+    });
 });
