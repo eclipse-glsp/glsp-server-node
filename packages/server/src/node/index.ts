@@ -15,6 +15,7 @@
  ********************************************************************************/
 export * from './abstract-json-model-storage';
 export * from './di/app-module';
+export * from './di/node-dispatch-context';
 export * from './di/winston-logger';
 export * from './gmodel/gmodel-storage';
 export * from './launch/cli-parser';

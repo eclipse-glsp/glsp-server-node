@@ -26,7 +26,7 @@ import {
     flatPush
 } from '@eclipse-glsp/protocol';
 import { inject, injectable, postConstruct } from 'inversify';
-import { ActionDispatchContext, ClientId } from '../di/service-identifiers';
+import { ClientId } from '../di/service-identifiers';
 import { ActionChannel } from '../utils/action-channel';
 import { GLSPServerError } from '../utils/glsp-server-error';
 import { Logger } from '../utils/logger';
@@ -113,6 +113,36 @@ export interface ActionDispatcher {
     ): Promise<Res | undefined>;
 }
 
+export const ActionDispatchContext = Symbol('ActionDispatchContext');
+
+/**
+ * Scope marker that lets the {@link ActionDispatcher} know whether a call to `dispatch()`
+ * originates from inside a running handler (reentrant) or from outside (external).
+ *
+ * The consumer loop wraps each action in {@link run} so that reentrant `dispatch()` calls
+ * (handler responses, injected dispatcher calls) can be recognized via {@link isInContext}
+ * and executed inline instead of being queued.
+ *
+ * Used by the {@link DefaultActionDispatcher} implementation.
+ */
+export interface ActionDispatchContext {
+    /**
+     * Executes the callback inside the dispatch context. While the callback (and its full
+     * async continuation) is running, {@link isInContext} returns `true` for reentrant calls.
+     */
+    run<R>(callback: () => R): R;
+
+    /**
+     * Returns `true` if the caller is executing inside a {@link run} callback, meaning the
+     * dispatch is reentrant (e.g. a handler response or an injected dispatcher call) and
+     * should run inline rather than being queued.
+     *
+     * Implementations may inspect the action to apply additional guards, e.g. to ensure
+     * client-originated actions are always queued regardless of context state.
+     */
+    isInContext(action: Action): boolean;
+}
+
 /**
  * Default {@link ActionDispatcher}. External dispatches are queued and processed one at a
  * time; dispatches made from within a running handler run inline with the containing action.
@@ -156,7 +186,7 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
             return Promise.resolve();
         }
         // Reentrant dispatches run inline to preserve ordering with the containing action.
-        if (this.dispatchContext.getStore()) {
+        if (this.dispatchContext.isInContext(action)) {
             return this.doDispatch(action);
         }
         // External dispatches are queued and processed sequentially.
@@ -167,7 +197,7 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
         // Run each action inside the dispatch context so reentrant dispatch() calls are recognized.
         for await (const entry of this.channel.consume()) {
             try {
-                await this.dispatchContext.run(true, () => this.doDispatch(entry.item));
+                await this.dispatchContext.run(() => this.doDispatch(entry.item));
                 entry.resolve();
             } catch (error) {
                 entry.reject(error);

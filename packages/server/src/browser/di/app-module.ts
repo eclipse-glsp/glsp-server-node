@@ -14,16 +14,15 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-// Side-effect import: patches Promise, timers, XHR, observers on the current realm to preserve async context across awaits.
-import { AsyncLocalStorage } from 'als-browser';
 import { ContainerModule } from 'inversify';
 import { ActionDispatchContext, InjectionContainer, LogLevel, LoggerConfigOptions, configureConsoleLogger } from '../../common/';
+import { BrowserDispatchContext } from './browser-dispatch-context';
 
 export function createAppModule(options: LoggerConfigOptions = {}): ContainerModule {
     const resolvedOptions: LoggerConfigOptions = { consoleLog: true, logLevel: LogLevel.info, ...options };
     return new ContainerModule((bind, unbind, isBound, rebind) => {
         bind(InjectionContainer).toDynamicValue(dynamicContext => dynamicContext.container);
-        bind(ActionDispatchContext).toDynamicValue(() => new AsyncLocalStorage<boolean>());
+        bind(ActionDispatchContext).toDynamicValue(() => new BrowserDispatchContext());
         const context = { bind, unbind, isBound, rebind };
         configureConsoleLogger(context, resolvedOptions);
     });

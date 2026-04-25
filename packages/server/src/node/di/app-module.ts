@@ -14,17 +14,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
-import { AsyncLocalStorage } from 'async_hooks';
 import { ContainerModule } from 'inversify';
 import * as winston from 'winston';
 import { ActionDispatchContext, InjectionContainer, LogLevel, Logger, LoggerFactory, NullLogger, getRequestParentName } from '../../common';
 import { LaunchOptions } from '../launch/cli-parser';
+import { NodeDispatchContext } from './node-dispatch-context';
 import { WinstonLogger } from './winston-logger';
 
 export function createAppModule(options: LaunchOptions): ContainerModule {
     return new ContainerModule((bind, unbind, isBound, rebind) => {
         bind(InjectionContainer).toDynamicValue(dynamicContext => dynamicContext.container);
-        bind(ActionDispatchContext).toDynamicValue(() => new AsyncLocalStorage<boolean>());
+        bind(ActionDispatchContext).toDynamicValue(() => new NodeDispatchContext());
         const context = { bind, unbind, isBound, rebind };
         configureWinstonLogger(context, options);
     });

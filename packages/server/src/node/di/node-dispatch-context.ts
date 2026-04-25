@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2024 EclipseSource and others.
+ * Copyright (c) 2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,7 +13,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-export * from './di/app-module';
-export * from './di/browser-dispatch-context';
-export * from './launch/worker-server-launcher';
-export * from './reexport';
+
+import { AsyncLocalStorage } from 'async_hooks';
+import { ActionDispatchContext } from '../../common/actions/action-dispatcher';
+
+/**
+ * Node.js {@link ActionDispatchContext} backed by native `AsyncLocalStorage`.
+ */
+export class NodeDispatchContext implements ActionDispatchContext {
+    protected storage = new AsyncLocalStorage<boolean>();
+
+    run<R>(callback: () => R): R {
+        return this.storage.run(true, callback);
+    }
+
+    isInContext(): boolean {
+        return this.storage.getStore() === true;
+    }
+}
