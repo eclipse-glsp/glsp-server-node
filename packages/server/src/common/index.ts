@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2024 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -95,6 +95,7 @@ export * from './session/client-session-factory';
 export * from './session/client-session-initializer';
 export * from './session/client-session-listener';
 export * from './session/client-session-manager';
+export * from './utils/action-queue';
 export * from './utils/args-util';
 export * from './utils/client-options-util';
 export * from './utils/console-logger';

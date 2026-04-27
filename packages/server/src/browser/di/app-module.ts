@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 EclipseSource and others.
+ * Copyright (c) 2022-2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -15,12 +15,16 @@
  ********************************************************************************/
 
 import { ContainerModule } from 'inversify';
-import { InjectionContainer, LogLevel, LoggerConfigOptions, configureConsoleLogger } from '../../common/';
+import { ActionDispatchScope, InjectionContainer, LogLevel, LoggerConfigOptions, configureConsoleLogger } from '../../common/';
+import { BrowserActionDispatchScope } from './browser-action-dispatch-scope';
 
 export function createAppModule(options: LoggerConfigOptions = {}): ContainerModule {
     const resolvedOptions: LoggerConfigOptions = { consoleLog: true, logLevel: LogLevel.info, ...options };
     return new ContainerModule((bind, unbind, isBound, rebind) => {
         bind(InjectionContainer).toDynamicValue(dynamicContext => dynamicContext.container);
+        // Transient on purpose: a singleton at the server-container level would be shared across
+        // sessions and leak the browser flag between them.
+        bind(ActionDispatchScope).to(BrowserActionDispatchScope);
         const context = { bind, unbind, isBound, rebind };
         configureConsoleLogger(context, resolvedOptions);
     });

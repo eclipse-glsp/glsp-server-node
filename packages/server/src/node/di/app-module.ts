@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2025 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -16,13 +16,15 @@
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ContainerModule } from 'inversify';
 import * as winston from 'winston';
-import { InjectionContainer, LogLevel, Logger, LoggerFactory, NullLogger, getRequestParentName } from '../../common';
+import { ActionDispatchScope, InjectionContainer, LogLevel, Logger, LoggerFactory, NullLogger, getRequestParentName } from '../../common';
 import { LaunchOptions } from '../launch/cli-parser';
+import { NodeActionDispatchScope } from './node-action-dispatch-scope';
 import { WinstonLogger } from './winston-logger';
 
 export function createAppModule(options: LaunchOptions): ContainerModule {
     return new ContainerModule((bind, unbind, isBound, rebind) => {
         bind(InjectionContainer).toDynamicValue(dynamicContext => dynamicContext.container);
+        bind(ActionDispatchScope).to(NodeActionDispatchScope).inSingletonScope();
         const context = { bind, unbind, isBound, rebind };
         configureWinstonLogger(context, options);
     });

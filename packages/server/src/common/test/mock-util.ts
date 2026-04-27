@@ -30,7 +30,9 @@ import {
     MaybeArray,
     MaybePromise,
     Point,
+    RequestAction,
     RequestEditValidationAction,
+    ResponseAction,
     ShapeTypeHint,
     ValidationStatus
 } from '@eclipse-glsp/protocol';
@@ -95,7 +97,7 @@ export function createClientSession(
 export class StubActionHandler implements ActionHandler {
     constructor(public actionKinds: string[]) {}
 
-    execute(action: Action): Action[] {
+    execute(action: Action): MaybePromise<Action[]> {
         return [];
     }
 }
@@ -135,6 +137,18 @@ export class StubActionDispatcher implements ActionDispatcher {
 
     dispatchAll(...actions: MaybeArray<Action>[]): Promise<void> {
         return Promise.resolve();
+    }
+
+    request<Res extends ResponseAction>(action: RequestAction<Res>): Promise<Res> {
+        return Promise.reject(new Error('Not implemented in stub'));
+    }
+
+    requestUntil<Res extends ResponseAction>(
+        action: RequestAction<Res>,
+        timeoutMs?: number,
+        rejectOnTimeout?: boolean
+    ): Promise<Res | undefined> {
+        return Promise.reject(new Error('Not implemented in stub'));
     }
 }
 
