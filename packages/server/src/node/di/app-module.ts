@@ -16,15 +16,17 @@
 import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import { ContainerModule } from 'inversify';
 import * as winston from 'winston';
-import { ActionDispatchContext, InjectionContainer, LogLevel, Logger, LoggerFactory, NullLogger, getRequestParentName } from '../../common';
+import { ActionDispatchScope, InjectionContainer, LogLevel, Logger, LoggerFactory, NullLogger, getRequestParentName } from '../../common';
 import { LaunchOptions } from '../launch/cli-parser';
-import { NodeDispatchContext } from './node-dispatch-context';
+import { NodeActionDispatchScope } from './node-action-dispatch-scope';
 import { WinstonLogger } from './winston-logger';
 
 export function createAppModule(options: LaunchOptions): ContainerModule {
     return new ContainerModule((bind, unbind, isBound, rebind) => {
         bind(InjectionContainer).toDynamicValue(dynamicContext => dynamicContext.container);
-        bind(ActionDispatchContext).toDynamicValue(() => new NodeDispatchContext());
+        // Transient on purpose: kept symmetric with the browser binding, which cannot share a
+        // singleton across sessions.
+        bind(ActionDispatchScope).to(NodeActionDispatchScope);
         const context = { bind, unbind, isBound, rebind };
         configureWinstonLogger(context, options);
     });

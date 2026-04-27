@@ -177,11 +177,15 @@ export class DefaultGLSPServer implements GLSPServer {
         } catch (error) {
             const detail = error instanceof GLSPServerError ? error.cause?.toString?.() : error?.toString?.();
             this.logger.error(`Failed to handle request '${action.kind}' (${action.requestId}):`, detail);
-            const reject = RejectAction.create(`Failed to handle request '${action.kind}' (${action.requestId})`, {
-                responseId: action.requestId,
-                detail
-            });
-            this.sendResponseToClient(clientId, reject);
+            try {
+                const reject = RejectAction.create(`Failed to handle request '${action.kind}' (${action.requestId})`, {
+                    responseId: action.requestId,
+                    detail
+                });
+                this.sendResponseToClient(clientId, reject);
+            } catch (sendError) {
+                this.logger.error(`Failed to send rejection for request '${action.requestId}':`, sendError);
+            }
         }
     }
 

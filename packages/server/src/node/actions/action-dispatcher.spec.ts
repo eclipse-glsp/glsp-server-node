@@ -17,7 +17,7 @@ import { Action, Deferred, RequestAction, ResponseAction, UpdateModelAction } fr
 import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
 import * as sinon from 'sinon';
-import { ActionDispatchContext, DefaultActionDispatcher } from '../../common/actions/action-dispatcher';
+import { ActionDispatchScope, DefaultActionDispatcher } from '../../common/actions/action-dispatcher';
 import { ActionHandler } from '../../common/actions/action-handler';
 import { ActionHandlerRegistry } from '../../common/actions/action-handler-registry';
 import { ClientActionForwarder } from '../../common/actions/client-action-handler';
@@ -25,7 +25,7 @@ import { ClientActionKinds, ClientId } from '../../common/di/service-identifiers
 import { ClientSessionManager } from '../../common/session/client-session-manager';
 import * as mock from '../../common/test/mock-util';
 import { Logger } from '../../common/utils/logger';
-import { NodeDispatchContext } from '../di/node-dispatch-context';
+import { NodeActionDispatchScope } from '../di/node-action-dispatch-scope';
 
 function waitSync(timeInMillis: number): void {
     const start = Date.now();
@@ -52,7 +52,7 @@ describe('test DefaultActionDispatcher', () => {
             bind(ActionHandlerRegistry).toConstantValue(actionHandlerRegistry);
             bind(ClientActionKinds).toConstantValue(new Set(['response', 'response1', 'response2']));
             bind(ClientActionForwarder).toConstantValue(clientActionForwarderStub);
-            bind(ActionDispatchContext).toDynamicValue(() => new NodeDispatchContext());
+            bind(ActionDispatchScope).to(NodeActionDispatchScope);
         })
     );
     const actionDispatcher = container.resolve(DefaultActionDispatcher);

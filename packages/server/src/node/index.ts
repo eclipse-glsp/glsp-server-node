@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2024 EclipseSource and others.
+ * Copyright (c) 2022-2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -15,7 +15,7 @@
  ********************************************************************************/
 export * from './abstract-json-model-storage';
 export * from './di/app-module';
-export * from './di/node-dispatch-context';
+export * from './di/node-action-dispatch-scope';
 export * from './di/winston-logger';
 export * from './gmodel/gmodel-storage';
 export * from './launch/cli-parser';

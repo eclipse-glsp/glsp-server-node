@@ -61,7 +61,6 @@
     "@eclipse-glsp/graph": "2.7.0-next",
     "@eclipse-glsp/protocol": "next",
     "@types/uuid": "8.3.1",
-    "als-browser": "^1.0.1",
     "commander": "^8.3.0",
     "fast-json-patch": "^3.1.0",
     "lodash": "4.17.21",

@@ -86,6 +86,8 @@ export interface ActionDispatcher {
      * The promise waits indefinitely until a response arrives or the dispatcher is disposed.
      * Use {@link requestUntil} if a timeout is needed.
      *
+     * Note: mutates `action.requestId` (if unset) and `action.timeout`.
+     *
      * @param action The request action to dispatch.
      * @returns A promise that resolves with the matching response action.
      */
@@ -100,6 +102,8 @@ export interface ActionDispatcher {
      * If `rejectOnTimeout` is set to `false` (default) the returned promise will be resolved with
      * no value, otherwise it will be rejected.
      *
+     * Note: mutates `action.requestId` (if unset) and `action.timeout`.
+     *
      * @param action The request action to dispatch.
      * @param timeoutMs Maximum wait time in milliseconds. Defaults to
      *        {@link RequestAction.timeout} if set, otherwise 2000 ms.
@@ -113,34 +117,34 @@ export interface ActionDispatcher {
     ): Promise<Res | undefined>;
 }
 
-export const ActionDispatchContext = Symbol('ActionDispatchContext');
+export const ActionDispatchScope = Symbol('ActionDispatchScope');
 
 /**
  * Scope marker that lets the {@link ActionDispatcher} know whether a call to `dispatch()`
  * originates from inside a running handler (reentrant) or from outside (external).
  *
- * The consumer loop wraps each action in {@link run} so that reentrant `dispatch()` calls
- * (handler responses, injected dispatcher calls) can be recognized via {@link isInContext}
- * and executed inline instead of being queued.
+ * The {@link DefaultActionDispatcher.processActionQueue} loop wraps each action in {@link enter}
+ * so that reentrant `dispatch()` calls (handler responses, injected dispatcher calls) can be
+ * recognized via {@link isReentrant} and executed inline instead of being queued.
  *
  * Used by the {@link DefaultActionDispatcher} implementation.
  */
-export interface ActionDispatchContext {
+export interface ActionDispatchScope {
     /**
-     * Executes the callback inside the dispatch context. While the callback (and its full
-     * async continuation) is running, {@link isInContext} returns `true` for reentrant calls.
+     * Executes the callback inside the dispatch scope. While the callback (and its full async
+     * continuation) is running, {@link isReentrant} returns `true` for reentrant calls.
      */
-    run<R>(callback: () => R): R;
+    enter<R>(callback: () => R): R;
 
     /**
-     * Returns `true` if the caller is executing inside a {@link run} callback, meaning the
-     * dispatch is reentrant (e.g. a handler response or an injected dispatcher call) and
-     * should run inline rather than being queued.
+     * Returns `true` if the given dispatch is reentrant — i.e. it originates from within a
+     * running {@link enter} callback (handler response or injected dispatcher call) and should
+     * run inline rather than being queued.
      *
      * Implementations may inspect the action to apply additional guards, e.g. to ensure
-     * client-originated actions are always queued regardless of context state.
+     * client-originated actions are always queued regardless of scope state.
      */
-    isInContext(action: Action): boolean;
+    isReentrant(action: Action): boolean;
 }
 
 /**
@@ -149,6 +153,8 @@ export interface ActionDispatchContext {
  */
 @injectable()
 export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
+    protected static readonly STALE_TIMEOUT_GRACE_MS = 30_000;
+
     @inject(ActionHandlerRegistry)
     protected actionHandlerRegistry: ActionHandlerRegistry;
 
@@ -161,19 +167,21 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
     @inject(ClientId)
     protected clientId: string;
 
-    @inject(ActionDispatchContext)
-    protected dispatchContext: ActionDispatchContext;
+    @inject(ActionDispatchScope)
+    protected dispatchScope: ActionDispatchScope;
 
-    protected channel = new ActionChannel<Action>();
+    protected actionQueue = new ActionChannel<Action>();
 
     protected postUpdateQueue: Action[] = [];
     protected readonly pendingRequests = new Map<string, Deferred<ResponseAction | undefined>>();
-    protected readonly timeouts = new Map<string, NodeJS.Timeout>();
+    protected readonly requestTimeouts = new Map<string, NodeJS.Timeout>();
     protected nextRequestId = 1;
 
     @postConstruct()
     protected initialize(): void {
-        this.runConsumerLoop();
+        // Fire-and-forget: the loop is meant to run for the dispatcher's lifetime; surface any
+        // unexpected termination via the logger instead of an unhandled rejection.
+        this.processActionQueue().catch(error => this.logger.error('Action queue processor terminated unexpectedly', error));
     }
 
     protected generateRequestId(): string {
@@ -186,18 +194,18 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
             return Promise.resolve();
         }
         // Reentrant dispatches run inline to preserve ordering with the containing action.
-        if (this.dispatchContext.isInContext(action)) {
+        if (this.dispatchScope.isReentrant(action)) {
             return this.doDispatch(action);
         }
         // External dispatches are queued and processed sequentially.
-        return this.channel.push(action);
+        return this.actionQueue.push(action);
     }
 
-    protected async runConsumerLoop(): Promise<void> {
-        // Run each action inside the dispatch context so reentrant dispatch() calls are recognized.
-        for await (const entry of this.channel.consume()) {
+    protected async processActionQueue(): Promise<void> {
+        // Process each action inside the dispatch scope so reentrant dispatch() calls are recognized.
+        for await (const entry of this.actionQueue.consume()) {
             try {
-                await this.dispatchContext.run(() => this.doDispatch(entry.item));
+                await this.dispatchScope.enter(() => this.doDispatch(entry.item));
                 entry.resolve();
             } catch (error) {
                 entry.reject(error);
@@ -227,26 +235,30 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
         await this.dispatchResponses(responses);
     }
 
-    protected async executeHandler(handler: ActionHandler, request: Action): Promise<Action[]> {
-        const responseActions = await handler.execute(request);
-        return responseActions.map(action => respond(request, action));
+    protected async executeHandler(handler: ActionHandler, action: Action): Promise<Action[]> {
+        const responseActions = await handler.execute(action);
+        return responseActions.map(response => respond(action, response));
     }
 
     protected async dispatchResponses(actions: Action[]): Promise<void> {
-        // Sequential dispatch inside the current dispatch context. Each response goes inline via
+        // Sequential dispatch inside the current dispatch scope. Each response goes inline via
         // the reentrant path, or is intercepted if it resolves a pending request().
         for (const action of actions) {
             await this.dispatch(action);
         }
     }
 
-    dispatchAll(...actions: MaybeArray<Action>[]): Promise<void> {
+    async dispatchAll(...actions: MaybeArray<Action>[]): Promise<void> {
         if (actions.length === 0) {
-            return Promise.resolve();
+            return;
         }
         const flat: Action[] = [];
         flatPush(flat, actions);
-        return Promise.all(flat.map(action => this.dispatch(action))).then(() => Promise.resolve());
+        // Sequential dispatch: external calls were already FIFO via the queue, but reentrant
+        // calls also need deterministic ordering so handlers see each other's effects in order.
+        for (const action of flat) {
+            await this.dispatch(action);
+        }
     }
 
     dispatchAfterNextUpdate(...actions: MaybeArray<Action>[]): void {
@@ -285,10 +297,14 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
         if (timeoutMs !== undefined) {
             const timeout = setTimeout(() => {
                 if (this.pendingRequests.delete(action.requestId)) {
-                    // Intentionally keep the timeouts entry (do NOT delete).
-                    // The stale entry signals "this request existed but timed out",
-                    // matching the client-side GLSPActionDispatcher pattern.
-                    // Cleaned up when the late response arrives or on dispose().
+                    // Keep the requestTimeouts entry briefly as a stale marker so a late response
+                    // can be filtered, then drop it after a grace period to avoid leaking markers
+                    // for requests whose late responses never arrive.
+                    const cleanup = setTimeout(
+                        () => this.requestTimeouts.delete(action.requestId),
+                        DefaultActionDispatcher.STALE_TIMEOUT_GRACE_MS
+                    );
+                    cleanup.unref?.();
                     const message = `Request '${action.requestId}' (${action.kind}) timed out after ${timeoutMs}ms`;
                     if (rejectOnTimeout) {
                         deferred.reject(new Error(message));
@@ -299,20 +315,20 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
                 }
             }, timeoutMs);
 
-            this.timeouts.set(action.requestId, timeout);
+            this.requestTimeouts.set(action.requestId, timeout);
         }
 
         // dispatch() routes correctly on its own: external callers queue, handler-internal
-        // callers run inline via the AsyncLocalStorage context. The matching response resolves
+        // callers run inline via the ActionDispatchScope. The matching response resolves
         // the deferred out-of-band via interceptPendingResponse().
         const dispatchPromise = this.dispatch(action);
 
         dispatchPromise.catch(error => {
             if (this.pendingRequests.delete(action.requestId)) {
-                const timeout = this.timeouts.get(action.requestId);
+                const timeout = this.requestTimeouts.get(action.requestId);
                 if (timeout !== undefined) {
                     clearTimeout(timeout);
-                    this.timeouts.delete(action.requestId);
+                    this.requestTimeouts.delete(action.requestId);
                 }
                 deferred.reject(error);
             }
@@ -350,15 +366,15 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
         if (!ResponseAction.hasValidResponseId(action)) {
             return false;
         }
-        // Node-only: responses to server-initiated requests are resolved here instead of going
-        // through action handlers. No Java equivalent.
+        // Responses to server-initiated requests are resolved here instead of going through
+        // action handlers. No equivalent in the Java GLSP server implementation.
         const deferred = this.pendingRequests.get(action.responseId);
         if (deferred !== undefined) {
             this.pendingRequests.delete(action.responseId);
-            const timeout = this.timeouts.get(action.responseId);
+            const timeout = this.requestTimeouts.get(action.responseId);
             if (timeout !== undefined) {
                 clearTimeout(timeout);
-                this.timeouts.delete(action.responseId);
+                this.requestTimeouts.delete(action.responseId);
             }
             // Intercepted responses skip doDispatch, so drain post-update actions here when the
             // response is an UpdateModel/SetModel. RejectAction does not trigger a drain; pending
@@ -370,16 +386,20 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
                 deferred.resolve(action);
             }
             if (postUpdateActions.length > 0) {
-                this.dispatchResponses(postUpdateActions);
+                // Fire-and-forget: callers of request() expect the resolved response, not the
+                // unrelated post-update fan-out; awaiting here would couple them unnecessarily.
+                this.dispatchResponses(postUpdateActions).catch(error =>
+                    this.logger.error('Failed to dispatch post-update actions', error)
+                );
             }
             return true;
         }
         // Late response for a timed-out request: clear responseId so ClientActionForwarder does
         // not re-emit it to the client.
-        const staleTimeout = this.timeouts.get(action.responseId);
+        const staleTimeout = this.requestTimeouts.get(action.responseId);
         if (staleTimeout !== undefined) {
             clearTimeout(staleTimeout);
-            this.timeouts.delete(action.responseId);
+            this.requestTimeouts.delete(action.responseId);
             this.logger.debug(`Late response for timed-out request '${action.responseId}', dispatching as normal action`);
             action.responseId = '';
         }
@@ -388,12 +408,12 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
 
     dispose(): void {
         // Reject queued actions: no further processing should happen after dispose.
-        this.channel.rejectPending(new Error('ActionDispatcher disposed'));
-        this.channel.stop();
+        this.actionQueue.rejectPending(new Error('ActionDispatcher disposed'));
+        this.actionQueue.stop();
         this.pendingRequests.forEach((deferred, id) => deferred.reject(new Error(`Request '${id}' cancelled: dispatcher disposed`)));
         this.pendingRequests.clear();
-        this.timeouts.forEach(timeout => clearTimeout(timeout));
-        this.timeouts.clear();
+        this.requestTimeouts.forEach(timeout => clearTimeout(timeout));
+        this.requestTimeouts.clear();
         this.postUpdateQueue = [];
     }
 }

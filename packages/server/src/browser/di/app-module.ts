@@ -15,14 +15,16 @@
  ********************************************************************************/
 
 import { ContainerModule } from 'inversify';
-import { ActionDispatchContext, InjectionContainer, LogLevel, LoggerConfigOptions, configureConsoleLogger } from '../../common/';
-import { BrowserDispatchContext } from './browser-dispatch-context';
+import { ActionDispatchScope, InjectionContainer, LogLevel, LoggerConfigOptions, configureConsoleLogger } from '../../common/';
+import { BrowserActionDispatchScope } from './browser-action-dispatch-scope';
 
 export function createAppModule(options: LoggerConfigOptions = {}): ContainerModule {
     const resolvedOptions: LoggerConfigOptions = { consoleLog: true, logLevel: LogLevel.info, ...options };
     return new ContainerModule((bind, unbind, isBound, rebind) => {
         bind(InjectionContainer).toDynamicValue(dynamicContext => dynamicContext.container);
-        bind(ActionDispatchContext).toDynamicValue(() => new BrowserDispatchContext());
+        // Transient on purpose: a singleton at the server-container level would be shared across
+        // sessions and leak the browser flag between them.
+        bind(ActionDispatchScope).to(BrowserActionDispatchScope);
         const context = { bind, unbind, isBound, rebind };
         configureConsoleLogger(context, resolvedOptions);
     });

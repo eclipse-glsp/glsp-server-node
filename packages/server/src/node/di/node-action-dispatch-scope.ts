@@ -15,19 +15,21 @@
  ********************************************************************************/
 
 import { AsyncLocalStorage } from 'async_hooks';
-import { ActionDispatchContext } from '../../common/actions/action-dispatcher';
+import { injectable } from 'inversify';
+import { ActionDispatchScope } from '../../common/actions/action-dispatcher';
 
 /**
- * Node.js {@link ActionDispatchContext} backed by native `AsyncLocalStorage`.
+ * Node.js {@link ActionDispatchScope} backed by native `AsyncLocalStorage`.
  */
-export class NodeDispatchContext implements ActionDispatchContext {
+@injectable()
+export class NodeActionDispatchScope implements ActionDispatchScope {
     protected storage = new AsyncLocalStorage<boolean>();
 
-    run<R>(callback: () => R): R {
+    enter<R>(callback: () => R): R {
         return this.storage.run(true, callback);
     }
 
-    isInContext(): boolean {
+    isReentrant(): boolean {
         return this.storage.getStore() === true;
     }
 }

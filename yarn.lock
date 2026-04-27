@@ -1982,11 +1982,6 @@ ajv@^6.12.4, ajv@^6.12.5:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-als-browser@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/als-browser/-/als-browser-1.0.1.tgz#ddd9c2ac8ad2817e7d55f0d470b76aaa70f3d521"
-  integrity sha512-DjavKf6zf4DFPdEmgsEM474MBjFcZG/1amv2/+WHGf61kVQWqf7XEn4jvpjFS4ssQbh/pkmYThaPfQK1ERC+3g==
-
 ansi-colors@4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/ansi-colors/-/ansi-colors-4.1.1.tgz#cbb9ae256bf750af1eab344f229aa27fe94ba348"
