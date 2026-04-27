@@ -27,7 +27,7 @@ import {
 } from '@eclipse-glsp/protocol';
 import { inject, injectable, postConstruct } from 'inversify';
 import { ClientId } from '../di/service-identifiers';
-import { ActionChannel } from '../utils/action-channel';
+import { ActionQueue } from '../utils/action-queue';
 import { GLSPServerError } from '../utils/glsp-server-error';
 import { Logger } from '../utils/logger';
 import { ActionHandler } from './action-handler';
@@ -170,7 +170,7 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
     @inject(ActionDispatchScope)
     protected dispatchScope: ActionDispatchScope;
 
-    protected actionQueue = new ActionChannel<Action>();
+    protected actionQueue = new ActionQueue<Action>();
 
     protected postUpdateQueue: Action[] = [];
     protected readonly pendingRequests = new Map<string, Deferred<ResponseAction | undefined>>();
@@ -366,8 +366,6 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
         if (!ResponseAction.hasValidResponseId(action)) {
             return false;
         }
-        // Responses to server-initiated requests are resolved here instead of going through
-        // action handlers. No equivalent in the Java GLSP server implementation.
         const deferred = this.pendingRequests.get(action.responseId);
         if (deferred !== undefined) {
             this.pendingRequests.delete(action.responseId);

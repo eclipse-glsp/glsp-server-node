@@ -15,31 +15,31 @@
  ********************************************************************************/
 
 /**
- * An entry yielded by {@link ActionChannel.consume}. The consumer must call either
+ * An entry yielded by {@link ActionQueue.consume}. The consumer must call either
  * `resolve()` or `reject(error)` exactly once after processing `item`.
  */
-export interface ActionChannelEntry<T> {
+export interface ActionQueueEntry<T> {
     item: T;
     resolve: () => void;
     reject: (error: unknown) => void;
 }
 
 /**
- * Producer/consumer channel with a single async consumer loop. Items are processed in FIFO order.
+ * Producer/consumer queue with a single async consumer loop. Items are processed in FIFO order.
  */
-export class ActionChannel<T> {
-    protected queue: ActionChannelEntry<T>[] = [];
+export class ActionQueue<T> {
+    protected queue: ActionQueueEntry<T>[] = [];
     protected notify: (() => void) | undefined;
     protected stopped = false;
     protected consuming = false;
 
     /**
      * Enqueues an item. The returned promise settles when the consumer finishes processing it,
-     * propagating results back to the producer. Rejects immediately if the channel has been stopped.
+     * propagating results back to the producer. Rejects immediately if the queue has been stopped.
      */
     push(item: T): Promise<void> {
         if (this.stopped) {
-            return Promise.reject(new Error('ActionChannel is stopped'));
+            return Promise.reject(new Error('ActionQueue is stopped'));
         }
         return new Promise((resolve, reject) => {
             this.queue.push({ item, resolve, reject });
@@ -49,13 +49,13 @@ export class ActionChannel<T> {
 
     /**
      * Yields pending entries, suspending until the next {@link push} when the queue is empty. Exits
-     * once the channel is stopped and the queue has been drained.
+     * once the queue is stopped and has been drained.
      *
      * Single-consumer: calling `consume()` a second time throws an error.
      */
-    async *consume(): AsyncGenerator<ActionChannelEntry<T>> {
+    async *consume(): AsyncGenerator<ActionQueueEntry<T>> {
         if (this.consuming) {
-            throw new Error('ActionChannel supports only a single consumer');
+            throw new Error('ActionQueue supports only a single consumer');
         }
         this.consuming = true;
         try {
@@ -77,7 +77,7 @@ export class ActionChannel<T> {
     }
 
     /**
-     * Stops the channel. Further {@link push} calls reject. The consumer loop exits after
+     * Stops the queue. Further {@link push} calls reject. The consumer loop exits after
      * the remaining queued entries have been yielded (or immediately if the queue is empty).
      */
     stop(): void {
@@ -87,9 +87,9 @@ export class ActionChannel<T> {
 
     /**
      * Rejects all queued entries with the given reason so producers awaiting their
-     * `push()` promises do not hang. Does not stop the channel.
+     * `push()` promises do not hang. Does not stop the queue.
      */
-    rejectPending(reason: Error = new Error('ActionChannel cleared')): void {
+    rejectPending(reason: Error = new Error('ActionQueue cleared')): void {
         const pending = this.queue;
         this.queue = [];
         for (const entry of pending) {

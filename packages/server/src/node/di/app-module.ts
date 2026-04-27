@@ -24,9 +24,7 @@ import { WinstonLogger } from './winston-logger';
 export function createAppModule(options: LaunchOptions): ContainerModule {
     return new ContainerModule((bind, unbind, isBound, rebind) => {
         bind(InjectionContainer).toDynamicValue(dynamicContext => dynamicContext.container);
-        // Transient on purpose: kept symmetric with the browser binding, which cannot share a
-        // singleton across sessions.
-        bind(ActionDispatchScope).to(NodeActionDispatchScope);
+        bind(ActionDispatchScope).to(NodeActionDispatchScope).inSingletonScope();
         const context = { bind, unbind, isBound, rebind };
         configureWinstonLogger(context, options);
     });

@@ -15,11 +15,11 @@
  ********************************************************************************/
 import { expect } from 'chai';
 import { expectToThrowAsync } from '../test/mock-util';
-import { ActionChannel } from './action-channel';
+import { ActionQueue } from './action-queue';
 
-describe('ActionChannel', () => {
+describe('ActionQueue', () => {
     it('yields pushed items in FIFO order', async () => {
-        const channel = new ActionChannel<number>();
+        const channel = new ActionQueue<number>();
         const consumed: number[] = [];
 
         const consumer = (async (): Promise<void> => {
@@ -37,7 +37,7 @@ describe('ActionChannel', () => {
     });
 
     it('resolves the push promise once the consumer resolves the entry', async () => {
-        const channel = new ActionChannel<string>();
+        const channel = new ActionQueue<string>();
         let entryResolver: (() => void) | undefined;
 
         const consumer = (async (): Promise<void> => {
@@ -57,7 +57,7 @@ describe('ActionChannel', () => {
     });
 
     it('propagates reject() from the consumer back to the pushing caller', async () => {
-        const channel = new ActionChannel<number>();
+        const channel = new ActionQueue<number>();
 
         const consumer = (async (): Promise<void> => {
             for await (const entry of channel.consume()) {
@@ -72,13 +72,13 @@ describe('ActionChannel', () => {
     });
 
     it('rejects push() after stop()', async () => {
-        const channel = new ActionChannel<number>();
+        const channel = new ActionQueue<number>();
         channel.stop();
-        await expectToThrowAsync(() => channel.push(1), 'ActionChannel is stopped');
+        await expectToThrowAsync(() => channel.push(1), 'ActionQueue is stopped');
     });
 
     it('consumer exits after stop() and drain', async () => {
-        const channel = new ActionChannel<number>();
+        const channel = new ActionQueue<number>();
         const consumed: number[] = [];
 
         const consumer = (async (): Promise<void> => {
@@ -98,7 +98,7 @@ describe('ActionChannel', () => {
     });
 
     it('rejectPending() rejects all queued push() promises without stopping', async () => {
-        const channel = new ActionChannel<number>();
+        const channel = new ActionQueue<number>();
         const pushes = [channel.push(1), channel.push(2)];
         expect(channel.size).to.equal(2);
 
@@ -111,7 +111,7 @@ describe('ActionChannel', () => {
     });
 
     it('size reflects the number of unconsumed entries', async () => {
-        const channel = new ActionChannel<number>();
+        const channel = new ActionQueue<number>();
         channel.push(1);
         channel.push(2);
         channel.push(3);
@@ -119,13 +119,13 @@ describe('ActionChannel', () => {
     });
 
     it('throws when a second consumer is started', async () => {
-        const channel = new ActionChannel<number>();
+        const channel = new ActionQueue<number>();
         const first = channel.consume();
         // Kick off the first consumer so it registers as the active consumer.
         const firstStep = first.next();
 
         const second = channel.consume();
-        await expectToThrowAsync(() => second.next().then(() => undefined), 'ActionChannel supports only a single consumer');
+        await expectToThrowAsync(() => second.next().then(() => undefined), 'ActionQueue supports only a single consumer');
 
         channel.stop();
         await firstStep;

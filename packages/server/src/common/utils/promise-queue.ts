@@ -32,7 +32,7 @@ export interface PromiseQueueElement<T = void> {
  *
  * @deprecated Since 2.7. The `DefaultActionDispatcher` no longer uses this queue. Kept for
  * backwards compatibility; will be removed in a future release. New code should use
- * {@link ActionChannel} or native async patterns instead.
+ * {@link ActionQueue} or native async patterns instead.
  */
 export class PromiseQueue<T = void> {
     protected queue: PromiseQueueElement<T>[] = [];
