@@ -16,12 +16,15 @@
 const webpack = require('webpack');
 const path = require('path');
 const buildRoot = path.resolve(__dirname, 'lib');
-const appRoot = path.resolve(__dirname, '..', 'workflow-server-bundled');
 
 module.exports = env => {
     const target = env.target ?? 'node';
     const pathToIndex = target !== 'node' ? 'browser/app' : 'node/app';
     const filename = `wf-glsp-server-${target}.js`;
+    const appRoot =
+        target !== 'node'
+            ? path.resolve(__dirname, '..', 'workflow-server-bundled-web')
+            : path.resolve(__dirname, '..', 'workflow-server-bundled');
     return {
         entry: [path.resolve(buildRoot, pathToIndex)],
         output: {
@@ -29,7 +32,7 @@ module.exports = env => {
             path: appRoot
         },
         mode: 'development',
-        devtool: 'source-map',
+        devtool: target !== 'node' ? 'inline-source-map' : 'source-map',
         resolve: {
             extensions: ['.js']
         },

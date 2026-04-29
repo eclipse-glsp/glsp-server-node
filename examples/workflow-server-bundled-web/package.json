@@ -1,7 +1,7 @@
 {
-  "name": "@eclipse-glsp-examples/workflow-server-bundled",
+  "name": "@eclipse-glsp-examples/workflow-server-bundled-web",
   "version": "2.7.0-next",
-  "description": "GLSP node server for the workflow example (bundled)",
+  "description": "GLSP web server for the workflow example (bundled)",
   "keywords": [
     "eclipse",
     "graphics",
@@ -32,19 +32,12 @@
       "url": "https://projects.eclipse.org/projects/ecd.glsp"
     }
   ],
-  "main": "./wf-glsp-server-node.js",
-  "browser": {
-    "./lib/node/index.js": "./lib/browser/index.js"
-  },
+  "main": "./wf-glsp-server-webworker.js",
   "files": [
-    "wf-glsp-server-node.js",
-    "wf-glsp-server-node.js.map"
+    "wf-glsp-server-webworker.js"
   ],
   "scripts": {
-    "clean": "rimraf wf-glsp-server-node.js wf-glsp-server-node.js.map",
-    "start": "node --enable-source-maps ./wf-glsp-server-node.js --port 5007",
-    "start:websocket": "node --enable-source-maps ./wf-glsp-server-node.js -w --port 8081",
-    "watch": "tsc -w"
+    "clean": "rimraf wf-glsp-server-webworker.js"
   },
   "publishConfig": {
     "access": "public"
