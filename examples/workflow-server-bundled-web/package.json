@@ -34,10 +34,11 @@
   ],
   "main": "./wf-glsp-server-webworker.js",
   "files": [
-    "wf-glsp-server-webworker.js"
+    "wf-glsp-server-webworker.js",
+    "wf-glsp-server-webworker.js.map"
   ],
   "scripts": {
-    "clean": "rimraf wf-glsp-server-webworker.js"
+    "clean": "rimraf wf-glsp-server-webworker.js wf-glsp-server-webworker.js.map"
   },
   "publishConfig": {
     "access": "public"
