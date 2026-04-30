@@ -32,7 +32,7 @@ module.exports = env => {
             path: appRoot
         },
         mode: 'development',
-        devtool: target !== 'node' ? 'inline-source-map' : 'source-map',
+        devtool: 'source-map',
         resolve: {
             extensions: ['.js']
         },
