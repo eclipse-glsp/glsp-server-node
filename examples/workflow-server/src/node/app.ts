@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2024 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -16,10 +16,11 @@
 import 'reflect-metadata';
 
 import { configureELKLayoutModule } from '@eclipse-glsp/layout-elk';
-import { createAppModule, GModelStorage, Logger, SocketServerLauncher, WebSocketServerLauncher } from '@eclipse-glsp/server/node';
+import { GModelStorage, Logger, SocketServerLauncher, WebSocketServerLauncher, createAppModule } from '@eclipse-glsp/server/node';
 import { Container } from 'inversify';
 
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
+import { WorkflowMcpDiagramModule, WorkflowMcpServerModule } from '../common/mcp/workflow-mcp-module';
 import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-diagram-module';
 import { createWorkflowCliParser } from './workflow-cli-parser';
 
@@ -39,15 +40,19 @@ async function launch(argv?: string[]): Promise<void> {
     });
 
     const elkLayoutModule = configureELKLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator });
-    const serverModule = new WorkflowServerModule().configureDiagramModule(new WorkflowDiagramModule(() => GModelStorage), elkLayoutModule);
-
+    const serverModule = new WorkflowServerModule().configureDiagramModule(
+        new WorkflowDiagramModule(() => GModelStorage),
+        elkLayoutModule,
+        new WorkflowMcpDiagramModule()
+    );
+    const mcpServerModule = new WorkflowMcpServerModule();
     if (options.webSocket) {
         const launcher = appContainer.resolve(WebSocketServerLauncher);
-        launcher.configure(serverModule);
+        launcher.configure(serverModule, mcpServerModule);
         await launcher.start({ port: options.port, host: options.host, path: 'workflow' });
     } else {
         const launcher = appContainer.resolve(SocketServerLauncher);
-        launcher.configure(serverModule);
+        launcher.configure(serverModule, mcpServerModule);
         await launcher.start({ port: options.port, host: options.host });
     }
 }

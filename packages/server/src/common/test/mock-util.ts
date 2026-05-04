@@ -169,6 +169,10 @@ export class StubClientSessionManager implements ClientSessionManager {
         return undefined;
     }
 
+    getSessions(): ClientSession[] {
+        return [];
+    }
+
     getSessionsByType(diagramType: string): ClientSession[] {
         return [];
     }

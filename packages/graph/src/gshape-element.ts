@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2024 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -27,6 +27,12 @@ export abstract class GShapeElement extends GModelElement implements GBoundsAwar
     [GBoundsAware] = true;
     [GLayoutable] = true;
     [GResizable] = true;
+}
+
+export namespace GShapeElement {
+    export function is(object: unknown): object is GShapeElement {
+        return object instanceof GShapeElement;
+    }
 }
 
 export class GShapeElementBuilder<G extends GShapeElement> extends GModelElementBuilder<G> {

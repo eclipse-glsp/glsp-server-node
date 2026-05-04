@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -62,5 +62,17 @@ export namespace CreateOperationHandler {
             hasArrayProp(object, 'elementTypeIds') &&
             hasFunctionProp(object, 'getTriggerActions', true)
         );
+    }
+}
+
+export namespace CreateNodeOperationHandler {
+    export function is(object: unknown): object is CreateNodeOperationHandler {
+        return CreateOperationHandler.is(object) && object.operationType === CreateNodeOperation.KIND;
+    }
+}
+
+export namespace CreateEdgeOperationHandler {
+    export function is(object: unknown): object is CreateEdgeOperationHandler {
+        return CreateOperationHandler.is(object) && object.operationType === CreateEdgeOperation.KIND;
     }
 }

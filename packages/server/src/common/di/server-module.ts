@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { GLSPServer, GLSPServerListener } from '@eclipse-glsp/protocol';
+import { GLSPServer, GLSPServerInitializer, GLSPServerListener } from '@eclipse-glsp/protocol';
 import { ContainerModule, interfaces } from 'inversify';
 import { DefaultGlobalActionProvider, GlobalActionProvider } from '../actions/global-action-provider';
 import { DefaultGLSPServer } from '../protocol/glsp-server';
@@ -77,6 +77,9 @@ export class ServerModule extends GLSPModule {
         this.configureMultiBinding(new MultiBinding<GLSPServerListener>(GLSPServerListener), binding =>
             this.configureGLSPServerListeners(binding)
         );
+        this.configureMultiBinding(new MultiBinding<GLSPServerInitializer>(GLSPServerInitializer), binding =>
+            this.configureGLSPServerInitializers(binding)
+        );
 
         applyBindingTarget(context, GlobalActionProvider, this.bindGlobalActionProvider()).inSingletonScope();
 
@@ -111,5 +114,9 @@ export class ServerModule extends GLSPModule {
 
     protected configureGLSPServerListeners(binding: MultiBinding<GLSPServerListener>): void {
         binding.add({ service: ClientSessionManager });
+    }
+
+    protected configureGLSPServerInitializers(binding: MultiBinding<GLSPServerInitializer>): void {
+        // Can be overridden to add contributions
     }
 }
