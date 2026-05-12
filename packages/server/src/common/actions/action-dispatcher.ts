@@ -219,6 +219,12 @@ export class DefaultActionDispatcher implements ActionDispatcher, Disposable {
 
         const actionHandlers = this.actionHandlerRegistry.get(action.kind);
         if (!handledOnClient && actionHandlers.length === 0) {
+            // Stale response (e.g. late `RejectAction`) for a pending request that's already
+            // gone — protocol signal, not a handler invocation; drop silently.
+            if (ResponseAction.is(action)) {
+                this.logger.debug(`Stale response '${action.kind}' (responseId='${action.responseId}') has no handler; dropping.`);
+                return;
+            }
             throw new GLSPServerError(`No handler registered for action kind: ${action.kind}`);
         }
 

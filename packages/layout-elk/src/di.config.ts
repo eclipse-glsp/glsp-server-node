@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2025 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,9 +13,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { LayoutEngine, Logger, LoggerFactory, ModelState, NullLogger } from '@eclipse-glsp/server';
+import {
+    BindingTarget,
+    GLSPModule,
+    LayoutEngine,
+    Logger,
+    LoggerFactory,
+    ModelState,
+    NullLogger,
+    applyBindingTarget
+} from '@eclipse-glsp/server';
 import ElkConstructor, { LayoutOptions } from 'elkjs/lib/elk.bundled';
-import { ContainerModule } from 'inversify';
+import { ContainerModule, injectable, interfaces } from 'inversify';
 import { DefaultElementFilter, ElementFilter } from './element-filter';
 import { ElkFactory, GlspElkLayoutEngine } from './glsp-elk-layout-engine';
 import { FallbackLayoutConfigurator, LayoutConfigurator } from './layout-configurator';
@@ -23,7 +32,7 @@ import { FallbackLayoutConfigurator, LayoutConfigurator } from './layout-configu
 type Constructor<T> = new (...args: any[]) => T;
 
 /**
- * Configuration options for the {@link configureELKLayoutModule} function.
+ * Configuration options for the {@link ElkLayoutModule} (and the legacy {@link configureELKLayoutModule} factory).
  */
 export interface ElkModuleOptions {
     /**
@@ -53,65 +62,76 @@ export interface ElkModuleOptions {
 }
 
 /**
- * Utility method to create a DI module that provides all necessary bindings to use the {@link GlspElkLayoutEngine} in a node GLSP server
- * implementation. A set of configuration options is provided to enable easy customization. In most cases at least
- * the custom {@link layoutConfigurator} binding should be provided (in addition to the required `algorithms' property) via these options.
+ * DI module that provides the bindings needed to use the {@link GlspElkLayoutEngine} in a node GLSP server.
  *
- * The constructed module is not intended for standalone use cases and only works in combination with a GLSPDiagramModule.
+ * Subclass and override the `bindXxx()` hooks to customize individual bindings — e.g. to swap the
+ * layout configurator or element filter without re-implementing the whole module. The module is
+ * only meaningful in combination with a `GLSPDiagramModule`.
  *
- * * The following bindings are provided:
- * - {@link ILayoutConfigurator}
- * - {@link IElementFilter}
- * - {@link LayoutEngine}
+ * Bindings provided:
+ * - {@link ElementFilter}
+ * - {@link LayoutConfigurator}
  * - {@link ElkFactory}
- *
- * @param options The configuration options
- * @returns A DI module that can be loaded as additional module when configuring a diagram module for a GLSP server.
+ * - {@link GlspElkLayoutEngine} + {@link LayoutEngine} (toService)
+ * - Fallback bindings for {@link Logger} and {@link LoggerFactory} if absent.
  */
-export function configureELKLayoutModule(options: ElkModuleOptions): ContainerModule {
-    return new ContainerModule((bind, unbind, isBound, rebind) => {
-        if (options.elementFilter) {
-            bind(ElementFilter).to(options.elementFilter).inSingletonScope();
-        } else {
-            bind(ElementFilter).to(DefaultElementFilter).inSingletonScope();
-        }
+@injectable()
+export class ElkLayoutModule extends GLSPModule {
+    constructor(protected readonly options: ElkModuleOptions) {
+        super();
+    }
 
-        if (options.layoutConfigurator) {
-            bind(LayoutConfigurator).to(options.layoutConfigurator);
-        } else {
-            bind(LayoutConfigurator)
-                .toDynamicValue(context => new FallbackLayoutConfigurator(options.algorithms, options.defaultLayoutOptions))
-                .inSingletonScope();
-        }
-
-        const elkFactory: ElkFactory = () =>
-            new ElkConstructor({
-                algorithms: options.algorithms,
-                defaultLayoutOptions: options.defaultLayoutOptions,
-                // The node implementation relied on elkjs' `FakeWorker` to set the `workerFactory`.
-                // However, since the required file is dynamically loaded and not available in a web-worker context,
-                // it needs to be mocked manually.
-                workerFactory: options.isWebWorker ? () => ({ postMessage: () => {} }) as unknown as Worker : undefined
-            });
-
-        bind(ElkFactory).toConstantValue(elkFactory);
-
-        bind(GlspElkLayoutEngine)
-            .toDynamicValue(context => {
-                const container = context.container;
-                const factory = container.get<ElkFactory>(ElkFactory);
-                const filter = container.get<ElementFilter>(ElementFilter);
-                const configurator = container.get<LayoutConfigurator>(LayoutConfigurator);
-                const modelState = container.get<ModelState>(ModelState);
-                return new GlspElkLayoutEngine(factory, filter, configurator, modelState);
-            })
-            .inSingletonScope();
+    protected configure(bind: interfaces.Bind, unbind: interfaces.Unbind, isBound: interfaces.IsBound, rebind: interfaces.Rebind): void {
+        const context = { bind, unbind, isBound, rebind };
+        applyBindingTarget(context, ElementFilter, this.bindElementFilter()).inSingletonScope();
+        applyBindingTarget(context, LayoutConfigurator, this.bindLayoutConfigurator()).inSingletonScope();
+        applyBindingTarget(context, ElkFactory, this.bindElkFactory());
+        applyBindingTarget(context, GlspElkLayoutEngine, this.bindGlspElkLayoutEngine()).inSingletonScope();
         bind(LayoutEngine).toService(GlspElkLayoutEngine);
+        this.bindLoggerFallbacks(bind, isBound);
+    }
 
+    protected bindElementFilter(): BindingTarget<ElementFilter> {
+        return this.options.elementFilter ?? DefaultElementFilter;
+    }
+
+    protected bindLayoutConfigurator(): BindingTarget<LayoutConfigurator> {
+        if (this.options.layoutConfigurator) {
+            return this.options.layoutConfigurator;
+        }
+        return { dynamicValue: () => new FallbackLayoutConfigurator(this.options.algorithms, this.options.defaultLayoutOptions) };
+    }
+
+    protected bindElkFactory(): BindingTarget<ElkFactory> {
+        const { algorithms, defaultLayoutOptions, isWebWorker } = this.options;
+        const factory: ElkFactory = () =>
+            new ElkConstructor({
+                algorithms,
+                defaultLayoutOptions,
+                // The node implementation relies on elkjs' `FakeWorker` to set the `workerFactory`. The required file is
+                // dynamically loaded and not available in a web-worker context, so it has to be mocked manually there.
+                workerFactory: isWebWorker ? () => ({ postMessage: () => {} }) as unknown as Worker : undefined
+            });
+        return { constantValue: factory };
+    }
+
+    protected bindGlspElkLayoutEngine(): BindingTarget<GlspElkLayoutEngine> {
+        return {
+            dynamicValue: ctx => {
+                const factory = ctx.container.get<ElkFactory>(ElkFactory);
+                const filter = ctx.container.get<ElementFilter>(ElementFilter);
+                const configurator = ctx.container.get<LayoutConfigurator>(LayoutConfigurator);
+                const modelState = ctx.container.get<ModelState>(ModelState);
+                return new GlspElkLayoutEngine(factory, filter, configurator, modelState);
+            }
+        };
+    }
+
+    /** Provide fallbacks so the module works standalone in tests/specs that don't preconfigure logging. */
+    protected bindLoggerFallbacks(bind: interfaces.Bind, isBound: interfaces.IsBound): void {
         if (!isBound(Logger)) {
             bind(Logger).to(NullLogger).inSingletonScope();
         }
-
         if (!isBound(LoggerFactory)) {
             bind(LoggerFactory).toFactory(dynamicContext => (caller: string) => {
                 const logger = dynamicContext.container.get(Logger);
@@ -119,5 +139,13 @@ export function configureELKLayoutModule(options: ElkModuleOptions): ContainerMo
                 return logger;
             });
         }
-    });
+    }
+}
+
+/**
+ * Utility wrapper around {@link ElkLayoutModule} for the common case where no override is needed.
+ * Prefer subclassing {@link ElkLayoutModule} when individual bindings need to be customized.
+ */
+export function configureELKLayoutModule(options: ElkModuleOptions): ContainerModule {
+    return new ElkLayoutModule(options);
 }

@@ -13,6 +13,9 @@
       "path": "../../packages/server"
     },
     {
+      "path": "../../packages/server-mcp"
+    },
+    {
       "path": "../../packages/layout-elk"
     }
   ]

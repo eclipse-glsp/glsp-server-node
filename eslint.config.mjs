@@ -22,6 +22,11 @@ export default [
         rules: {
             '@typescript-eslint/no-shadow': 'off',
             '@typescript-eslint/padding-line-between-statements': 'off',
+            // The MCP SDK uses `exports` subpath patterns with explicit `.js` suffixes (e.g.
+            // `@modelcontextprotocol/sdk/server/mcp.js`). The TypeScript import resolver does
+            // not match these against the `./*` wildcard, even though tsc and Node resolve
+            // them correctly at compile- and runtime.
+            'import-x/no-unresolved': ['error', { ignore: ['^@modelcontextprotocol/sdk/'] }],
             'no-restricted-imports': [
                 'warn',
                 {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 EclipseSource and others.
+ * Copyright (c) 2023-2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -83,6 +83,9 @@ export abstract class JsonRpcGLSPServerLauncher<T> extends GLSPServerLauncher<T>
         serverInstance.clientConnection.onNotification(JsonrpcGLSPClient.ShutdownNotification, () =>
             this.disposeServerInstance(serverInstance)
         );
+        // A connection may be unceremoniously be closed (e.g., closing/reloading the browser) in which
+        // case the server must still be disposed
+        serverInstance.clientConnection.onClose(() => this.disposeServerInstance(serverInstance));
 
         this.logger.info('Starting GLSP server connection');
     }

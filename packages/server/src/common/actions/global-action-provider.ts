@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { distinctAdd } from '@eclipse-glsp/protocol';
 import { Container, ContainerModule, inject, injectable } from 'inversify';
-import { createClientSessionModule } from '../di/client-session-module';
+import { TEMPORARY_CLIENT_ID, createClientSessionModule } from '../di/client-session-module';
 import { DiagramModules, InjectionContainer } from '../di/service-identifiers';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
 import { ActionHandlerRegistry } from './action-handler-registry';
@@ -50,8 +50,7 @@ export class DefaultGlobalActionProvider implements GlobalActionProvider {
     createDiagramContainer(serverContainer: Container, modules: ContainerModule[]): Container {
         const container = serverContainer.createChild();
         const clientSessionModule = createClientSessionModule({
-            clientId: 'tempId',
-
+            clientId: TEMPORARY_CLIENT_ID,
             glspClient: { process: () => {} },
             clientActionKinds: []
         });

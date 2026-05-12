@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -38,6 +38,12 @@ export interface CreateEdgeOperationHandler extends OperationHandler {
     createCommand(operation: CreateEdgeOperation): MaybePromise<Command | undefined>;
 }
 
+export namespace CreateEdgeOperationHandler {
+    export function is(object: unknown): object is CreateEdgeOperationHandler {
+        return CreateOperationHandler.is(object) && object.operationType === CreateEdgeOperation.KIND;
+    }
+}
+
 export interface CreateNodeOperationHandler extends OperationHandler {
     readonly label: string;
     elementTypeIds: string[];
@@ -45,13 +51,18 @@ export interface CreateNodeOperationHandler extends OperationHandler {
     getTriggerActions(): TriggerNodeCreationAction[];
     createCommand(operation: CreateNodeOperation): MaybePromise<Command | undefined>;
 }
+
+export namespace CreateNodeOperationHandler {
+    export function is(object: unknown): object is CreateNodeOperationHandler {
+        return CreateOperationHandler.is(object) && object.operationType === CreateNodeOperation.KIND;
+    }
+}
+
 /**
  * A special {@link OperationHandler} that is responsible for the handling of a node or edge creation operation. Depending on its
  * operation type the triggered actions are {@link TriggerNodeCreationAction} or {@link TriggerEdgeCreationAction}s.
  */
 export type CreateOperationHandler = CreateNodeOperationHandler | CreateEdgeOperationHandler;
-
-export type CreateOperationKind = typeof CreateNodeOperation.KIND | typeof CreateEdgeOperation.KIND;
 
 export namespace CreateOperationHandler {
     export function is(object: unknown): object is CreateOperationHandler {
@@ -64,3 +75,5 @@ export namespace CreateOperationHandler {
         );
     }
 }
+
+export type CreateOperationKind = typeof CreateNodeOperation.KIND | typeof CreateEdgeOperation.KIND;

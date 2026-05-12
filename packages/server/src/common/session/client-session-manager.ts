@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -46,6 +46,13 @@ export interface ClientSessionManager {
      * @returns The client session for the given id o `undefined` if no session is present with the given id.
      */
     getSession(clientSessionId: string): ClientSession | undefined;
+
+    /**
+     * Return all currently active {@link ClientSession}s.
+     *
+     * @returns An array of all currently active {@link ClientSession}s.
+     */
+    getSessions(): Array<ClientSession>;
 
     /**
      * Return all currently active {@link ClientSession}s for the given diagram type.
@@ -127,6 +134,10 @@ export class DefaultClientSessionManager implements ClientSessionManager, GLSPSe
 
     getSession(clientSessionId: string): ClientSession | undefined {
         return this.clientSessions.get(clientSessionId);
+    }
+
+    getSessions(): ClientSession[] {
+        return Array.from(this.clientSessions.values());
     }
 
     getSessionsByType(diagramType: string): ClientSession[] {

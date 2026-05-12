@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { Action, Deferred, RequestAction, ResponseAction, UpdateModelAction } from '@eclipse-glsp/protocol';
+import { Action, Deferred, RejectAction, RequestAction, ResponseAction, UpdateModelAction } from '@eclipse-glsp/protocol';
 import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
 import * as sinon from 'sinon';
@@ -95,6 +95,13 @@ describe('test DefaultActionDispatcher', () => {
             const spy_handler1_execute = sinon.stub(handler1, 'execute').returns([]);
             const spy_handler2_execute = sinon.stub(handler2, 'execute').returns([]);
             const spy_handler3_execute = sinon.stub(handler3, 'execute').returns([]);
+            // Stubs created at the describe-level survive sandbox.restore(), so call counts
+            // would accumulate across tests and break `.calledOnce` assertions.
+            beforeEach(() => {
+                spy_handler1_execute.resetHistory();
+                spy_handler2_execute.resetHistory();
+                spy_handler3_execute.resetHistory();
+            });
             const handlerMockImpl = (kind: string): ActionHandler[] => {
                 switch (kind) {
                     case action1:
@@ -129,9 +136,9 @@ describe('test DefaultActionDispatcher', () => {
                 // Test execution
                 await actionDispatcher.dispatchAll([{ kind: action1 }, { kind: action2 }, { kind: action3 }]);
                 // Check if all handlers have been called
-                expect(spy_handler1_execute.calledOnce);
-                expect(spy_handler2_execute.calledOnce);
-                expect(spy_handler3_execute.calledOnce);
+                expect(spy_handler1_execute.calledOnce).to.be.true;
+                expect(spy_handler2_execute.calledOnce).to.be.true;
+                expect(spy_handler3_execute.calledOnce).to.be.true;
                 // Check if all handlers have been called in the right order
                 sinon.assert.callOrder(spy_handler1_execute, spy_handler2_execute, spy_handler3_execute);
             });
@@ -156,9 +163,9 @@ describe('test DefaultActionDispatcher', () => {
                 actionDispatcher.dispatch({ kind: action2 });
                 await actionDispatcher.dispatch({ kind: action3 });
                 // Check if all handlers have been called
-                expect(spy_handler1_execute.calledOnce);
-                expect(spy_handler2_execute.calledOnce);
-                expect(spy_handler3_execute.calledOnce);
+                expect(spy_handler1_execute.calledOnce).to.be.true;
+                expect(spy_handler2_execute.calledOnce).to.be.true;
+                expect(spy_handler3_execute.calledOnce).to.be.true;
                 // Check if all handlers have been called in the right order
                 sinon.assert.callOrder(spy_handler1_execute, spy_handler2_execute, spy_handler3_execute);
             });
@@ -176,8 +183,8 @@ describe('test DefaultActionDispatcher', () => {
             const spy_handler2_execute = sinon.spy(handler2, 'execute');
             // Test execution
             await actionDispatcher.dispatch({ kind: action1 });
-            expect(spy_handler1_execute.calledOnce);
-            expect(spy_handler2_execute.calledOnce);
+            expect(spy_handler1_execute.calledOnce).to.be.true;
+            expect(spy_handler2_execute.calledOnce).to.be.true;
             sinon.assert.callOrder(spy_handler1_execute, spy_handler2_execute);
         });
     });
@@ -208,8 +215,8 @@ describe('test DefaultActionDispatcher', () => {
             // Add a delay so that the action dispatcher has time to dispatch the handler response
             await mock.delay(200);
             // Check if all handlers have been called
-            expect(spy_requestHandler_execute.calledOnce);
-            expect(spy_responseHandler_execute.calledOnce);
+            expect(spy_requestHandler_execute.calledOnce).to.be.true;
+            expect(spy_responseHandler_execute.calledOnce).to.be.true;
         });
 
         it('dispatch - multiple actions & multiple response', async () => {
@@ -249,10 +256,10 @@ describe('test DefaultActionDispatcher', () => {
             // Add a delay so that the action dispatcher has time to dispatch the handler response
             await mock.delay(100);
             // Check if all handlers have been called correctly
-            expect(spy_requestHandler1_execute.calledOnce);
-            expect(spy_requestHandler2_execute.calledOnce);
-            expect(spy_responseHandler1_execute.calledOnce);
-            expect(spy_responseHandler2_execute.calledThrice);
+            expect(spy_requestHandler1_execute.calledOnce).to.be.true;
+            expect(spy_requestHandler2_execute.calledOnce).to.be.true;
+            expect(spy_responseHandler1_execute.calledOnce).to.be.true;
+            expect(spy_responseHandler2_execute.calledThrice).to.be.true;
             // Check if all handlers have been called in the right order
             sinon.assert.callOrder(spy_requestHandler1_execute, spy_requestHandler2_execute);
             sinon.assert.callOrder(spy_responseHandler1_execute, spy_responseHandler2_execute);
@@ -286,10 +293,10 @@ describe('test DefaultActionDispatcher', () => {
             await actionDispatcher.dispatch({ kind: intermediateAction });
             expect(spy_postUpdateHandler_execute.called).to.be.false;
             await actionDispatcher.dispatch(updateModelAction);
-            expect(spy_postUpdateHandler_execute.calledOnce);
+            expect(spy_postUpdateHandler_execute.calledOnce).to.be.true;
             // Check that action does not get dispatched again
             await actionDispatcher.dispatch(updateModelAction);
-            expect(spy_postUpdateHandler_execute.calledOnce);
+            expect(spy_postUpdateHandler_execute.calledOnce).to.be.true;
         });
     });
 
@@ -500,6 +507,21 @@ describe('test DefaultActionDispatcher', () => {
             const lateResponse: ResponseAction = { kind: 'testResponse', responseId: 'req_late' };
             await actionDispatcher.dispatch(lateResponse);
             expect(lateResponse.responseId).to.equal('');
+        });
+
+        it('dispatch - drops a stale ResponseAction with no matching pending request and no handler', async () => {
+            // Late `RejectAction`s (and any other ResponseAction that arrives after the matching
+            // pending request is gone) used to throw "No handler registered" because the dispatcher
+            // tried to route them as regular actions. They are protocol signals, not handler
+            // invocations — `doDispatch` swallows them with a debug log instead.
+            clientActionForwarderStub.shouldForwardToClient.returns(false);
+            clientActionForwarderStub.handle.returns(false);
+            registry_get_stub.callsFake(() => []);
+
+            const lateReject = RejectAction.create('late reject', { responseId: 'never-pending' });
+
+            // No throw, no client-forward — the dispatch resolves cleanly.
+            await actionDispatcher.dispatch(lateReject);
         });
 
         it('request - resolves when response intercept happens from inside doDispatch', async () => {

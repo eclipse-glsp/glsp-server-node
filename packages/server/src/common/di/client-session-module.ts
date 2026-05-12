@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2024 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -23,6 +23,14 @@ export interface ClientSessionModuleOptions {
     glspClient: GLSPClientProxy;
     clientActionKinds: string[];
 }
+
+/**
+ * Synthetic `ClientId` used by framework probes that load diagram modules onto a throwaway
+ * container — e.g. {@link DefaultGlobalActionProvider} scraping action-kind metadata at server
+ * startup. Adopters can detect this id in their `ClientSessionInitializer`s to suppress
+ * setup-time diagnostics that don't apply when no real GLSP client is connected.
+ */
+export const TEMPORARY_CLIENT_ID = 'tempId';
 
 /**
  * Creates the DI module that binds client session specific configuration
