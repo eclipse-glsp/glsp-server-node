@@ -5,7 +5,7 @@
     "outDir": "lib",
     "composite": true
   },
-  "exclude": ["**/*.spec.ts", "**/*.test-util.ts"],
+  "exclude": ["**/*.spec.ts"],
   "include": ["src"],
   "references": [
     {

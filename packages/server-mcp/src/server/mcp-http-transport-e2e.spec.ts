@@ -23,7 +23,7 @@ import { Container, ContainerModule } from 'inversify';
 import * as z from 'zod/v4';
 import { McpHttpTransport } from './mcp-http-transport';
 import { McpServerOptions } from './mcp-options';
-import { rawHttpRequest } from './raw-http.test-util';
+import { rawHttpRequest } from './raw-http.spec';
 
 function buildTransport(): McpHttpTransport {
     const container = new Container();

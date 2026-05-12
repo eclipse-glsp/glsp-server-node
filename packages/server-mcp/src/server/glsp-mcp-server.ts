@@ -23,7 +23,7 @@ import {
     RegisteredTool
 } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { EmptyResultSchema, ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
-import { injectable } from 'inversify';
+import { injectable, unmanaged } from 'inversify';
 
 export const GLSPMcpServer = Symbol('GLSPMcpServer');
 
@@ -31,9 +31,9 @@ export const GLSPMcpServer = Symbol('GLSPMcpServer');
 export type GLSPMcpResource = RegisteredResource | RegisteredResourceTemplate;
 
 /**
- * Cadence for server-initiated `ping` requests on the standalone SSE GET stream. Below typical
- * client-side SSE read timeouts (e.g. undici's 5-min `bodyTimeout`) so the stream stays alive
- * across chat-idle periods.
+ * Cadence for server-initiated `ping` requests on the standalone SSE GET stream. Shorter than
+ * typical client-side SSE read timeouts (e.g. undici's 5-min `bodyTimeout`) so the stream stays
+ * alive across chat-idle periods.
  */
 const KEEP_ALIVE_INTERVAL_MS = 30_000;
 
@@ -41,42 +41,37 @@ const KEEP_ALIVE_INTERVAL_MS = 30_000;
 const KEEP_ALIVE_PING_TIMEOUT_MS = 5_000;
 
 /**
- * Curated, per-session view onto the underlying MCP server that GLSP
- * tool/resource handlers see during registration. The `register*`,
- * `sendLoggingMessage`, `isConnected`, and `connect` methods delegate to
- * the underlying server; the `list*` methods read from a registration log
- * maintained by {@link DefaultGLSPMcpServer}. `dispose()` closes the
- * underlying SDK server (called by `McpServerLauncher` on session-close
- * and on overall server shutdown).
- *
- * The `GLSP` prefix mirrors core's convention (`GLSPServer`,
- * `GLSPClientProxy`, `GLSPModule`) where it disambiguates from
- * external/SDK types. Here it specifically separates `GLSPMcpServer` from
- * the SDK's `McpServer`; the rest of this package uses an `Mcp` prefix
- * because there's no name collision.
+ * Curated, per-session view onto the underlying MCP server. Handlers see this during
+ * registration; the launcher disposes it on session-close and on server shutdown.
  */
 export interface GLSPMcpServer
     extends Pick<McpServer, 'registerPrompt' | 'registerResource' | 'registerTool' | 'sendLoggingMessage' | 'isConnected' | 'connect'>,
         Disposable {
     readonly options: McpServerOptions;
+
+    /** Register a tool. Wraps the SDK's {@link McpServer.registerTool} and updates the local log. */
+    readonly registerTool: McpServer['registerTool'];
+    /** Register a resource. Wraps the SDK's {@link McpServer.registerResource} and updates the local log. */
+    readonly registerResource: McpServer['registerResource'];
+    /** Register a prompt. Wraps the SDK's {@link McpServer.registerPrompt} and updates the local log. */
+    readonly registerPrompt: McpServer['registerPrompt'];
+    /** Send an LLM-facing log message via the MCP `logging/message` notification. */
+    sendLoggingMessage: McpServer['sendLoggingMessage'];
+    /** True iff a transport is currently connected. */
+    isConnected: McpServer['isConnected'];
+    /** Attach the supplied transport. */
+    connect: McpServer['connect'];
+
     listTools(): RegisteredTool[];
     /** True iff a tool with this exact `name` has been registered on this server instance. */
     hasTool(name: string): boolean;
     listResources(): GLSPMcpResource[];
     listPrompts(): RegisteredPrompt[];
-    /**
-     * Sends an MCP `ping` request and resolves with the empty result. Rejects on transport
-     * timeout (e.g. when the standalone SSE GET stream is not currently open).
-     */
+    /** Sends an MCP `ping` and resolves on empty result, rejects on transport timeout. */
     ping(): Promise<void>;
     /**
      * Escape hatch to the underlying SDK `McpServer` for advanced APIs not covered by the
-     * stable {@link GLSPMcpServer} surface. The common operations ({@link connect},
-     * {@link sendLoggingMessage}, the `register*` methods, {@link dispose}) are exposed
-     * directly — reach for the raw server only when an SDK feature is not yet wrapped.
-     *
-     * The returned value is the SDK type, not a stable GLSP surface — its API may change
-     * with `@modelcontextprotocol/sdk` upgrades.
+     * stable surface. The returned value is the SDK type, not a stable GLSP surface.
      */
     getRawServer(): McpServer;
 }
@@ -102,9 +97,9 @@ export class DefaultGLSPMcpServer implements GLSPMcpServer {
     readonly registerPrompt: McpServer['registerPrompt'];
 
     constructor(
-        protected readonly mcpServer: McpServer,
-        readonly options: McpServerOptions,
-        protected readonly logger: Logger
+        @unmanaged() protected readonly mcpServer: McpServer,
+        @unmanaged() readonly options: McpServerOptions,
+        @unmanaged() protected readonly logger: Logger
     ) {
         // `register*` need an interception layer so the local registration log stays in
         // sync; the Proxy preserves the SDK's generic signatures (which a wrapped method

@@ -25,14 +25,11 @@ import {
 import { inject, injectable } from 'inversify';
 
 /**
- * A discoverable creatable element type emitted by the `element-types` tool handler.
+ * A discoverable creatable element type emitted by the `element-types` tool handler. Adopters
+ * may add further passthrough fields beyond these — the tool handler's structured output schema
+ * is `loose()`.
  *
- * Required fields (`id`, `label`) are produced by every provider, including the default
- * registry-scrape impl. The optional fields are populated by adopter-specific providers that
- * have richer semantic info — `description` adds an LLM-facing explanation, `acceptsText`
- * tells the LLM whether the `text` arg on create-* / modify-* tools is meaningful for this
- * type. Custom adopters MAY add further passthrough fields beyond these (the schema is
- * `loose()` on the tool handler's structured output).
+ * @experimental
  */
 export interface ElementTypeEntry {
     id: string;

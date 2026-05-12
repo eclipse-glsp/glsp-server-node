@@ -122,6 +122,7 @@ export class DefaultGLSPServer implements GLSPServer {
                 result = await initializer.initializeServer(this, params, result);
             } catch (error: unknown) {
                 this.logger.error(`Error during server initialization from ${initializer.constructor.name}:`, error);
+                throw error;
             }
         }
         return result;

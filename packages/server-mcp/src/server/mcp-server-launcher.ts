@@ -101,14 +101,9 @@ export function isLoopbackHost(host: string): boolean {
 }
 
 /**
- * Auth-footgun check: refuse to start the MCP HTTP server on a non-loopback host unless the
- * operator has explicitly acknowledged that traffic is authenticated by an external
- * mechanism (reverse proxy, mTLS, network ACL, etc.). The MCP server has no built-in
- * authentication, so the default loopback bind is the only safe configuration without
- * external fronting; this assertion catches the careless `host: '0.0.0.0'` for "easier dev
- * access" case before it exposes an unauthenticated endpoint to the network.
- *
- * Exported for regression-test access only; not part of the public package surface.
+ * Refuse to bind on a non-loopback host unless the operator has acknowledged that traffic is
+ * authenticated externally (reverse proxy, mTLS, ACL). The MCP server has no built-in auth.
+ * Exported for regression tests only; not part of the public surface.
  */
 export function assertLoopbackOrAcknowledged(host: string, acknowledgedNoAuth: boolean | undefined): void {
     if (isLoopbackHost(host) || acknowledgedNoAuth === true) {
@@ -125,15 +120,9 @@ export function assertLoopbackOrAcknowledged(host: string, acknowledgedNoAuth: b
 
 /**
  * Boots the embedded MCP HTTP server when a GLSP `initialize` call carries an `mcpServer`
- * configuration. **Not a separate process runner** — despite the `*Launcher` name (which in
- * core typically means a top-level process entry point such as `SocketServerLauncher`), this
- * launches the MCP server *within* the GLSP server process via the
- * `GLSPServerInitializer` lifecycle. The naming follows the broader sense of "launches
- * something" rather than the process-runner sub-meaning specific to core.
- *
- * Diagram-scope handler discovery, registration, and dispatch are delegated to
- * {@link DefaultMcpDiagramHandlerDispatcher} (rebindable via the {@link McpDiagramHandlerDispatcher}
- * symbol).
+ * configuration. Runs in-process via the {@link GLSPServerInitializer} lifecycle — not a
+ * separate process runner. Diagram-scope handler discovery and dispatch are delegated to
+ * {@link McpDiagramHandlerDispatcher}.
  */
 @injectable()
 export class McpServerLauncher implements GLSPServerInitializer, GLSPServerListener, Disposable {
@@ -178,18 +167,12 @@ export class McpServerLauncher implements GLSPServerInitializer, GLSPServerListe
             return McpInitializeResult.attachServer(result, { name: this.serverConfig.name, url: this.serverUrl });
         }
 
-        // Default to a random port; IDE integrations pick up the resolved URL via the stdout
-        // marker emitted below (mirrors `START_UP_COMPLETE_MSG` for the GLSP server's port).
-        // `host` is intentionally NOT in the public init-time schema (security: no DNS-rebinding
-        // foot-gun via the LLM-init path); the bind host comes from the server module's
-        // constructor-supplied defaults via `McpServerOptions`.
+        // Port defaults to 0 (random); the resolved URL is announced via the stdout marker
+        // below. `host` is intentionally NOT in the init-time schema — it comes from the
+        // server module's adopter defaults (no DNS-rebinding foot-gun via the LLM path).
         const { port = 0, route = '/mcp', name = 'glsp', options = {} } = mcpServerParam;
-        // Adopter defaults from the server module (constructor arg) merged with init-time
-        // overrides — init-time wins per field, *but only for fields in the init allowlist*.
-        // Deploy-only fields (host, allowedHosts, allowedOrigins) come exclusively from the
-        // adopter defaults; `pickInitOptions` strips any wire-smuggled keys before merge. The
-        // shared holder reference makes the result visible to every `@inject(McpServerOptions)`
-        // consumer, including singletons that were constructed before this call ran.
+        // Init-time options win per field, but only fields in the init allowlist —
+        // `pickInitOptions` strips any wire-smuggled deploy-only keys before merge.
         const mergedOptions = { ...this.mcpDefaults, ...pickInitOptions(options) };
         this.mcpOptions.values = mergedOptions;
         const host = mergedOptions.host ?? '127.0.0.1';
@@ -215,9 +198,8 @@ export class McpServerLauncher implements GLSPServerInitializer, GLSPServerListe
             `MCP server '${mcpServerConfig.name}' is ready to accept new client requests on: ${this.serverUrl ?? '(no network endpoint)'}`
         );
 
-        // stdout ready-marker — IPC contract for parent processes to discover the MCP URL.
-        // Routed through `console.log` deliberately, NOT the GLSP Logger, so log-level / formatter
-        // changes by adopters can never hide it (mirrors the GLSP server's own startup announcement).
+        // stdout ready-marker for parent processes to discover the URL. Uses `console.log`
+        // (not the GLSP logger) so adopter logger config can never hide it.
         console.log(MCP_SERVER_READY_MSG + JSON.stringify({ name: mcpServerConfig.name, url: this.serverUrl, route }));
         if (endpoint.url) {
             return McpInitializeResult.attachServer(result, {
@@ -299,15 +281,10 @@ export class McpServerLauncher implements GLSPServerInitializer, GLSPServerListe
     }
 
     /**
-     * Build the MCP server-capabilities map from what's actually bound. The SDK wires
-     * `tools/list`, `resources/list`, `prompts/list` request handlers lazily — on the *first*
-     * corresponding `register*()` call. Declaring a capability the host never registers any
-     * handlers for produces `-32601 Method not found` on `<cap>/list` while `initialize` happily
-     * advertises support. So we only declare a key when at least one binding contributes to it,
-     * and pin `listChanged: false` on the keys we do include (the catalog is fixed at
-     * session-init; no `notifications/<cap>/list_changed` is ever emitted).
-     *
-     * Resources surfaced as tools (`dataMode === 'tools'`) count toward `tools`, not `resources`.
+     * Build the MCP capabilities map from what is actually bound. Only declare a key when at
+     * least one handler contributes — declaring a capability the SDK never registers a handler
+     * for produces `-32601 Method not found` on `<cap>/list`. Resources surfaced as tools
+     * (`dataMode === 'tools'`) count toward `tools`, not `resources`.
      */
     protected buildCapabilities(resourcesAsResources: boolean): ServerCapabilities {
         const hasStaticTools = this.toolHandlers.length > 0;

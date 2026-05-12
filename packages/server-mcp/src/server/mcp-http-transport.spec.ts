@@ -19,7 +19,7 @@ import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
 import { McpHttpTransport } from './mcp-http-transport';
 import { McpServerOptions } from './mcp-options';
-import { rawHttpRequest } from './raw-http.test-util';
+import { rawHttpRequest } from './raw-http.spec';
 
 /**
  * Builds a transport instance with a configurable `McpServerOptions` binding so tests can

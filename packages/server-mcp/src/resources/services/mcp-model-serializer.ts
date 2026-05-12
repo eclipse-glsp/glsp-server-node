@@ -34,8 +34,7 @@ export interface SerializedElement {
  * JSON are both reasonable formats; the default impl ({@link MarkdownMcpModelSerializer}) emits
  * Markdown for {@link serialize}/{@link serializeArray} and an object payload for
  * {@link serializeStructured} (the dual-emit `structuredContent` counterpart). Aliasing of element
- * ids happens internally via the per-session {@link McpIdAliasService}; callers don't pass an
- * alias function.
+ * ids happens internally via the per-session {@link McpIdAliasService}.
  *
  * @experimental
  */

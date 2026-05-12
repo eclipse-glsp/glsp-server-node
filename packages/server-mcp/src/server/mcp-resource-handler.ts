@@ -37,23 +37,14 @@ import { mcpRequestContext } from './mcp-request-context';
 
 /**
  * Multi-binding key for **server-scope** resource handlers — singletons that don't target a
- * specific GLSP client session (e.g. a hypothetical adopter-supplied "global config" resource
- * that returns the same data regardless of which diagram is open). Adopters extend
- * {@link AbstractMcpResourceHandler} and bind their subclass against this symbol; the
- * launcher invokes `registerResource(server)` once per MCP session.
- *
- * Resources may also be exposed as tools for clients that don't speak the resources protocol —
- * setting `toolAlternativeInputSchema` (a zod object) opts the resource into the tool fallback.
- * The launcher picks one or the other depending on `McpServerOptions.resources`.
- *
- * Diagram-scope resources (one instance per open diagram) use the separate
- * {@link McpDiagramResourceHandlerConstructor} multi-binding instead — see `mcp-session.ts` for
- * the MCP-session vs GLSP-session terminology.
+ * specific GLSP client session. For diagram-scope resources see
+ * {@link McpDiagramResourceHandlerConstructor}.
  *
  * @experimental
  */
 export interface McpResourceHandler {
     registerResource(server: GLSPMcpServer): void;
+    /** Optional tool fallback for clients that don't speak the resources protocol. */
     registerToolAlternative?(server: GLSPMcpServer): void;
 }
 export const McpResourceHandler = Symbol('McpResourceHandler');
