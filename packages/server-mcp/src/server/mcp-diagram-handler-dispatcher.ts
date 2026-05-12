@@ -25,7 +25,7 @@ import {
 import { CompleteResourceTemplateCallback, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { Variables } from '@modelcontextprotocol/sdk/shared/uriTemplate.js';
 import { CallToolResult, GetPromptResult, ListResourcesResult, ReadResourceResult } from '@modelcontextprotocol/sdk/types.js';
-import { Container, ContainerModule, inject, injectable } from 'inversify';
+import { Container, ContainerModule, inject, injectable, interfaces } from 'inversify';
 import { GLSPMcpServer } from './glsp-mcp-server';
 import { McpDiagramPromptHandlerRegistry } from './mcp-diagram-prompt-handler-registry';
 import { McpDiagramResourceHandlerRegistry } from './mcp-diagram-resource-handler-registry';
@@ -51,12 +51,10 @@ export interface DiagramTypeCatalog {
     readonly promptConstructors: McpDiagramPromptHandlerConstructor[];
 }
 
-export const McpDiagramHandlerDispatcher = Symbol('McpDiagramHandlerDispatcher');
-
 /**
  * Owns diagram-scope handler discovery, SDK registration, and per-MCP-call dispatch routing.
  * Extracted from {@link McpServerLauncher} so adopters can `rebind(McpDiagramHandlerDispatcher)`
- * to a subclass to customize registration without subclassing the entire launcher lifecycle.
+ * to a custom implementation without subclassing the entire launcher lifecycle.
  *
  * Responsibilities:
  * - Harvest per-diagram-type constructor catalogs from the diagram modules ({@link harvest}).
@@ -65,8 +63,27 @@ export const McpDiagramHandlerDispatcher = Symbol('McpDiagramHandlerDispatcher')
  * - Dispatch each registered SDK callback to the per-GLSP-session handler instance, resolved
  *   from the GLSP session container by the {@link McpDiagramScopedInput.sessionId} input.
  */
+export interface McpDiagramHandlerDispatcher {
+    /** Build the diagram-type catalog from registered diagram modules. Idempotent until {@link reset}. */
+    harvest(): void;
+    /** Drop the cached catalog so a subsequent {@link harvest} re-reads the diagram modules. */
+    reset(): void;
+
+    /** True when at least one diagram type has at least one tool handler bound. */
+    hasDiagramTools(): boolean;
+    /** True when at least one diagram type has at least one resource handler bound. */
+    hasDiagramResources(): boolean;
+    /** True when at least one diagram type has at least one prompt handler bound. */
+    hasDiagramPrompts(): boolean;
+
+    /** Register all diagram-scope tools/resources/prompts on the supplied per-MCP-session server. */
+    registerAll(glspMcpServer: GLSPMcpServer, resourcesAsResources: boolean): void;
+}
+
+export const McpDiagramHandlerDispatcher = Symbol('McpDiagramHandlerDispatcher');
+
 @injectable()
-export class DefaultMcpDiagramHandlerDispatcher {
+export class DefaultMcpDiagramHandlerDispatcher implements McpDiagramHandlerDispatcher {
     @inject(InjectionContainer) protected serverContainer: Container;
     @inject(DiagramModules) protected diagramModules: Map<string, ContainerModule[]>;
     @inject(ClientSessionManager) protected clientSessionManager: ClientSessionManager;
@@ -75,14 +92,19 @@ export class DefaultMcpDiagramHandlerDispatcher {
     protected diagramCatalogs: DiagramTypeCatalog[] = [];
 
     /**
-     * Builds {@link diagramCatalogs} once per dispatcher lifetime by loading each diagram type's
-     * modules onto a temporary child container and reading out the constructor lists. Pure
-     * metadata — no instances are created here.
+     * Build the per-diagram-type catalog by inspecting each diagram type's module set. We don't
+     * have a real GLSP session yet — and we don't want one, because we only need the bound
+     * constructor *lists*, not instances. So we spin up a throwaway child container per diagram
+     * type, load its modules plus a placeholder session module, and read out the multi-binding
+     * constants. No handler is instantiated; the temporary container is unbound immediately
+     * after.
      *
-     * Loaded with the synthetic {@link TEMPORARY_CLIENT_ID} so session-scoped `@inject`
-     * dependencies resolve. Diagram modules' `configure()` therefore must not have side effects
-     * keyed on `ClientId`. Catalogs are harvested once and never re-read; call {@link reset} to
-     * invalidate before re-harvest.
+     * The placeholder session module is bound with the synthetic {@link TEMPORARY_CLIENT_ID} so
+     * any session-scoped `@inject(ClientId)` in module-load wiring resolves cleanly. Diagram
+     * modules must therefore treat `ClientId` as opaque at `configure()` time — the value they
+     * see at harvest is a placeholder, not the GLSP session that will later receive a call.
+     *
+     * Idempotent until {@link reset}.
      */
     harvest(): void {
         if (this.diagramCatalogs.length > 0) {
@@ -97,15 +119,9 @@ export class DefaultMcpDiagramHandlerDispatcher {
         for (const [diagramType, modules] of this.diagramModules) {
             const tempContainer = this.serverContainer.createChild();
             tempContainer.load(...modules, placeholderSessionModule);
-            const tools = tempContainer.isBound(McpDiagramToolHandlerConstructor)
-                ? tempContainer.get<McpDiagramToolHandlerConstructor[]>(McpDiagramToolHandlerConstructor)
-                : [];
-            const resources = tempContainer.isBound(McpDiagramResourceHandlerConstructor)
-                ? tempContainer.get<McpDiagramResourceHandlerConstructor[]>(McpDiagramResourceHandlerConstructor)
-                : [];
-            const prompts = tempContainer.isBound(McpDiagramPromptHandlerConstructor)
-                ? tempContainer.get<McpDiagramPromptHandlerConstructor[]>(McpDiagramPromptHandlerConstructor)
-                : [];
+            const tools = getConstructorList<McpDiagramToolHandlerConstructor>(tempContainer, McpDiagramToolHandlerConstructor);
+            const resources = getConstructorList<McpDiagramResourceHandlerConstructor>(tempContainer, McpDiagramResourceHandlerConstructor);
+            const prompts = getConstructorList<McpDiagramPromptHandlerConstructor>(tempContainer, McpDiagramPromptHandlerConstructor);
             tempContainer.unbindAll();
             catalogs.push({ diagramType, toolConstructors: tools, resourceConstructors: resources, promptConstructors: prompts });
         }
@@ -334,9 +350,12 @@ export class DefaultMcpDiagramHandlerDispatcher {
         });
     }
 
+    /**
+     * Dispatch a read against a diagram-scope resource registered with a *static* (non-templated)
+     * URI. The URI carries no session id, so we pick the first open GLSP session as the source —
+     * adopters that need session-aware routing should register a templated URI instead.
+     */
     protected dispatchStaticDiagramRead(name: string, uri: string): Promise<ReadResourceResult> {
-        // Static URI on a diagram-scope resource doesn't differentiate sessions; pick the first
-        // open one and surface a clear error when none is available.
         const sessionId = this.clientSessionManager.getSessions()[0]?.id;
         if (!sessionId) {
             throw new McpToolError(`No open GLSP session can serve resource '${name}'.`);
@@ -432,4 +451,9 @@ export class DefaultMcpDiagramHandlerDispatcher {
     reset(): void {
         this.diagramCatalogs = [];
     }
+}
+
+/** Read an optional constructor-list multi-binding. Returns `[]` when no module bound the symbol. */
+function getConstructorList<T>(container: Container, identifier: interfaces.ServiceIdentifier<T[]>): T[] {
+    return container.isBound(identifier) ? container.get<T[]>(identifier) : [];
 }

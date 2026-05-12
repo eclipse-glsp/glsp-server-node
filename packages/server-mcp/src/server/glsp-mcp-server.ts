@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Disposable, McpServerOptions } from '@eclipse-glsp/server';
+import { Disposable, Logger, McpServerOptions } from '@eclipse-glsp/server';
 import {
     McpServer,
     RegisteredPrompt,
@@ -103,7 +103,8 @@ export class DefaultGLSPMcpServer implements GLSPMcpServer {
 
     constructor(
         protected readonly mcpServer: McpServer,
-        readonly options: McpServerOptions
+        readonly options: McpServerOptions,
+        protected readonly logger: Logger
     ) {
         // `register*` need an interception layer so the local registration log stays in
         // sync; the Proxy preserves the SDK's generic signatures (which a wrapped method
@@ -151,7 +152,7 @@ export class DefaultGLSPMcpServer implements GLSPMcpServer {
             () =>
                 this.ping().catch(err => {
                     if (!(err instanceof McpError) || err.code !== ErrorCode.RequestTimeout) {
-                        console.debug('MCP keep-alive ping failed:', err);
+                        this.logger.debug('MCP keep-alive ping failed:', err);
                     }
                 }),
             KEEP_ALIVE_INTERVAL_MS

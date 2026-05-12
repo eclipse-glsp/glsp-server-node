@@ -83,14 +83,14 @@ export class ModifyNodesMcpToolHandler extends OperationMcpDiagramToolHandler<Mo
         // Reject edge ids — they have no `position`/`size` semantics and would fail downstream
         // with a misleading "model element not found" error from the operation handler. Aliases
         // are sequential across all element kinds, so an LLM passing an arbitrary id may hit an edge.
-        const wrongType = elements.filter(([, element]) => GEdge.is(element)).map(([change]) => `'${change.elementId}'`);
+        const wrongType = elements.filter(([, element]) => element instanceof GEdge).map(([change]) => `'${change.elementId}'`);
         if (wrongType.length) {
             throw new McpToolError(`modify-nodes does not accept edges — got: ${wrongType.join(', ')}. Use modify-edges for edges.`);
         }
 
         // Reject any other non-shape kinds (labels, compartments, ports, custom kinds) — they
         // reach the index too and would silently produce no-op or undefined-bounds operations.
-        const nonShape = elements.filter(([, element]) => !GShapeElement.is(element)).map(([change]) => `'${change.elementId}'`);
+        const nonShape = elements.filter(([, element]) => !(element instanceof GShapeElement)).map(([change]) => `'${change.elementId}'`);
         if (nonShape.length) {
             throw new McpToolError(
                 `modify-nodes only accepts shape elements — got: ${nonShape.join(', ')}. ` +

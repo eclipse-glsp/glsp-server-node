@@ -29,12 +29,6 @@ export abstract class GShapeElement extends GModelElement implements GBoundsAwar
     [GResizable] = true;
 }
 
-export namespace GShapeElement {
-    export function is(object: unknown): object is GShapeElement {
-        return object instanceof GShapeElement;
-    }
-}
-
 export class GShapeElementBuilder<G extends GShapeElement> extends GModelElementBuilder<G> {
     position(x: number, y: number): this;
     position(position: Point): this;

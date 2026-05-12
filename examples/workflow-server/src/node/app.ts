@@ -15,7 +15,7 @@
  ********************************************************************************/
 import 'reflect-metadata';
 
-import { configureELKLayoutModule } from '@eclipse-glsp/layout-elk';
+import { ElkLayoutModule } from '@eclipse-glsp/layout-elk';
 import { GModelStorage, Logger, SocketServerLauncher, WebSocketServerLauncher, createAppModule } from '@eclipse-glsp/server/node';
 import { Container } from 'inversify';
 
@@ -39,10 +39,9 @@ async function launch(argv?: string[]): Promise<void> {
         logger.error('Uncaught exception:', error);
     });
 
-    const elkLayoutModule = configureELKLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator });
     const serverModule = new WorkflowServerModule().configureDiagramModule(
         new WorkflowDiagramModule(() => GModelStorage),
-        elkLayoutModule,
+        new ElkLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator }),
         new WorkflowMcpDiagramModule()
     );
     const mcpServerModule = new WorkflowMcpServerModule();

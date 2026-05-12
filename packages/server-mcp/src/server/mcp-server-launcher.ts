@@ -35,7 +35,7 @@ import { ServerCapabilities, SetLevelRequestSchema } from '@modelcontextprotocol
 import { inject, injectable, multiInject, optional } from 'inversify';
 import { version as packageVersion } from '../../package.json';
 import { GLSPMcpServer, GLSPMcpServerFactory } from './glsp-mcp-server';
-import { DefaultMcpDiagramHandlerDispatcher, McpDiagramHandlerDispatcher } from './mcp-diagram-handler-dispatcher';
+import { McpDiagramHandlerDispatcher } from './mcp-diagram-handler-dispatcher';
 import { McpHttpTransport } from './mcp-http-transport';
 import { McpLogLevelRegistry } from './mcp-log-level-registry';
 import { McpServerDefaults, McpServerOptions } from './mcp-options';
@@ -147,7 +147,7 @@ export class McpServerLauncher implements GLSPServerInitializer, GLSPServerListe
 
     @inject(GLSPMcpServerFactory) protected glspMcpServerFactory: GLSPMcpServerFactory;
 
-    @inject(McpDiagramHandlerDispatcher) protected dispatcher: DefaultMcpDiagramHandlerDispatcher;
+    @inject(McpDiagramHandlerDispatcher) protected dispatcher: McpDiagramHandlerDispatcher;
 
     @inject(McpLogLevelRegistry) protected logLevelRegistry: McpLogLevelRegistry;
 

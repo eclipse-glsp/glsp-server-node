@@ -14,6 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+import { NullLogger } from '@eclipse-glsp/server';
 import { McpServer, RegisteredResource } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
@@ -23,7 +24,7 @@ import { DefaultGLSPMcpServer } from './glsp-mcp-server';
 describe('DefaultGLSPMcpServer', () => {
     function makeServer(): { wrapper: DefaultGLSPMcpServer; sdk: McpServer } {
         const sdk = new McpServer({ name: 'test', version: '1.0.0' }, { capabilities: {} });
-        const wrapper = new DefaultGLSPMcpServer(sdk, { dataMode: 'tools' });
+        const wrapper = new DefaultGLSPMcpServer(sdk, { dataMode: 'tools' }, new NullLogger());
         return { wrapper, sdk };
     }
 

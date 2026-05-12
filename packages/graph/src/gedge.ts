@@ -29,6 +29,7 @@ export class GEdge extends GModelElement {
 }
 
 export namespace GEdge {
+    /** @deprecated Use `object instanceof GEdge` directly — this guard adds no value over the language operator. */
     export function is(object: unknown): object is GEdge {
         return object instanceof GEdge;
     }

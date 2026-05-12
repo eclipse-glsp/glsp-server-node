@@ -331,7 +331,11 @@ export class McpHttpTransport implements Disposable {
         // only stops accepting new connections — existing sockets stay open until they drain — so
         // closing the server first would leave streams hanging until the per-session `client.close()`
         // catches up.
-        Array.from(this.sessions.values()).forEach(client => client.close());
+        // `Transport.close()` is async (returns Promise<void>) but `Disposable.dispose()` is sync,
+        // so we attach a catch handler to keep stray rejections out of the unhandled-rejection log.
+        Array.from(this.sessions.values()).forEach(client =>
+            client.close().catch(err => this.logger.warn(`Error closing MCP session ${client.sessionId}: ${err}`))
+        );
         this.sessions.clear();
         this._server?.close();
         // Reset transient state so a subsequent `start()` call boots cleanly. Required because

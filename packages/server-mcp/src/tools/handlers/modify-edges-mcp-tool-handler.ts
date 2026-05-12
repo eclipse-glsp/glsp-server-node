@@ -78,7 +78,7 @@ export class ModifyEdgesMcpToolHandler extends OperationMcpDiagramToolHandler<Mo
         // from the dispatched operation handler. Aliases are sequential across all element kinds,
         // so an LLM passing an arbitrary id may hit a node here.
         const wrongType = elements
-            .filter(([, element]) => !GEdge.is(element))
+            .filter(([, element]) => !(element instanceof GEdge))
             .map(([change, element]) => `'${change.elementId}' (type '${element.type}')`);
         if (wrongType.length) {
             throw new McpToolError(`modify-edges accepts edges only — got: ${wrongType.join(', ')}. Use modify-nodes for nodes.`);

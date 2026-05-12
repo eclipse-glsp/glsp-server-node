@@ -22,7 +22,8 @@ import {
     BindingTarget,
     GLSPModule,
     GLSPServerInitializer,
-    GLSPServerListener
+    GLSPServerListener,
+    Logger
 } from '@eclipse-glsp/server';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { interfaces } from 'inversify';
@@ -175,7 +176,7 @@ export abstract class AbstractMcpServerModule extends GLSPModule {
      * SDK registration, and per-call dispatch routing. Override (or `rebind` to a subclass)
      * to customize registration without subclassing the launcher itself.
      */
-    protected bindMcpDiagramHandlerDispatcher(): BindingTarget<DefaultMcpDiagramHandlerDispatcher> {
+    protected bindMcpDiagramHandlerDispatcher(): BindingTarget<McpDiagramHandlerDispatcher> {
         return DefaultMcpDiagramHandlerDispatcher;
     }
 
@@ -222,10 +223,11 @@ export abstract class AbstractMcpServerModule extends GLSPModule {
      */
     protected bindGLSPMcpServerFactory(): BindingTarget<GLSPMcpServerFactory> {
         return {
-            dynamicValue:
-                () =>
-                (mcpServer: McpServer, options: McpServerOptionsType): DefaultGLSPMcpServer =>
-                    new DefaultGLSPMcpServer(mcpServer, options)
+            dynamicValue: ctx => {
+                const logger = ctx.container.get<Logger>(Logger);
+                return (mcpServer: McpServer, options: McpServerOptionsType): DefaultGLSPMcpServer =>
+                    new DefaultGLSPMcpServer(mcpServer, options, logger);
+            }
         };
     }
 
