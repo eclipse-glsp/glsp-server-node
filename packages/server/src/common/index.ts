@@ -52,6 +52,7 @@ export * from './features/model/model-state';
 export * from './features/model/model-submission-handler';
 export * from './features/model/request-model-action-handler';
 export * from './features/model/save-model-action-handler';
+export * from './features/model/set-edit-mode-action-handler';
 export * from './features/model/source-model-storage';
 export * from './features/navigation/json-opener-options';
 export * from './features/navigation/navigation-target-provider';

@@ -17,16 +17,10 @@
 import { ApplyLabelEditOperation, ChangeBoundsOperation, GEdge, GShapeElement } from '@eclipse-glsp/server';
 import { injectable } from 'inversify';
 import * as z from 'zod/v4';
-import {
-    ElementIdentitySchema,
-    McpDiagramScopedInputSchema,
-    McpToolError,
-    McpToolResult,
-    OperationMcpDiagramToolHandler,
-    elementId,
-    position
-} from '../../server';
-import { formatNoticeList } from '../../util';
+import { McpToolError, McpToolResult } from '../../server/mcp-handler-shared';
+import { ElementIdentitySchema, McpDiagramScopedInputSchema, elementId, position } from '../../server/mcp-input-schemas';
+import { OperationMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
+import { formatNoticeList } from '../../util/mcp-util';
 
 /** Strict — any unknown field on the size object surfaces as a validation error. */
 export const NodeSizeSchema = z.strictObject({

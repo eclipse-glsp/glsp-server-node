@@ -17,7 +17,10 @@
 import { ActionDispatcher, CommandStack, SaveModelAction } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { McpDiagramScopedInputSchema, AbstractMcpDiagramToolHandler, McpLogger, McpToolResult } from '../../server';
+import { McpToolResult } from '../../server/mcp-handler-shared';
+import { McpDiagramScopedInputSchema } from '../../server/mcp-input-schemas';
+import { McpLogger } from '../../server/mcp-logger';
+import { AbstractMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
 
 export const SaveModelInputSchema = McpDiagramScopedInputSchema.extend({
     fileUri: z.string().optional().describe('Optional destination file URI. If not provided, saves to the original source model location.')

@@ -18,15 +18,11 @@ import { ClientActionKinds, RequestExportAction } from '@eclipse-glsp/server';
 import { Role } from '@modelcontextprotocol/sdk/types.js';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import {
-    AbstractMcpDiagramResourceHandler,
-    McpDiagramScopedInputSchema,
-    McpMimeType,
-    McpProgressReporter,
-    McpResourceContent,
-    McpResourceUri,
-    McpToolError
-} from '../../server';
+import { McpResourceContent, McpToolError } from '../../server/mcp-handler-shared';
+import { McpDiagramScopedInputSchema } from '../../server/mcp-input-schemas';
+import { McpMimeType } from '../../server/mcp-mime-types';
+import { McpProgressReporter } from '../../server/mcp-progress-reporter';
+import { AbstractMcpDiagramResourceHandler, McpResourceUri } from '../../server/mcp-resource-handler';
 
 export const DiagramSvgInputSchema = McpDiagramScopedInputSchema.extend({
     timeoutMs: z

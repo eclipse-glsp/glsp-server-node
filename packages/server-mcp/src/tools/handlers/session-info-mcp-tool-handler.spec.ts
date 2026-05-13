@@ -17,7 +17,7 @@
 import { ClientSession, ClientSessionManager, CommandStack, Logger, ModelState, NullLogger } from '@eclipse-glsp/server';
 import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
-import { McpToolResult } from '../../server';
+import { McpToolResult } from '../../server/mcp-handler-shared';
 import { SessionInfoMcpToolHandler } from './session-info-mcp-tool-handler';
 
 function asText(result: McpToolResult): string {

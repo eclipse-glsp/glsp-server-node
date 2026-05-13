@@ -17,15 +17,14 @@
 import { ClientSessionManager } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { AbstractMcpPromptHandler, McpPromptResult, resolveActiveSessionId } from '../../server';
-import {
-    CountElementsMcpToolHandler,
-    DiagramModelMcpToolHandler,
-    ElementTypesMcpToolHandler,
-    QueryElementsMcpToolHandler,
-    SetSelectionMcpToolHandler,
-    SetViewMcpToolHandler
-} from '../../tools';
+import { McpPromptResult, resolveActiveSessionId } from '../../server/mcp-handler-shared';
+import { AbstractMcpPromptHandler } from '../../server/mcp-prompt-handler';
+import { CountElementsMcpToolHandler } from '../../tools/handlers/count-elements-mcp-tool-handler';
+import { DiagramModelMcpToolHandler } from '../../tools/handlers/diagram-model-mcp-tool-handler';
+import { ElementTypesMcpToolHandler } from '../../tools/handlers/element-types-mcp-tool-handler';
+import { QueryElementsMcpToolHandler } from '../../tools/handlers/query-elements-mcp-tool-handler';
+import { SetSelectionMcpToolHandler } from '../../tools/handlers/set-selection-mcp-tool-handler';
+import { SetViewMcpToolHandler } from '../../tools/handlers/set-view-mcp-tool-handler';
 
 export const DescribeDiagramArgsSchema = z.object({
     sessionId: z

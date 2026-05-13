@@ -16,48 +16,47 @@
 
 import { applyBindingTarget, BindingTarget, ClientSessionInitializer, GLSPModule, InstanceMultiBinding } from '@eclipse-glsp/server';
 import { interfaces } from 'inversify';
-import { DiagramPngMcpResourceHandler, DiagramSvgMcpResourceHandler } from '../resources';
+import { DiagramPngMcpResourceHandler } from '../resources/handlers/diagram-png-mcp-resource-handler';
+import { DiagramSvgMcpResourceHandler } from '../resources/handlers/diagram-svg-mcp-resource-handler';
 import { DefaultElementTypesProvider, ElementTypesProvider } from '../resources/services/element-types-provider';
 import { MarkdownMcpModelSerializer, McpModelSerializer } from '../resources/services/mcp-model-serializer';
-import {
-    CountElementsMcpToolHandler,
-    CreateEdgesMcpToolHandler,
-    CreateNodesMcpToolHandler,
-    DeleteElementsMcpToolHandler,
-    DiagramModelMcpToolHandler,
-    GetSelectionMcpToolHandler,
-    LayoutMcpToolHandler,
-    ModifyEdgesMcpToolHandler,
-    ModifyNodesMcpToolHandler,
-    QueryElementsMcpToolHandler,
-    RedoMcpToolHandler,
-    SaveModelMcpToolHandler,
-    SetSelectionMcpToolHandler,
-    SetViewMcpToolHandler,
-    UndoMcpToolHandler,
-    ValidateDiagramMcpToolHandler
-} from '../tools';
+import { CountElementsMcpToolHandler } from '../tools/handlers/count-elements-mcp-tool-handler';
+import { CreateEdgesMcpToolHandler } from '../tools/handlers/create-edges-mcp-tool-handler';
+import { CreateNodesMcpToolHandler } from '../tools/handlers/create-nodes-mcp-tool-handler';
+import { DeleteElementsMcpToolHandler } from '../tools/handlers/delete-elements-mcp-tool-handler';
+import { DiagramModelMcpToolHandler } from '../tools/handlers/diagram-model-mcp-tool-handler';
+import { GetSelectionMcpToolHandler } from '../tools/handlers/get-selection-mcp-tool-handler';
+import { LayoutMcpToolHandler } from '../tools/handlers/layout-mcp-tool-handler';
+import { ModifyEdgesMcpToolHandler } from '../tools/handlers/modify-edges-mcp-tool-handler';
+import { ModifyNodesMcpToolHandler } from '../tools/handlers/modify-nodes-mcp-tool-handler';
+import { QueryElementsMcpToolHandler } from '../tools/handlers/query-elements-mcp-tool-handler';
+import { RedoMcpToolHandler } from '../tools/handlers/redo-mcp-tool-handler';
+import { SaveModelMcpToolHandler } from '../tools/handlers/save-model-mcp-tool-handler';
+import { SetSelectionMcpToolHandler } from '../tools/handlers/set-selection-mcp-tool-handler';
+import { SetViewMcpToolHandler } from '../tools/handlers/set-view-mcp-tool-handler';
+import { UndoMcpToolHandler } from '../tools/handlers/undo-mcp-tool-handler';
+import { ValidateDiagramMcpToolHandler } from '../tools/handlers/validate-diagram-mcp-tool-handler';
 import {
     McpDiagramPromptHandlerFactory,
     McpDiagramPromptHandlerRegistry,
     McpDiagramPromptHandlerRegistryInitializer
-} from './mcp-diagram-prompt-handler-registry';
+} from '../server/mcp-diagram-prompt-handler-registry';
 import {
     McpDiagramResourceHandlerFactory,
     McpDiagramResourceHandlerRegistry,
     McpDiagramResourceHandlerRegistryInitializer
-} from './mcp-diagram-resource-handler-registry';
+} from '../server/mcp-diagram-resource-handler-registry';
 import {
     McpDiagramToolHandlerFactory,
     McpDiagramToolHandlerRegistry,
     McpDiagramToolHandlerRegistryInitializer
-} from './mcp-diagram-tool-handler-registry';
-import { DefaultMcpIdAliasService, McpIdAliasService } from './mcp-id-alias-service';
-import { McpDiagramScopedInput } from './mcp-input-schemas';
-import { DefaultMcpLabelProvider, McpLabelProvider } from './mcp-label-provider';
-import { AbstractMcpDiagramPromptHandler, McpDiagramPromptHandlerConstructor } from './mcp-prompt-handler';
-import { AbstractMcpDiagramResourceHandler, McpDiagramResourceHandlerConstructor } from './mcp-resource-handler';
-import { BaseMcpDiagramToolHandler, McpDiagramToolHandlerConstructor } from './mcp-tool-handler';
+} from '../server/mcp-diagram-tool-handler-registry';
+import { DefaultMcpIdAliasService, McpIdAliasService } from '../server/mcp-id-alias-service';
+import { McpDiagramScopedInput } from '../server/mcp-input-schemas';
+import { DefaultMcpLabelProvider, McpLabelProvider } from '../server/mcp-label-provider';
+import { AbstractMcpDiagramPromptHandler, McpDiagramPromptHandlerConstructor } from '../server/mcp-prompt-handler';
+import { AbstractMcpDiagramResourceHandler, McpDiagramResourceHandlerConstructor } from '../server/mcp-resource-handler';
+import { BaseMcpDiagramToolHandler, McpDiagramToolHandlerConstructor } from '../server/mcp-tool-handler';
 
 /**
  * Per-GLSP-client-session DI module for the MCP server. Loaded inside `configureDiagramModule`

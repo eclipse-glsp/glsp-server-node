@@ -18,7 +18,9 @@ import { GModelElement } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { McpModelSerializer } from '../../resources/services/mcp-model-serializer';
-import { McpDiagramScopedInputSchema, AbstractMcpDiagramToolHandler, McpToolResult } from '../../server';
+import { McpToolResult } from '../../server/mcp-handler-shared';
+import { McpDiagramScopedInputSchema } from '../../server/mcp-input-schemas';
+import { AbstractMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
 
 export const DiagramModelInputSchema = McpDiagramScopedInputSchema;
 export type DiagramModelInput = z.infer<typeof DiagramModelInputSchema>;

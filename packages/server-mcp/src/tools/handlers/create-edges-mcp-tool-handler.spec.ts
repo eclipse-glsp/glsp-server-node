@@ -28,7 +28,9 @@ import {
 } from '@eclipse-glsp/server';
 import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
-import { DefaultMcpLabelProvider, McpIdAliasService, McpLabelProvider, McpToolResult } from '../../server';
+import { McpToolResult } from '../../server/mcp-handler-shared';
+import { McpIdAliasService } from '../../server/mcp-id-alias-service';
+import { DefaultMcpLabelProvider, McpLabelProvider } from '../../server/mcp-label-provider';
 import { CreateEdgesInput, CreateEdgesMcpToolHandler } from './create-edges-mcp-tool-handler';
 
 function makeElement(id: string, type: string): GModelElement {

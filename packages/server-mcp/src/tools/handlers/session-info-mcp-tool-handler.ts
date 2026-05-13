@@ -17,7 +17,8 @@
 import { ClientSessionManager, CommandStack, ModelState } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { AbstractMcpToolHandler, McpToolError, McpToolResult } from '../../server';
+import { McpToolError, McpToolResult } from '../../server/mcp-handler-shared';
+import { AbstractMcpToolHandler } from '../../server/mcp-tool-handler';
 
 export const SessionInfoInputSchema = z.object({
     sessionId: z
