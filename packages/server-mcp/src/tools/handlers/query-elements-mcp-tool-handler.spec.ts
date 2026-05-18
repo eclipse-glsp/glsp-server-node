@@ -18,7 +18,9 @@ import { ClientId, GLabel, GModelElement, Logger, ModelState, NullLogger } from 
 import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
 import { McpModelSerializer } from '../../resources/services/mcp-model-serializer';
-import { DefaultMcpLabelProvider, McpElementsNotFoundError, McpIdAliasService, McpLabelProvider, McpToolResult } from '../../server';
+import { McpElementsNotFoundError, McpToolResult } from '../../server/mcp-handler-shared';
+import { McpIdAliasService } from '../../server/mcp-id-alias-service';
+import { DefaultMcpLabelProvider, McpLabelProvider } from '../../server/mcp-label-provider';
 import { QueryElementsInput, QueryElementsMcpToolHandler } from './query-elements-mcp-tool-handler';
 
 function makeLabel(text: string): GLabel {

@@ -26,15 +26,9 @@ import {
 } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import {
-    McpDiagramScopedInputSchema,
-    AbstractMcpDiagramToolHandler,
-    McpToolError,
-    McpToolResult,
-    elementIds,
-    position,
-    requestActionOrFail
-} from '../../server';
+import { McpToolError, McpToolResult, requestActionOrFail } from '../../server/mcp-handler-shared';
+import { McpDiagramScopedInputSchema, elementIds, position } from '../../server/mcp-input-schemas';
+import { AbstractMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
 
 export const VIEWPORT_ACTIONS = ['fit-to-screen', 'center-on-elements', 'reset-viewport', 'set-viewport'] as const;
 export type ViewportAction = (typeof VIEWPORT_ACTIONS)[number];

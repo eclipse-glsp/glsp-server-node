@@ -17,16 +17,10 @@
 import { ChangeRoutingPointsOperation, GEdge, ReconnectEdgeOperation } from '@eclipse-glsp/server';
 import { injectable } from 'inversify';
 import * as z from 'zod/v4';
-import {
-    ElementIdentitySchema,
-    McpDiagramScopedInputSchema,
-    McpToolError,
-    McpToolResult,
-    OperationMcpDiagramToolHandler,
-    elementId as elementIdSchema,
-    position
-} from '../../server';
-import { formatNoticeList } from '../../util';
+import { McpToolError, McpToolResult } from '../../server/mcp-handler-shared';
+import { ElementIdentitySchema, McpDiagramScopedInputSchema, elementId as elementIdSchema, position } from '../../server/mcp-input-schemas';
+import { OperationMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
+import { formatNoticeList } from '../../util/mcp-util';
 
 /** Single edge-modification entry. Strict so an LLM-typoed field surfaces as a validation error instead of being silently dropped. */
 export const ModifyEdgeSpecSchema = z.strictObject({

@@ -19,7 +19,7 @@ import { Dimension, GModelSerializer, Logger, Point } from '@eclipse-glsp/server
 import { inject, injectable, postConstruct } from 'inversify';
 import { McpStructuredContent } from '../../server/mcp-handler-shared';
 import { McpIdAliasService } from '../../server/mcp-id-alias-service';
-import { objectArrayToMarkdownTable } from '../../util';
+import { objectArrayToMarkdownTable } from '../../util/markdown-util';
 
 export const McpModelSerializer = Symbol('McpModelSerializer');
 

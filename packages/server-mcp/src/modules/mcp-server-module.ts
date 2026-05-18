@@ -27,20 +27,22 @@ import {
 } from '@eclipse-glsp/server';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { interfaces } from 'inversify';
-import { DescribeDiagramMcpPromptHandler, SuggestImprovementsMcpPromptHandler } from '../prompts';
-import { ElementTypesMcpToolHandler, SessionInfoMcpToolHandler } from '../tools';
-import { DefaultGLSPMcpServer, GLSPMcpServerFactory } from './glsp-mcp-server';
-import { DefaultMcpDiagramHandlerDispatcher, McpDiagramHandlerDispatcher } from './mcp-diagram-handler-dispatcher';
-import { DefaultMcpLogLevelRegistry, McpLogLevelRegistry } from './mcp-log-level-registry';
-import { LruEventStore } from './lru-event-store';
-import { McpHttpTransport } from './mcp-http-transport';
-import { McpLogger } from './mcp-logger';
-import { McpServerDefaults, McpServerOptions } from './mcp-options';
-import { McpProgressReporter } from './mcp-progress-reporter';
-import { McpPromptHandler } from './mcp-prompt-handler';
-import { McpResourceHandler } from './mcp-resource-handler';
-import { McpServerLauncher } from './mcp-server-launcher';
-import { McpToolHandler } from './mcp-tool-handler';
+import { DescribeDiagramMcpPromptHandler } from '../prompts/handlers/describe-diagram-mcp-prompt-handler';
+import { SuggestImprovementsMcpPromptHandler } from '../prompts/handlers/suggest-improvements-mcp-prompt-handler';
+import { ElementTypesMcpToolHandler } from '../tools/handlers/element-types-mcp-tool-handler';
+import { SessionInfoMcpToolHandler } from '../tools/handlers/session-info-mcp-tool-handler';
+import { DefaultGLSPMcpServer, GLSPMcpServerFactory } from '../server/glsp-mcp-server';
+import { DefaultMcpDiagramHandlerDispatcher, McpDiagramHandlerDispatcher } from '../server/mcp-diagram-handler-dispatcher';
+import { DefaultMcpLogLevelRegistry, McpLogLevelRegistry } from '../server/mcp-log-level-registry';
+import { LruEventStore } from '../server/lru-event-store';
+import { McpHttpTransport } from '../server/mcp-http-transport';
+import { McpLogger } from '../server/mcp-logger';
+import { McpServerDefaults, McpServerOptions } from '../server/mcp-options';
+import { McpProgressReporter } from '../server/mcp-progress-reporter';
+import { McpPromptHandler } from '../server/mcp-prompt-handler';
+import { McpResourceHandler } from '../server/mcp-resource-handler';
+import { McpServerLauncher } from '../server/mcp-server-launcher';
+import { McpToolHandler } from '../server/mcp-tool-handler';
 
 /**
  * GLSP-generic default agent persona — adopters typically pass a product-specific persona to

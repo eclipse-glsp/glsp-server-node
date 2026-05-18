@@ -27,7 +27,9 @@ import {
 } from '@eclipse-glsp/server';
 import { expect } from 'chai';
 import { Container, ContainerModule } from 'inversify';
-import { DefaultMcpLabelProvider, McpElementsNotFoundError, McpIdAliasService, McpLabelProvider, McpToolResult } from '../../server';
+import { McpElementsNotFoundError, McpToolResult } from '../../server/mcp-handler-shared';
+import { McpIdAliasService } from '../../server/mcp-id-alias-service';
+import { DefaultMcpLabelProvider, McpLabelProvider } from '../../server/mcp-label-provider';
 import { SetSelectionInput, SetSelectionMcpToolHandler } from './set-selection-mcp-tool-handler';
 
 function makeElement(id: string, type: string): GModelElement {

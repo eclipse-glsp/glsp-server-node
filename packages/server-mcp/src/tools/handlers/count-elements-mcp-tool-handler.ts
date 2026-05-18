@@ -16,7 +16,9 @@
 
 import { injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { McpDiagramScopedInputSchema, AbstractMcpDiagramToolHandler, McpToolResult } from '../../server';
+import { McpToolResult } from '../../server/mcp-handler-shared';
+import { McpDiagramScopedInputSchema } from '../../server/mcp-input-schemas';
+import { AbstractMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
 
 export const CountElementsInputSchema = McpDiagramScopedInputSchema;
 export type CountElementsInput = z.infer<typeof CountElementsInputSchema>;

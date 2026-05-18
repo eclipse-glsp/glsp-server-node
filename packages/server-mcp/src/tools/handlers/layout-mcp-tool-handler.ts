@@ -17,7 +17,9 @@
 import { LayoutEngine, LayoutOperation } from '@eclipse-glsp/server';
 import { inject, injectable, optional } from 'inversify';
 import * as z from 'zod/v4';
-import { McpDiagramScopedInputSchema, McpToolResult, OperationMcpDiagramToolHandler } from '../../server';
+import { McpToolResult } from '../../server/mcp-handler-shared';
+import { McpDiagramScopedInputSchema } from '../../server/mcp-input-schemas';
+import { OperationMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
 
 export const LayoutInputSchema = McpDiagramScopedInputSchema;
 export type LayoutInput = z.infer<typeof LayoutInputSchema>;

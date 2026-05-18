@@ -17,7 +17,9 @@
 import { ActionDispatcher, SelectAction, SelectAllAction } from '@eclipse-glsp/server';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { AbstractMcpDiagramToolHandler, McpDiagramScopedInputSchema, McpToolResult, elementIds } from '../../server';
+import { McpToolResult } from '../../server/mcp-handler-shared';
+import { McpDiagramScopedInputSchema, elementIds } from '../../server/mcp-input-schemas';
+import { AbstractMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
 
 export const SetSelectionInputSchema = McpDiagramScopedInputSchema.extend({
     selectedElementIds: elementIds

@@ -17,13 +17,9 @@
 import { DeleteElementOperation } from '@eclipse-glsp/server';
 import { injectable } from 'inversify';
 import * as z from 'zod/v4';
-import {
-    ElementIdentitySchema,
-    McpDiagramScopedInputSchema,
-    McpToolResult,
-    OperationMcpDiagramToolHandler,
-    elementIds
-} from '../../server';
+import { McpToolResult } from '../../server/mcp-handler-shared';
+import { ElementIdentitySchema, McpDiagramScopedInputSchema, elementIds } from '../../server/mcp-input-schemas';
+import { OperationMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
 
 export const DeleteElementsInputSchema = McpDiagramScopedInputSchema.extend({ elementIds });
 export type DeleteElementsInput = z.infer<typeof DeleteElementsInputSchema>;
