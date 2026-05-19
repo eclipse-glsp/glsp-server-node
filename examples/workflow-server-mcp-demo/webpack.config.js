@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2026 EclipseSource and others.
+ * Copyright (c) 2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,6 +13,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-export * from './mcp/workflow-mcp-module';
-export * from './reexport';
-export * from './workflow-cli-parser';
+const path = require('path');
+
+// Bundle `vscode-jsonrpc/browser` plus the page-side script into a single file emitted into
+// `dist/`, alongside the verbatim assets copied from `public/` and the worker bundle synced
+// from `@eclipse-glsp-examples/workflow-server-bundled-web`. `serve` then serves `dist/`.
+module.exports = {
+    entry: path.resolve(__dirname, 'src', 'index.js'),
+    output: {
+        filename: 'index.bundle.js',
+        path: path.resolve(__dirname, 'dist')
+    },
+    mode: 'development',
+    devtool: 'source-map',
+    target: 'web',
+    resolve: {
+        extensions: ['.js']
+    }
+};

@@ -46,7 +46,7 @@
     "browser.js"
   ],
   "scripts": {
-    "build": "tsc -b && yarn bundle",
+    "build": "tsc -b && yarn bundle && yarn bundle:browser",
     "bundle": "webpack",
     "bundle:browser": "webpack --env target=webworker ",
     "clean": "rimraf lib *.tsbuildinfo",

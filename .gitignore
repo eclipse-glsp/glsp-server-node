@@ -19,6 +19,9 @@ wf-glsp-server-node.js
 wf-glsp-server-node.js.map
 wf-glsp-server-webworker.js
 wf-glsp-server-webworker.js.map
+examples/workflow-server-bundled-web/mcp-service-worker.js
+examples/workflow-server-bundled-web/index.bundle.js
+examples/workflow-server-bundled-web/index.bundle.js.map
 
 .claude/settings.local.json
 CLAUDE.local.md

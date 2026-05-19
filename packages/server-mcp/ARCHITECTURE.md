@@ -208,9 +208,20 @@ The tag is exported as `MCP_SERVER_READY_MSG` so IDE integrations can parse the 
 
 ### Transport
 
-The MCP server uses the **Streamable HTTP transport** (`StreamableHTTPServerTransport` from the MCP SDK). HTTP `POST` carries client → server JSON-RPC; `GET` returns the server → client SSE stream (with `Last-Event-ID` resumability); `DELETE` terminates a session. Sessions are multiplexed on a single endpoint via the `mcp-session-id` header.
+The MCP server uses the **Streamable HTTP transport** (`WebStandardStreamableHTTPServerTransport` from the MCP SDK). HTTP `POST` carries client → server JSON-RPC; `GET` returns the server → client SSE stream (with `Last-Event-ID` resumability); `DELETE` terminates a session. Sessions are multiplexed on a single endpoint via the `mcp-session-id` header.
 
 A periodic server-initiated `ping` keeps the SSE GET stream alive across chat-idle periods, so client-side read timeouts (e.g. undici's 5-min `bodyTimeout`) don't force a reconnect cycle.
+
+#### Portable handler — Node, browser, and web-runtime targets
+
+The launcher exposes a Fetch-API `handleRequest(req: Request): Promise<Response>` that any runtime with a `fetch`-shaped listener can drive — Node (via `@hono/node-server`), Bun, Deno, Cloudflare Workers, and in-page Web Workers. Two concrete launcher subclasses ship:
+
+-   `McpServerLauncher` (Node) binds a Hono listener and announces the loopback URL.
+-   `WebMcpServerLauncher` (browser / web-runtime) returns no transport endpoint; the adopter wires `launcher.getRequestHandler()` into their own listener.
+
+For the browser/Web-Worker case where the GLSP client and the MCP server share a tab, `McpWorkerBridge` (in `@eclipse-glsp/server-mcp/browser`) plumbs Service-Worker→Web-Worker `MessageChannel` traffic into the launcher. The matching page-side proxy — a Service Worker that intercepts `fetch('/mcp', …)` and forwards each `Request` over a `MessageChannel` — is host-side scaffolding that adopters own. The browser demo at `examples/workflow-server-mcp-demo/` is the canonical end-to-end reference, including a working `mcp-service-worker.js`.
+
+Auth and shared session state for non-loopback deploys (Cloudflare DurableObjects-style multi-isolate setups) are explicitly out of scope — adopters wrap `getRequestHandler()` with their own middleware.
 
 ---
 
@@ -245,7 +256,9 @@ Both the GLSP server itself and this MCP server default to **random port allocat
 
 Two paths, depending on the client class:
 
--   **IDE-internal MCP clients** (VS Code Copilot chat, Theia AI, etc.) should consume the resolved URL programmatically. The GLSP IDE integration knows it via the `MCP_SERVER_READY_MSG` stdout marker and is best placed to register that URL with the IDE's native MCP infrastructure. _This automatic registration is intended follow-up work in the GLSP VS Code and Theia integrations_ — at the time of writing, adopters wire it up manually using the URL surfaced in `InitializeResult.mcpServer`.
+-   **IDE-internal MCP clients** (VS Code Copilot chat, Theia AI, etc.) consume the resolved URL programmatically — the GLSP IDE integration reads it from `InitializeResult.mcpServer` (or, on the spawn side, the `MCP_SERVER_READY_MSG` stdout marker) and registers it with the host IDE's native MCP infrastructure:
+    -   **Theia**: `@eclipse-glsp/theia-mcp-integration` ships a `FrontendApplicationContribution` that auto-registers every GLSP server's MCP URL with `@theia/ai-mcp` on startup. No adopter wiring beyond installing the package.
+    -   **VS Code**: `@eclipse-glsp/vscode-integration` exposes a `GlspMcpServerProvider` (a `vscode.McpServerDefinitionProvider` implementation). Adopters declare an `mcpServerDefinitionProviders` contribution in their extension's `package.json`, register the provider via `vscode.lm.registerMcpServerDefinitionProvider`, and feed it the GLSP `InitializeResult` via `addServer(...)`. See `example/workflow/extension/src/workflow-extension.ts` in the integration repo for the canonical wiring.
 -   **External MCP clients** (Claude Desktop, web clients, etc.) are configured separately by the user with a stable URL. For these, pick a fixed port and document it in the adopter's setup guide.
 
 ---

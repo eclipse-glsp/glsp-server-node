@@ -14,6 +14,12 @@ See [our project website](https://www.eclipse.org/glsp/documentation/#workflowov
 
 <https://user-images.githubusercontent.com/588090/154459938-849ca684-11b3-472c-8a59-98ea6cb0b4c1.mp4>
 
+## MCP demo
+
+A self-contained dev demo that drives this bundle through `@eclipse-glsp/server-mcp` lives in
+its own private workspace at
+[`examples/workflow-server-mcp-demo`](../workflow-server-mcp-demo). See its README for how to run.
+
 ## More information
 
 For more information, please visit the [Eclipse GLSP Umbrella repository](https://github.com/eclipse-glsp/glsp) and the [Eclipse GLSP Website](https://www.eclipse.org/glsp/).

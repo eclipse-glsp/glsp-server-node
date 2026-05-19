@@ -1,0 +1,776 @@
+<!doctype html>
+<!--
+    Copyright (c) 2026 EclipseSource and others.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License v. 2.0 which is available at
+    http://www.eclipse.org/legal/epl-2.0.
+
+    This Source Code may also be made available under the following Secondary
+    Licenses when the conditions for such availability set forth in the Eclipse
+    Public License v. 2.0 are satisfied: GNU General Public License, version 2
+    with the GNU Classpath Exception which is available at
+    https://www.gnu.org/software/classpath/license.html.
+
+    SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
+
+    End-to-end smoke harness for the @eclipse-glsp/server-mcp portable handler.
+    The page acts as both a minimal GLSP JSON-RPC client (to open a workflow session inside
+    the in-page Web Worker) and an MCP client that drives the launcher via Service Worker.
+    See README.md for how to run; `vscode-jsonrpc/browser` is loaded from esm.sh.
+-->
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>GLSP MCP Smoke</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            :root {
+                --bg: #faf7f1;
+                --panel: #ffffff;
+                --subtle: #f1ece1;
+                --text: #1c1917;
+                --text-soft: #44403c;
+                --text-muted: #78716c;
+                --text-faint: #a8a29e;
+                --border: #e8e2d4;
+                --border-strong: #cfc8b8;
+                --accent: #b45309;
+                --accent-hover: #92400e;
+                --accent-soft: #fef3c7;
+                --success: #4d7c0f;
+                --error: #b91c1c;
+                --info: #475569;
+                --sans: 'Bricolage Grotesque', ui-sans-serif, system-ui, -apple-system, sans-serif;
+                --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+                --radius: 8px;
+                --radius-sm: 4px;
+                --shadow: 0 1px 2px rgba(28, 25, 23, 0.04), 0 6px 16px -8px rgba(28, 25, 23, 0.08);
+                --duration: 220ms;
+                --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+            }
+
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
+
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                background: var(--bg);
+                color: var(--text);
+                font-family: var(--sans);
+                font-weight: 400;
+                font-size: 15px;
+                line-height: 1.55;
+                min-height: 100vh;
+                -webkit-font-smoothing: antialiased;
+                text-rendering: optimizeLegibility;
+            }
+
+            main {
+                max-width: 72rem;
+                margin: 0 auto;
+                padding: 2.5rem clamp(1rem, 4vw, 3rem) 4rem;
+            }
+
+            /* Header */
+            .topbar {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                align-items: end;
+                gap: 1rem;
+                padding-bottom: 1.5rem;
+                border-bottom: 1px solid var(--border);
+                opacity: 0;
+                animation: rise var(--duration) var(--ease) forwards;
+            }
+            .topbar h1 {
+                margin: 0;
+                font-family: var(--sans);
+                font-weight: 600;
+                font-size: clamp(1.6rem, 4vw, 2.3rem);
+                font-variation-settings: 'opsz' 72;
+                letter-spacing: -0.015em;
+                line-height: 1.1;
+                color: var(--text);
+            }
+            .topbar h1 .accent {
+                color: var(--accent);
+            }
+            .topbar .tag {
+                margin: 0.45rem 0 0;
+                color: var(--text-muted);
+                font-size: 0.92rem;
+                line-height: 1.45;
+            }
+            .topbar .indicator {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.55rem;
+                font-size: 0.82rem;
+                color: var(--text-soft);
+                padding: 0.45rem 0.8rem;
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: 999px;
+            }
+            .topbar .indicator::before {
+                content: '';
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: var(--accent);
+                animation: pulse 1.6s ease-in-out infinite;
+            }
+            .topbar .indicator[data-state='ready']::before {
+                background: var(--success);
+                animation: none;
+            }
+            .topbar .indicator[data-state='failed']::before {
+                background: var(--error);
+                animation: none;
+            }
+
+            /* Sections */
+            .section {
+                margin-top: 1.75rem;
+                opacity: 0;
+                animation: rise var(--duration) var(--ease) forwards;
+            }
+            .section:nth-of-type(2) {
+                animation-delay: 50ms;
+            }
+            .section:nth-of-type(3) {
+                animation-delay: 100ms;
+            }
+            .section:nth-of-type(4) {
+                animation-delay: 150ms;
+            }
+            .section:nth-of-type(5) {
+                animation-delay: 200ms;
+            }
+            .section:nth-of-type(6) {
+                animation-delay: 250ms;
+            }
+
+            .section-header {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                gap: 1rem;
+                margin-bottom: 0.7rem;
+            }
+            .section-header > span:first-child {
+                font-weight: 600;
+                font-size: 0.95rem;
+                color: var(--text);
+                letter-spacing: -0.005em;
+            }
+            .section-header > span:last-child {
+                font-size: 0.82rem;
+                color: var(--text-muted);
+            }
+            .section-header code {
+                font-family: var(--mono);
+                font-size: 0.78rem;
+                padding: 0.05rem 0.4rem;
+                background: var(--subtle);
+                border-radius: 4px;
+                color: var(--text-soft);
+            }
+            /* Hide the Server messages section until there's actually a message. */
+            .section.section-hidden {
+                display: none;
+            }
+
+            /* Boot panel */
+            #boot-status {
+                position: relative;
+                padding: 1rem 1.1rem;
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                box-shadow: var(--shadow);
+                font-size: 0.92rem;
+                color: var(--text-soft);
+            }
+            #boot-status.ready {
+                border-color: #c6e0a3;
+                background: #f7fbef;
+                color: var(--text);
+            }
+            #boot-status.failed {
+                border-color: #f1c5c5;
+                background: #fbf3f3;
+                color: var(--error);
+            }
+
+            /* Info bar */
+            #info-bar {
+                display: none;
+                padding: 0.9rem 1.1rem;
+                background: var(--accent-soft);
+                border: 1px solid #f0d9a4;
+                border-radius: var(--radius);
+                font-size: 0.92rem;
+                color: var(--text);
+            }
+            #info-bar.visible {
+                display: block;
+            }
+            #info-bar .status-line {
+                color: var(--text-soft);
+            }
+            #info-bar .progress-row {
+                display: flex;
+                gap: 0.8rem;
+                align-items: center;
+                margin-top: 0.55rem;
+                font-size: 0.88rem;
+                color: var(--text-soft);
+            }
+            #info-bar .progress-row progress {
+                flex: 1;
+                appearance: none;
+                height: 6px;
+                border: none;
+                border-radius: 999px;
+                overflow: hidden;
+                background: rgba(180, 83, 9, 0.15);
+            }
+            #info-bar .progress-row progress::-webkit-progress-bar {
+                background: rgba(180, 83, 9, 0.15);
+                border-radius: 999px;
+            }
+            #info-bar .progress-row progress::-webkit-progress-value {
+                background: var(--accent);
+                border-radius: 999px;
+            }
+            #info-bar .progress-row progress::-moz-progress-bar {
+                background: var(--accent);
+            }
+            #info-bar .progress-row progress:indeterminate {
+                background-image: linear-gradient(
+                    90deg,
+                    rgba(180, 83, 9, 0.1) 0%,
+                    rgba(180, 83, 9, 0.1) 40%,
+                    var(--accent) 50%,
+                    rgba(180, 83, 9, 0.1) 60%,
+                    rgba(180, 83, 9, 0.1) 100%
+                );
+                background-size: 200% 100%;
+                animation: scan 1.4s linear infinite;
+            }
+
+            /* Sessions */
+            .session-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+            @media (max-width: 32rem) {
+                .session-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+            .session-field label {
+                display: block;
+                font-size: 0.85rem;
+                color: var(--text-soft);
+                margin-bottom: 0.4rem;
+                font-weight: 500;
+            }
+            input[readonly] {
+                width: 100%;
+                padding: 0.7rem 0.85rem;
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                color: var(--text);
+                font-family: var(--mono);
+                font-size: 0.88rem;
+                transition: border-color var(--duration) var(--ease);
+            }
+            input[readonly]:focus {
+                outline: none;
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.12);
+            }
+            input[readonly]:placeholder-shown {
+                color: var(--text-faint);
+                font-family: var(--sans);
+            }
+
+            /* Controls */
+            .controls {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 0.65rem;
+            }
+            button {
+                appearance: none;
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                color: var(--text);
+                font-family: var(--sans);
+                font-size: 0.94rem;
+                font-weight: 500;
+                padding: 0.85rem 1rem;
+                cursor: pointer;
+                text-align: left;
+                box-shadow: var(--shadow);
+                transition:
+                    background var(--duration) var(--ease),
+                    color var(--duration) var(--ease),
+                    border-color var(--duration) var(--ease),
+                    transform var(--duration) var(--ease);
+            }
+            button:hover:not(:disabled) {
+                background: var(--accent-soft);
+                border-color: var(--accent);
+                color: var(--accent-hover);
+            }
+            button:focus-visible:not(:disabled) {
+                outline: none;
+                border-color: var(--accent);
+                box-shadow:
+                    0 0 0 3px rgba(180, 83, 9, 0.18),
+                    var(--shadow);
+            }
+            button:active:not(:disabled) {
+                transform: translateY(1px);
+            }
+            button:disabled {
+                cursor: not-allowed;
+                color: var(--text-faint);
+                background: var(--panel);
+                border-color: var(--border);
+                box-shadow: none;
+                opacity: 0.7;
+            }
+            /* Primary action — keeps Initialize visible until the user has stepped past boot. */
+            button.primary:not(:disabled) {
+                background: var(--accent);
+                border-color: var(--accent);
+                color: #fff;
+            }
+            button.primary:not(:disabled):hover {
+                background: var(--accent-hover);
+                border-color: var(--accent-hover);
+                color: #fff;
+            }
+            button#btn-clear {
+                background: transparent;
+                color: var(--text-muted);
+                border-color: transparent;
+                box-shadow: none;
+                font-size: 0.85rem;
+                padding: 0.45rem 0.7rem;
+            }
+            button#btn-clear:hover {
+                background: transparent;
+                color: var(--error);
+                border-color: transparent;
+            }
+
+            /* Diagram viewport */
+            .viewport {
+                position: relative;
+                padding: 1.25rem;
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                box-shadow: var(--shadow);
+            }
+
+            #diagram-canvas {
+                display: none;
+                width: 100%;
+                height: auto;
+            }
+            #diagram-canvas.visible {
+                display: block;
+            }
+            .viewport-empty {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 12rem;
+                color: var(--text-faint);
+                font-size: 0.92rem;
+            }
+            #diagram-canvas.visible + .viewport-empty {
+                display: none;
+            }
+
+            .diagram-node {
+                fill: #f8fafc;
+                stroke: #94a3b8;
+                stroke-width: 1.25;
+                transition:
+                    fill var(--duration) var(--ease),
+                    stroke-width var(--duration) var(--ease);
+            }
+            .diagram-node:hover {
+                stroke-width: 1.75;
+                filter: drop-shadow(0 1px 2px rgba(28, 25, 23, 0.08));
+            }
+            .diagram-node.task-automated {
+                fill: #e0ecff;
+                stroke: #6b88c4;
+            }
+            .diagram-node.task-manual {
+                fill: #fdf0d8;
+                stroke: #c79b58;
+            }
+            .diagram-node.activity-node {
+                fill: #e7f4dc;
+                stroke: #79a868;
+            }
+            .diagram-edge {
+                stroke: #94a3b8;
+                stroke-width: 1.2;
+                fill: none;
+            }
+            .diagram-edge-arrow {
+                fill: #94a3b8;
+            }
+            .diagram-label {
+                font-family: var(--sans);
+                font-size: 11px;
+                font-weight: 500;
+                fill: var(--text);
+                text-anchor: middle;
+                dominant-baseline: middle;
+                pointer-events: none;
+            }
+            .diagram-note {
+                margin: 0.65rem 0 0;
+                font-size: 0.78rem;
+                color: var(--text-muted);
+                line-height: 1.45;
+            }
+            .diagram-note code {
+                font-size: 0.74rem;
+            }
+            .dirty-pill:not([hidden]) {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                margin-right: 0.55rem;
+                padding: 0.1rem 0.5rem;
+                border-radius: 999px;
+                background: var(--accent-soft);
+                color: var(--accent);
+                font-size: 0.72rem;
+                font-weight: 500;
+                letter-spacing: 0.005em;
+            }
+
+            /* Last-result panel */
+            .last-result {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                box-shadow: var(--shadow);
+                padding: 0.9rem 1.05rem;
+                font-size: 0.86rem;
+                height: 18rem;
+                overflow-y: auto;
+            }
+            .last-result table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .last-result td,
+            .last-result th {
+                text-align: left;
+                vertical-align: top;
+                padding: 0.25rem 0.5rem 0.25rem 0;
+                border-bottom: 1px solid var(--border);
+            }
+            .last-result tr:last-child td,
+            .last-result tr:last-child th {
+                border-bottom: 0;
+            }
+            .last-result td.key,
+            .last-result th {
+                font-weight: 600;
+                color: var(--text);
+                white-space: nowrap;
+                width: 14rem;
+            }
+            .last-result td.value {
+                color: var(--text-soft);
+            }
+            .last-result td.muted,
+            .last-result .muted {
+                color: var(--text-muted);
+                font-size: 0.82rem;
+            }
+            .last-result pre {
+                margin: 0;
+                font-family: var(--mono);
+                font-size: 0.78rem;
+                color: var(--text-soft);
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+            #last-result-title {
+                font-family: var(--mono);
+                font-size: 0.78rem;
+            }
+
+            /* Log */
+            #log {
+                max-height: 32rem;
+                overflow: auto;
+                padding: 0.5rem 0.6rem 0.7rem;
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                box-shadow: var(--shadow);
+                scrollbar-width: thin;
+                scrollbar-color: var(--border-strong) transparent;
+            }
+            #log::-webkit-scrollbar {
+                width: 8px;
+            }
+            #log::-webkit-scrollbar-thumb {
+                background: var(--border-strong);
+                border-radius: 999px;
+            }
+            #log::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            #log:empty::before {
+                content: 'No entries yet — interact with the buttons above to see request and response traces.';
+                display: block;
+                padding: 1.5rem 1rem;
+                color: var(--text-faint);
+                font-size: 0.92rem;
+                text-align: center;
+                line-height: 1.5;
+            }
+            details {
+                margin: 0.45rem 0;
+                padding: 0.55rem 0.75rem 0.55rem 0.95rem;
+                background: var(--subtle);
+                border-radius: var(--radius-sm);
+                border-left: 3px solid var(--accent);
+            }
+            details.error {
+                border-left-color: var(--error);
+                background: #fbf3f3;
+            }
+            details summary {
+                cursor: pointer;
+                font-family: var(--sans);
+                font-size: 0.92rem;
+                color: var(--text);
+                font-weight: 500;
+                list-style: none;
+            }
+            details summary::-webkit-details-marker {
+                display: none;
+            }
+            details summary::before {
+                content: '▸';
+                display: inline-block;
+                margin-right: 0.5rem;
+                color: var(--accent);
+                font-size: 0.78rem;
+                transition: transform var(--duration) var(--ease);
+            }
+            details[open] summary::before {
+                transform: rotate(90deg);
+            }
+            details.error summary::before {
+                color: var(--error);
+            }
+            pre {
+                margin: 0.5rem 0 0 1.2rem;
+                padding: 0.7rem 0.9rem;
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-sm);
+                color: var(--text-soft);
+                font-size: 0.82rem;
+                line-height: 1.55;
+                white-space: pre-wrap;
+                word-break: break-word;
+                font-family: var(--mono);
+            }
+
+            /* Animations */
+            @keyframes rise {
+                from {
+                    opacity: 0;
+                    transform: translateY(8px);
+                }
+                to {
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+            @keyframes pulse {
+                0%,
+                100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+                50% {
+                    opacity: 0.55;
+                    transform: scale(0.85);
+                }
+            }
+            @keyframes scan {
+                from {
+                    background-position: -100% 0;
+                }
+                to {
+                    background-position: 200% 0;
+                }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                *,
+                *::before,
+                *::after {
+                    animation-duration: 0.001ms !important;
+                    animation-iteration-count: 1 !important;
+                    transition-duration: 0.001ms !important;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <header class="topbar">
+                <div>
+                    <h1>GLSP <span class="accent">·</span> MCP demo</h1>
+                    <p class="tag">
+                        A workflow diagram running entirely in the page, driven through MCP. Step through the actions to see the model load,
+                        query it, and create a new node.
+                    </p>
+                </div>
+                <div class="indicator" id="system-indicator" data-state="boot">Connecting…</div>
+            </header>
+
+            <section class="section">
+                <div class="section-header">
+                    <span>Boot</span>
+                    <span>Worker, GLSP, Service Worker</span>
+                </div>
+                <div id="boot-status">Connecting the in-page Worker, GLSP, and the Service Worker…</div>
+            </section>
+
+            <section class="section section-hidden" id="server-messages-section">
+                <div class="section-header">
+                    <span>Live status</span>
+                    <span>updates from the server</span>
+                </div>
+                <div id="info-bar" aria-live="polite">
+                    <div class="status-line" id="status-line">No messages yet</div>
+                    <div class="progress-row" id="progress-row" style="display: none">
+                        <span id="progress-title"></span>
+                        <progress id="progress-bar"></progress>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-header">
+                    <span>Sessions</span>
+                    <span>identifiers</span>
+                </div>
+                <div class="session-grid">
+                    <div class="session-field">
+                        <label for="glsp-session">GLSP client session</label>
+                        <input id="glsp-session" readonly placeholder="Not connected yet" />
+                    </div>
+                    <div class="session-field">
+                        <label for="mcp-session">MCP session</label>
+                        <input id="mcp-session" readonly placeholder="Initialize MCP to open" />
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-header">
+                    <span>Diagram</span>
+                    <span>
+                        <span id="diagram-dirty" class="dirty-pill" hidden>● Unsaved</span>
+                        schematic SVG of <code>diagram-model</code>
+                    </span>
+                </div>
+                <div class="viewport">
+                    <svg
+                        id="diagram-canvas"
+                        xmlns="http://www.w3.org/2000/svg"
+                        role="img"
+                        aria-label="Schematic SVG of the workflow diagram"
+                    ></svg>
+                    <div class="viewport-empty" id="viewport-empty">
+                        <span>Click <strong>Initialize MCP</strong> below to load the workflow diagram.</span>
+                    </div>
+                </div>
+                <p class="diagram-note">
+                    Schematic only — not the GLSP client and not Sprotty. Shapes are painted from the
+                    <code>diagram-model</code> MCP tool's payload to make the handlers' output visible.
+                </p>
+            </section>
+
+            <section class="section" id="last-result-section">
+                <div class="section-header">
+                    <span>Last result</span>
+                    <span id="last-result-title">—</span>
+                </div>
+                <div id="last-result" class="last-result">
+                    <span class="muted">No tool calls yet.</span>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-header">
+                    <span>Actions</span>
+                    <span>step through the demo</span>
+                </div>
+                <div class="controls">
+                    <button id="btn-mcp-init" class="primary" disabled>Initialize MCP</button>
+                    <button id="btn-mcp-tools" disabled>List tools</button>
+                    <button id="btn-mcp-session-info" disabled>Session info</button>
+                    <button id="btn-mcp-element-types" disabled>Element types</button>
+                    <button id="btn-mcp-query" disabled>Query elements</button>
+                    <button id="btn-mcp-validate" disabled>Validate diagram</button>
+                    <button id="btn-mcp-create" disabled>Create task</button>
+                    <button id="btn-mcp-move" disabled>Move last task</button>
+                    <button id="btn-mcp-delete" disabled>Delete last task</button>
+                    <button id="btn-mcp-undo" disabled>Undo</button>
+                    <button id="btn-mcp-redo" disabled>Redo</button>
+                    <button id="btn-mcp-terminate" disabled>Terminate session</button>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-header section-header-with-action">
+                    <span>Activity log</span>
+                    <button id="btn-clear" type="button">Clear log</button>
+                </div>
+                <div id="log" aria-live="polite"></div>
+            </section>
+        </main>
+
+        <script type="module" src="./index.bundle.js"></script>
+    </body>
+</html>
