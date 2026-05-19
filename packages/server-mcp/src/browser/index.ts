@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2026 EclipseSource and others.
+ * Copyright (c) 2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,6 +13,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-export * from './mcp/workflow-mcp-module';
+
+export * from './modules/browser-mcp-server-module';
 export * from './reexport';
-export * from './workflow-cli-parser';
+export * from './server/browser-mcp-request-context';
+export * from './server/mcp-worker-bridge';
+export * from './server/web-mcp-server-launcher';

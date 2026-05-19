@@ -20,8 +20,9 @@ import { GModelStorage, Logger, SocketServerLauncher, WebSocketServerLauncher, c
 import { Container } from 'inversify';
 
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
-import { WorkflowMcpDiagramModule, WorkflowMcpServerModule } from '../common/mcp/workflow-mcp-module';
+import { WorkflowMcpDiagramModule } from '../common/mcp/workflow-mcp-diagram-module';
 import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-diagram-module';
+import { WorkflowMcpServerModule } from './mcp/workflow-mcp-module';
 import { createWorkflowCliParser } from './workflow-cli-parser';
 
 async function launch(argv?: string[]): Promise<void> {

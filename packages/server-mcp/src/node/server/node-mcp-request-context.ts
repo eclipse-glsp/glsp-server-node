@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2026 EclipseSource and others.
+ * Copyright (c) 2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,6 +13,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-export * from './mcp/workflow-mcp-module';
-export * from './reexport';
-export * from './workflow-cli-parser';
+
+import { AsyncLocalStorage } from 'async_hooks';
+import { injectable } from 'inversify';
+import { McpRequestContext, McpRequestExtra } from '../../common/server/mcp-request-context';
+
+/** {@link McpRequestContext} backed by native `AsyncLocalStorage`; frame survives across `await`. */
+@injectable()
+export class NodeMcpRequestContext implements McpRequestContext {
+    protected storage = new AsyncLocalStorage<McpRequestExtra>();
+
+    run<R>(extra: McpRequestExtra, callback: () => R): R {
+        return this.storage.run(extra, callback);
+    }
+
+    getStore(): McpRequestExtra | undefined {
+        return this.storage.getStore();
+    }
+}

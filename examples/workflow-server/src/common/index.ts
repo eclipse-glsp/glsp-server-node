@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023-2024 STMicroelectronics and others.
+ * Copyright (c) 2023-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -33,9 +33,9 @@ export * from './labeledit/workflow-label-edit-validator';
 export * from './layout/workflow-layout-configurator';
 export * from './marker/workflow-model-validator';
 export * from './mcp/workflow-element-types-provider';
+export * from './mcp/workflow-mcp-diagram-module';
 export * from './mcp/workflow-mcp-label-provider';
 export * from './mcp/workflow-mcp-model-serializer';
-export * from './mcp/workflow-mcp-module';
 export * from './model/workflow-navigation-target-resolver';
 export * from './provider/abstract-next-or-previous-navigation-target-provider';
 export * from './provider/next-node-navigation-target-provider';

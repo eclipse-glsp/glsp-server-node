@@ -26,6 +26,7 @@
     "publish:latest": "lerna publish from-package --no-git-reset -y",
     "publish:next": "lerna publish preminor --exact --canary --preid next --dist-tag next --no-git-reset --no-git-tag-version --no-push --ignore-scripts --yes",
     "start": "yarn --cwd examples/workflow-server-bundled start",
+    "start:mcp-demo": "yarn --cwd examples/workflow-server build && yarn --cwd examples/workflow-server-mcp-demo start",
     "start:websocket": "yarn --cwd examples/workflow-server-bundled start:websocket",
     "test": "lerna run test --no-bail",
     "test:ci": "lerna run test:ci --no-bail",

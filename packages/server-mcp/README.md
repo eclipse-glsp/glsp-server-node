@@ -27,7 +27,8 @@ Load the MCP container modules in your GLSP server's DI configuration:
 ```typescript
 import { GModelStorage, WebSocketServerLauncher, createAppModule } from '@eclipse-glsp/server/node';
 import { Container } from 'inversify';
-import { DefaultMcpDiagramModule, DefaultMcpServerModule } from '@eclipse-glsp/server-mcp';
+import { DefaultMcpDiagramModule } from '@eclipse-glsp/server-mcp';
+import { NodeMcpServerModule } from '@eclipse-glsp/server-mcp/node';
 
 const appContainer = new Container();
 appContainer.load(createAppModule(options));
@@ -38,15 +39,28 @@ const serverModule = new MyServerModule().configureDiagramModule(new MyDiagramMo
 
 const launcher = appContainer.resolve(WebSocketServerLauncher);
 // Launcher-level bindings — must not be part of `configureDiagramModule`.
-launcher.configure(serverModule, new DefaultMcpServerModule());
+launcher.configure(serverModule, new NodeMcpServerModule());
 ```
 
 The two modules are deliberately separate because they bind into different container scopes:
 
 -   `DefaultMcpDiagramModule` is mounted inside `configureDiagramModule`, so each `ClientSession.container` gets its own per-session services (`McpIdAliasService`, `McpModelSerializer`, the diagram-scope handler registries).
--   `DefaultMcpServerModule` is mounted at the launcher container, so the MCP HTTP server, the option holder, and the server-scope tool/resource handlers live as launcher singletons.
+-   `NodeMcpServerModule` is mounted at the launcher container, so the MCP HTTP server, the option holder, and the server-scope tool/resource handlers live as launcher singletons.
 
 The MCP server itself is started lazily on the first GLSP `InitializeAction` that carries an `mcpServer` configuration.
+
+### Browser / Web Worker target
+
+For browser, Bun, Deno, Cloudflare Workers, or any Fetch-shaped runtime, use the `browser` subpath. `McpWorkerBridge` wires `postMessage` traffic into the launcher for the common Service-Worker → Web-Worker setup:
+
+```typescript
+import { McpWorkerBridge } from '@eclipse-glsp/server-mcp/browser';
+
+const bridge = new McpWorkerBridge();
+launcher.configure(serverModule, bridge.createServerModule());
+```
+
+The page-side proxy — a Service Worker that intercepts `fetch('/mcp', …)` and forwards each `Request` to the bridge over a `MessageChannel` — is host-side scaffolding that adopters own. See `examples/workflow-server-mcp-demo/mcp-service-worker.js` for a working reference implementation that the workflow browser demo uses end-to-end.
 
 ## Further reading
 

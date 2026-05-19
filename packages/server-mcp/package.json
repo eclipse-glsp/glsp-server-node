@@ -1,7 +1,7 @@
 {
   "name": "@eclipse-glsp/server-mcp",
   "version": "2.7.0-next",
-  "description": "Extension of the GLSP Node Server for the Model Context Protocol",
+  "description": "Model Context Protocol (MCP) server for the GLSP TypeScript server — runs on Node, browser, and Fetch-API runtimes",
   "keywords": [
     "eclipse",
     "graphics",
@@ -29,16 +29,25 @@
       "url": "https://projects.eclipse.org/projects/ecd.glsp"
     }
   ],
-  "main": "lib/index",
-  "types": "lib/index",
+  "main": "lib/node/index",
+  "browser": {
+    "lib/node/index": "./lib/browser/index"
+  },
+  "types": "lib/common/index",
   "files": [
     "lib",
-    "src"
+    "src",
+    "node.js",
+    "node.d.ts",
+    "browser.js",
+    "browser.d.ts",
+    "common.js",
+    "common.d.ts"
   ],
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf lib *.tsbuildinfo coverage .nyc_output",
-    "generate:index": "glsp generateIndex src -f -s",
+    "generate:index": "glsp generateIndex src/browser src/common src/node -f -s",
     "lint": "eslint --ext .ts,.tsx ./src",
     "test": "mocha --config ../../.mocharc \"./src/**/*.spec.?(ts|tsx)\"",
     "test:ci": "yarn test --reporter mocha-ctrf-json-reporter",
@@ -47,11 +56,8 @@
   },
   "dependencies": {
     "@eclipse-glsp/server": "2.7.0-next",
-    "@modelcontextprotocol/sdk": "^1.29.0",
-    "express": "^5.2.1"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.6"
+    "@hono/node-server": "^1.19.9",
+    "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "peerDependencies": {
     "inversify": "^6.1.3"
