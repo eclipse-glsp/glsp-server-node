@@ -25,9 +25,7 @@ import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-
 import { WorkflowMockModelStorage } from './mock-model-storage';
 
 export async function launch(_argv?: string[]): Promise<void> {
-    // Bridge must be created before any await so postMessages that arrive on the next event-loop
-    // tick aren't dropped. Requests pile up on the bridge's internal `launcherReady` until the
-    // GLSP client connects and the DI container activates the MCP launcher.
+    // Bridge must be created before any await so postMessages that arrive on the next event-loop tick aren't dropped.
     const bridge = new McpWorkerBridge();
 
     const appContainer = new Container();

@@ -32,15 +32,14 @@ The Node path is additionally covered by the automated end-to-end spec at
 From the repository root:
 
 ```bash
-yarn workspace @eclipse-glsp-examples/workflow-server build
-yarn workspace @eclipse-glsp-examples/workflow-server-mcp-demo start
+yarn start:mcp-demo
 ```
 
-The `start` script copies the worker bundle from
+This builds the workflow server, copies the worker bundle from
 `@eclipse-glsp-examples/workflow-server-bundled-web`, builds the page-side bundle, and serves
 the directory on `http://localhost:8000/`.
 
-Open `http://localhost:8000/` in a Chromium-based browser. Step through the buttons
+Open `http://localhost:8000/` in any modern browser. Step through the buttons
 top-to-bottom; the workflow auto-renders once MCP is initialized, and **Create task**
 mutates the live session.
 

@@ -38,8 +38,8 @@ export interface McpResponseMessage {
     status: number;
     statusText: string;
     headers: Record<string, string>;
-    /** Transferred across `postMessage` so streaming (SSE) bodies don't get buffered. */
-    body: ReadableStream<Uint8Array> | null;
+    /** `ReadableStream` on Chromium (streams SSE); buffered `ArrayBuffer` on browsers without transferable streams. */
+    body: ReadableStream<Uint8Array> | ArrayBuffer | null;
 }
 
 /** Carries the SW↔Worker `MessagePort` transfer that wires MCP traffic over a dedicated channel. */
@@ -53,6 +53,17 @@ export function isMcpRequestMessage(value: unknown): value is McpRequestMessage 
 
 export function isMcpInitPortMessage(value: unknown): value is McpInitPortMessage {
     return Object(value) === value && (value as { type?: unknown }).type === MCP_INIT_PORT_MESSAGE_TYPE;
+}
+
+/** Probes whether the current realm can transfer `ReadableStream` via `postMessage` (Chromium yes; Firefox / Safari no). */
+export function canTransferReadableStream(): boolean {
+    try {
+        const probe = new ReadableStream();
+        structuredClone(probe, { transfer: [probe] });
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 /** Minimal Worker scope contract — defined locally so the package compiles without the `webworker` lib. */
@@ -73,6 +84,8 @@ export class McpWorkerBridge implements Disposable {
     protected readonly listener = (event: MessageEvent): void => this.onMessage(event);
     /** Serialise dispatches — `BrowserMcpRequestContext` is a single-slot store, not concurrency-safe. */
     protected dispatchChain: Promise<void> = Promise.resolve();
+    protected readonly streamTransferable: boolean = canTransferReadableStream();
+    protected bufferingWarned = false;
 
     constructor(protected readonly scope: McpBridgeScope = self as unknown as McpBridgeScope) {
         this.launcherReady = new Promise<AbstractMcpServerLauncher>(resolve => {
@@ -146,7 +159,7 @@ export class McpWorkerBridge implements Disposable {
                 status: response.status,
                 statusText: response.statusText,
                 headers,
-                body: response.body
+                body: await this.encodeBody(response)
             });
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : String(err);
@@ -156,13 +169,28 @@ export class McpWorkerBridge implements Disposable {
                 status: 500,
                 statusText: 'Internal Server Error',
                 headers: { 'content-type': 'text/plain' },
-                body: new Response(`MCP worker bridge error: ${message}`).body
+                body: await this.encodeBody(new Response(`MCP worker bridge error: ${message}`))
             });
         }
     }
 
+    /** Stream on Chromium; buffer to `ArrayBuffer` (still transferable) on browsers without transferable streams. */
+    protected async encodeBody(response: Response): Promise<ReadableStream<Uint8Array> | ArrayBuffer | null> {
+        if (this.streamTransferable) {
+            return response.body;
+        }
+        if (!this.bufferingWarned) {
+            this.bufferingWarned = true;
+            console.warn(
+                'McpWorkerBridge: ReadableStream is not transferable in this browser — buffering MCP response bodies. ' +
+                    'Chunked / SSE streaming will deliver as a single chunk; non-streaming MCP calls are unaffected.'
+            );
+        }
+        return response.arrayBuffer();
+    }
+
     protected reply(port: MessagePort | undefined, message: McpResponseMessage): void {
-        const transfer = message.body ? [message.body] : [];
+        const transfer: Transferable[] = message.body ? [message.body] : [];
         if (port) {
             port.postMessage(message, transfer);
         } else {
