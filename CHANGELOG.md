@@ -2,9 +2,16 @@
 
 ## v2.7.0 - active
 
+### Changes
+
+-   [mcp] Add support for Model Context Protocol (MCP) [#120](https://github.com/eclipse-glsp/glsp-server-node/pull/120)
+-   [mcp] Make MCP server browser-portable with a Web-standard Fetch API handler [#136](https://github.com/eclipse-glsp/glsp-server-node/pull/136)
+
 ### Potentially Breaking Changes
 
 -   [node] Update minimum requirements for Node to >=22 [#128](https://github.com/eclipse-glsp/glsp-server-node/pull/128)
+-   [action] Add `request()` and `requestUntil()` to `ActionDispatcher` for server-to-client request/response support [#131](https://github.com/eclipse-glsp/glsp-server-node/pull/131)
+    -   Adopters with custom `ActionDispatcher` implementations need to add the new `request()` and `requestUntil()` methods
 
 ## [v2.6.0 - 10/02/2026](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.6.0)
 
