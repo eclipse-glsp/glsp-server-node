@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-glsp-examples/workflow-server-mcp-demo",
-  "version": "2.7.0-next",
+  "version": "2.7.0",
   "private": true,
   "description": "Browser demo that drives the @eclipse-glsp/server-mcp portable Fetch handler against the workflow web server bundle.",
   "homepage": "https://www.eclipse.org/glsp/",
@@ -20,7 +20,7 @@
     "start": "npx -y serve -l 8000 ./dist"
   },
   "dependencies": {
-    "@eclipse-glsp-examples/workflow-server-bundled-web": "2.7.0-next"
+    "@eclipse-glsp-examples/workflow-server-bundled-web": "2.7.0"
   },
   "devDependencies": {
     "vscode-jsonrpc": "8.2.0",
