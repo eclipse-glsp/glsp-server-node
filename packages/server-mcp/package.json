@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-glsp/server-mcp",
-  "version": "2.7.0-next",
+  "version": "2.7.0",
   "description": "Model Context Protocol (MCP) server for the GLSP TypeScript server — runs on Node, browser, and Fetch-API runtimes",
   "keywords": [
     "eclipse",
@@ -55,7 +55,7 @@
     "watch": "tsc -w"
   },
   "dependencies": {
-    "@eclipse-glsp/server": "2.7.0-next",
+    "@eclipse-glsp/server": "2.7.0",
     "@hono/node-server": "^1.19.9",
     "@modelcontextprotocol/sdk": "^1.29.0"
   },
