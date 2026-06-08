@@ -24,6 +24,7 @@ import {
     applyBindingTarget
 } from '@eclipse-glsp/server';
 import ElkConstructor, { LayoutOptions } from 'elkjs/lib/elk.bundled';
+import { ELK } from 'elkjs/lib/elk-api';
 import { ContainerModule, injectable, interfaces } from 'inversify';
 import { DefaultElementFilter, ElementFilter } from './element-filter';
 import { ElkFactory, GlspElkLayoutEngine } from './glsp-elk-layout-engine';
@@ -104,15 +105,35 @@ export class ElkLayoutModule extends GLSPModule {
 
     protected bindElkFactory(): BindingTarget<ElkFactory> {
         const { algorithms, defaultLayoutOptions, isWebWorker } = this.options;
-        const factory: ElkFactory = () =>
-            new ElkConstructor({
-                algorithms,
-                defaultLayoutOptions,
-                // The node implementation relies on elkjs' `FakeWorker` to set the `workerFactory`. The required file is
-                // dynamically loaded and not available in a web-worker context, so it has to be mocked manually there.
-                workerFactory: isWebWorker ? () => ({ postMessage: () => {} }) as unknown as Worker : undefined
-            });
+        const factory: ElkFactory = () => this.createElk({ algorithms, defaultLayoutOptions }, isWebWorker);
         return { constantValue: factory };
+    }
+
+    /** Creates the underlying elkjs {@link ELK} instance, see {@link createWebWorkerElk} for the web-worker case. */
+    protected createElk(options: { algorithms: string[]; defaultLayoutOptions?: LayoutOptions }, isWebWorker?: boolean): ELK {
+        return isWebWorker ? this.createWebWorkerElk(options) : new ElkConstructor(options);
+    }
+
+    /**
+     * Creates an {@link ELK} instance for a web-worker server. elkjs only exposes its in-process fake worker when it
+     * doesn't detect a dedicated-worker scope (`self` present, `document` absent) — otherwise it hijacks
+     * `self.onmessage` and layout never runs. Briefly presenting a `document` during construction flips elkjs back to
+     * the in-process worker without touching the server's own `self.onmessage` handler.
+     */
+    protected createWebWorkerElk(options: { algorithms: string[]; defaultLayoutOptions?: LayoutOptions }): ELK {
+        const globalScope = globalThis as { document?: unknown };
+        const hadDocument = 'document' in globalScope;
+        const previousDocument = globalScope.document;
+        globalScope.document = previousDocument ?? {};
+        try {
+            return new ElkConstructor(options);
+        } finally {
+            if (hadDocument) {
+                globalScope.document = previousDocument;
+            } else {
+                delete globalScope.document;
+            }
+        }
     }
 
     protected bindGlspElkLayoutEngine(): BindingTarget<GlspElkLayoutEngine> {
