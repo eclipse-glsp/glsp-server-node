@@ -1,2 +1,2 @@
-# Populated by `yarn start` (verbatim assets + synced worker bundle + webpack output)
+# Populated by `yarn start` (verbatim assets + synced worker bundle + esbuild output)
 dist/

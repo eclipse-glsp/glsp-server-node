@@ -10,8 +10,10 @@ Eclipse GLSP Server Node monorepo. Provides the TypeScript-based server framewor
 -   **Build**: `yarn` from root installs and compiles everything
 -   **Compile**: `yarn compile` (runs `tsc -b` with project references)
 -   **Clean**: `yarn clean`
--   **Watch**: `yarn watch` (parallel TypeScript + bundle watch)
--   **Start example server**: `yarn start` (TCP on 5007) or `yarn start:websocket` (WebSocket on 8081)
+-   **Watch**: `yarn watch` (parallel TypeScript + esbuild bundle watch)
+-   **Bundle**: `yarn bundle` (esbuild bundles the workflow example, node + webworker targets)
+-   **Start example server**: `yarn start` (TCP on 5007) or `yarn start:websocket` (WebSocket on 8081) — runs the pre-built bundle
+-   **Dev server (hot reload)**: `yarn dev` (TCP on 5007) or `yarn dev:ws` (WebSocket on 8081) — esbuild watches `src` and restarts the server on change
 
 ## Validation
 

@@ -14,7 +14,7 @@
     "name": "Eclipse GLSP"
   },
   "scripts": {
-    "build": "webpack",
+    "build": "node esbuild.js",
     "clean": "rimraf dist",
     "prestart": "node ./scripts/prepare-dist.mjs && yarn build",
     "start": "npx -y serve -l 8000 ./dist"
@@ -23,8 +23,7 @@
     "@eclipse-glsp-examples/workflow-server-bundled-web": "2.8.0-next"
   },
   "devDependencies": {
-    "vscode-jsonrpc": "8.2.0",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1"
+    "esbuild": "~0.25.9",
+    "vscode-jsonrpc": "8.2.0"
   }
 }

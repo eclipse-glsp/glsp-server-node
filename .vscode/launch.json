@@ -77,9 +77,6 @@
         "${workspaceRoot}/examples/workflow-server/*/lib/**/*.js",
         "${workspaceRoot}/packages/**/*/lib/**/*.js"
       ],
-      "sourceMapPathOverrides": {
-        "webpack://@eclipse-glsp-examples/workflow-server/(.+)": "${workspaceFolder}/examples/workflow-server/$1"
-      },
       "smartStep": true,
       "internalConsoleOptions": "openOnSessionStart",
       "outputCapture": "std"
@@ -100,9 +97,6 @@
         "${workspaceRoot}/examples/workflow-server/*/lib/**/*.js",
         "${workspaceRoot}/packages/**/*/lib/**/*.js"
       ],
-      "sourceMapPathOverrides": {
-        "webpack://@eclipse-glsp-examples/workflow-server/(.+)": "${workspaceFolder}/examples/workflow-server/$1"
-      },
       "smartStep": true,
       "internalConsoleOptions": "openOnSessionStart",
       "outputCapture": "std"
