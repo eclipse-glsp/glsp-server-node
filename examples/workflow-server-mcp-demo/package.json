@@ -23,7 +23,7 @@
     "@eclipse-glsp-examples/workflow-server-bundled-web": "2.8.0-next"
   },
   "devDependencies": {
-    "esbuild": "~0.25.9",
+    "esbuild": "~0.28.0",
     "vscode-jsonrpc": "8.2.0"
   }
 }
