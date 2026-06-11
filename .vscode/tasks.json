@@ -26,6 +26,17 @@
       "problemMatcher": ["$tsc-watch"]
     },
     {
+      "label": "Start Example GLSP server (dev, hot reload)",
+      "type": "shell",
+      "group": "none",
+      "command": "yarn dev",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Execute all glsp-server tests",
       "type": "shell",
       "group": "test",

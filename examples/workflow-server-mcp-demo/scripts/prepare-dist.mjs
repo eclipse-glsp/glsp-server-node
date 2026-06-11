@@ -14,10 +14,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-// Populates `dist/` with everything `serve` needs that webpack doesn't emit:
+// Populates `dist/` with everything `serve` needs that esbuild doesn't emit:
 //  - verbatim files from `public/` (index.html, mcp-service-worker.js)
 //  - the worker bundle from `@eclipse-glsp-examples/workflow-server-bundled-web`
-// Webpack writes `index.bundle.js` into the same dir as a separate step.
+// esbuild writes `index.bundle.js` into the same dir as a separate step.
 
 import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
