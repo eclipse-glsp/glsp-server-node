@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { McpServerInitOptions } from '@eclipse-glsp/protocol';
+import { McpServerInitOptions } from '@eclipse-glsp/server';
 import { expect } from 'chai';
 import { version as packageVersion } from '../../../package.json';
 import { SERVER_VERSION, pickInitOptions } from '../../common/server/abstract-mcp-server-launcher';

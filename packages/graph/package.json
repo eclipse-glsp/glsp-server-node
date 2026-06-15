@@ -43,16 +43,13 @@
     "clean": "rimraf lib *.tsbuildinfo coverage .nyc_output",
     "generate:index": "glsp generateIndex src -f -s",
     "lint": "eslint ./src",
+    "prepublishOnly": "pnpm build",
     "test": "mocha --config ../../.mocharc \"./src/**/*.spec.?(ts|tsx)\"",
-    "test:ci": "yarn test --reporter mocha-ctrf-json-reporter",
-    "test:coverage": "nyc yarn test",
-    "watch": "tsc -w"
+    "test:ci": "pnpm test --reporter mocha-ctrf-json-reporter",
+    "test:coverage": "nyc pnpm test"
   },
   "dependencies": {
     "@eclipse-glsp/protocol": "next"
-  },
-  "devDependencies": {
-    "@types/uuid": "8.3.1"
   },
   "publishConfig": {
     "access": "public"

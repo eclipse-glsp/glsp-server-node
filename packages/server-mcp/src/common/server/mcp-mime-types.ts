@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ProposalString } from '@eclipse-glsp/protocol';
+import { ProposalString } from '@eclipse-glsp/server';
 
 /**
  * MIME type for an MCP resource. Annotating a `mimeType` field with this type prompts the IDE

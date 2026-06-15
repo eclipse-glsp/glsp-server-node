@@ -6,18 +6,18 @@ An extension of the [GLSP Node Server](https://github.com/eclipse-glsp/glsp-serv
 
 ## What it provides
 
--   **Tools** — Read/query and read/write operations to inspect, create, modify, delete, validate, and navigate diagram elements (and the active sessions themselves).
--   **Resources** — URI-addressable read-only data; in the default ship-set this is `diagram-png` only (the rendered diagram screenshot, useful as embeddable image content). Other read endpoints ship as plain tools because in-the-wild MCP clients support tools more reliably than resources — see [Resource vs. Tool Mode](./ARCHITECTURE.md#resource-vs-tool-mode).
--   **Prompts** — User-invokable templates (slash-command-style) that frame multi-step agent tasks against the diagram.
+- **Tools** — Read/query and read/write operations to inspect, create, modify, delete, validate, and navigate diagram elements (and the active sessions themselves).
+- **Resources** — URI-addressable read-only data; in the default ship-set this is `diagram-png` only (the rendered diagram screenshot, useful as embeddable image content). Other read endpoints ship as plain tools because in-the-wild MCP clients support tools more reliably than resources — see [Resource vs. Tool Mode](./ARCHITECTURE.md#resource-vs-tool-mode).
+- **Prompts** — User-invokable templates (slash-command-style) that frame multi-step agent tasks against the diagram.
 
 The MCP server is initialized as part of the GLSP server startup sequence and creates a new MCP session for each connecting MCP client. Each session runs a preconfigured AI agent persona (the _GLSP Modeling Agent_) that guides AI clients toward correct and safe usage of the modeling tools. It should be noted that the server startup sequence does not mean simply starting a server process, but rather that some kind of GLSP client starts the initialization.
 
 ## Installation
 
 ```bash
-yarn add @eclipse-glsp/server-mcp
-# or
 npm install @eclipse-glsp/server-mcp
+# or
+pnpm add @eclipse-glsp/server-mcp
 ```
 
 ## Integrating into a GLSP Server
@@ -44,8 +44,8 @@ launcher.configure(serverModule, new NodeMcpServerModule());
 
 The two modules are deliberately separate because they bind into different container scopes:
 
--   `DefaultMcpDiagramModule` is mounted inside `configureDiagramModule`, so each `ClientSession.container` gets its own per-session services (`McpIdAliasService`, `McpModelSerializer`, the diagram-scope handler registries).
--   `NodeMcpServerModule` is mounted at the launcher container, so the MCP HTTP server, the option holder, and the server-scope tool/resource handlers live as launcher singletons.
+- `DefaultMcpDiagramModule` is mounted inside `configureDiagramModule`, so each `ClientSession.container` gets its own per-session services (`McpIdAliasService`, `McpModelSerializer`, the diagram-scope handler registries).
+- `NodeMcpServerModule` is mounted at the launcher container, so the MCP HTTP server, the option holder, and the server-scope tool/resource handlers live as launcher singletons.
 
 The MCP server itself is started lazily on the first GLSP `InitializeAction` that carries an `mcpServer` configuration.
 

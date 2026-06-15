@@ -71,12 +71,10 @@ export interface McpStructuredContent {
  * otherwise throw `new McpToolError('context-specific message')`.
  */
 export class McpToolError extends Error {
-    constructor(
-        message: string,
-        readonly cause?: unknown
-    ) {
+    constructor(message: string, cause?: unknown) {
         super(message);
         this.name = 'McpToolError';
+        this.cause = cause;
     }
 }
 

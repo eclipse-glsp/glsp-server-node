@@ -14,8 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { GModelElement } from '@eclipse-glsp/graph';
-import { Dimension, DefaultTypes } from '@eclipse-glsp/server';
+import { DefaultTypes, Dimension, GModelElement } from '@eclipse-glsp/server';
 import { MarkdownMcpModelSerializer, SerializedElement } from '@eclipse-glsp/server-mcp';
 import { injectable } from 'inversify';
 import { ModelTypes } from '../util/model-types';
@@ -90,7 +89,7 @@ export class WorkflowMcpModelSerializer extends MarkdownMcpModelSerializer {
                 // structure's parent as the logical parent. Falls back to the direct `parentId`
                 // when the task is at the root or the structure has no parent.
                 const liveParent = (element as { parent?: GModelElement }).parent;
-                const parentId = liveParent?.type === ModelTypes.STRUCTURE ? liveParent.parent?.id ?? element.parentId : element.parentId;
+                const parentId = liveParent?.type === ModelTypes.STRUCTURE ? (liveParent.parent?.id ?? element.parentId) : element.parentId;
                 return {
                     id: element.id,
                     type,

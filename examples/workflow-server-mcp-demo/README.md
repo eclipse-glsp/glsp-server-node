@@ -18,10 +18,10 @@ For the **Node variant**, no demo is needed in this repo — the launcher binds 
 listener and announces its URL via stdout (`[GLSP-MCP-Server]:Ready. {…}`). Point any MCP
 client at that URL:
 
--   The official **[MCP Inspector](https://github.com/modelcontextprotocol/inspector)** is the
-    best manual debug tool — runs as a local web UI and lets you exercise tools, prompts and
-    resources interactively.
--   **Claude Code**, **Cursor**, or any other MCP-aware client also work.
+- The official **[MCP Inspector](https://github.com/modelcontextprotocol/inspector)** is the
+  best manual debug tool — runs as a local web UI and lets you exercise tools, prompts and
+  resources interactively.
+- **Claude Code**, **Cursor**, or any other MCP-aware client also work.
 
 The Node path is additionally covered by the automated end-to-end spec at
 `packages/server-mcp/src/node/server/mcp-http-transport-e2e.spec.ts`, which runs an MCP SDK
@@ -32,7 +32,7 @@ The Node path is additionally covered by the automated end-to-end spec at
 From the repository root:
 
 ```bash
-yarn start:mcp-demo
+pnpm start:mcp-demo
 ```
 
 This builds the workflow server, copies the worker bundle from

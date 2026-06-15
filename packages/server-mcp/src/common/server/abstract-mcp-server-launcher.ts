@@ -14,7 +14,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { McpServerOptions as McpServerOptionsType } from '@eclipse-glsp/protocol';
 import {
     ClientSessionListener,
     ClientSessionManager,
@@ -30,14 +29,15 @@ import {
     McpInitializeParameters,
     McpInitializeResult,
     McpServerConfiguration,
-    McpServerInitOptions
+    McpServerInitOptions,
+    McpServerOptions as McpServerOptionsType
 } from '@eclipse-glsp/server';
 import { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import {
-    ServerCapabilities,
     SUPPORTED_PROTOCOL_VERSIONS,
+    ServerCapabilities,
     SetLevelRequestSchema,
     isInitializeRequest
 } from '@modelcontextprotocol/sdk/types.js';

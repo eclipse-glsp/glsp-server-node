@@ -27,3 +27,4 @@ examples/workflow-server-bundled-web/index.bundle.js.map
 CLAUDE.local.md
 .claude/plans/
 .reviews/
+.worktrees/
