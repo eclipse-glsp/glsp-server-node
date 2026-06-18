@@ -36,7 +36,7 @@
     "mocha-ctrf-json-reporter": "0.0.11",
     "typescript": "^5.9.2"
   },
-  "packageManager": "pnpm@11.6.0",
+  "packageManager": "pnpm@11.7.0",
   "engines": {
     "node": ">=22",
     "pnpm": ">=11"
