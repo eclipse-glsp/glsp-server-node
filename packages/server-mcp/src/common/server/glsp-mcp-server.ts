@@ -45,7 +45,8 @@ const KEEP_ALIVE_PING_TIMEOUT_MS = 5_000;
  * registration; the launcher disposes it on session-close and on server shutdown.
  */
 export interface GLSPMcpServer
-    extends Pick<McpServer, 'registerPrompt' | 'registerResource' | 'registerTool' | 'sendLoggingMessage' | 'isConnected' | 'connect'>,
+    extends
+        Pick<McpServer, 'registerPrompt' | 'registerResource' | 'registerTool' | 'sendLoggingMessage' | 'isConnected' | 'connect'>,
         Disposable {
     readonly options: McpServerOptions;
 

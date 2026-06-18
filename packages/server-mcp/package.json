@@ -49,18 +49,20 @@
     "clean": "rimraf lib *.tsbuildinfo coverage .nyc_output",
     "generate:index": "glsp generateIndex src/browser src/common src/node -f -s",
     "lint": "eslint --ext .ts,.tsx ./src",
+    "prepublishOnly": "pnpm build",
     "test": "mocha --config ../../.mocharc \"./src/**/*.spec.?(ts|tsx)\"",
-    "test:ci": "yarn test --reporter mocha-ctrf-json-reporter",
-    "test:coverage": "nyc yarn test",
-    "watch": "tsc -w"
+    "test:ci": "pnpm test --reporter mocha-ctrf-json-reporter",
+    "test:coverage": "nyc pnpm test"
   },
   "dependencies": {
-    "@eclipse-glsp/server": "2.8.0-next",
+    "@eclipse-glsp/server": "workspace:*",
     "@hono/node-server": "^1.19.9",
-    "@modelcontextprotocol/sdk": "^1.29.0"
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.0.0"
   },
   "peerDependencies": {
-    "inversify": "^6.1.3"
+    "inversify": "^6.1.3",
+    "reflect-metadata": "^0.2.2"
   },
   "publishConfig": {
     "access": "public"

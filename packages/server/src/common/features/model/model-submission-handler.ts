@@ -15,6 +15,7 @@
  ********************************************************************************/
 import {
     Action,
+    DebouncedFunc,
     DirtyStateChangeReason,
     GModelRootSchema,
     LayoutOperation,
@@ -26,9 +27,9 @@ import {
     SetMarkersAction,
     SetModelAction,
     StatusAction,
-    UpdateModelAction
+    UpdateModelAction,
+    debounce
 } from '@eclipse-glsp/protocol';
-import { DebouncedFunc, debounce } from 'lodash';
 
 import { inject, injectable, optional } from 'inversify';
 import { ActionDispatcher } from '../../actions/action-dispatcher';

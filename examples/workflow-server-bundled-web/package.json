@@ -38,7 +38,8 @@
     "wf-glsp-server-webworker.js.map"
   ],
   "scripts": {
-    "clean": "rimraf wf-glsp-server-webworker.js wf-glsp-server-webworker.js.map"
+    "clean": "rimraf wf-glsp-server-webworker.js wf-glsp-server-webworker.js.map",
+    "prepublishOnly": "pnpm -C ../workflow-server build"
   },
   "publishConfig": {
     "access": "public"

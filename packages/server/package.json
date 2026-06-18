@@ -52,28 +52,26 @@
     "clean": "rimraf lib *.tsbuildinfo coverage .nyc_output",
     "generate:index": "glsp generateIndex src/browser src/common src/node -s -f",
     "lint": "eslint ./src",
+    "prepublishOnly": "pnpm build",
     "test": "mocha --config ../../.mocharc \"./src/**/*.spec.?(ts|tsx)\"",
-    "test:ci": "yarn test --reporter mocha-ctrf-json-reporter",
-    "test:coverage": "nyc yarn test:ci",
-    "watch": "tsc -w"
+    "test:ci": "pnpm test --reporter mocha-ctrf-json-reporter",
+    "test:coverage": "nyc pnpm test:ci"
   },
   "dependencies": {
-    "@eclipse-glsp/graph": "2.8.0-next",
+    "@eclipse-glsp/graph": "workspace:*",
     "@eclipse-glsp/protocol": "next",
-    "@types/uuid": "8.3.1",
-    "commander": "^8.3.0",
+    "commander": "^14.0.0",
     "fast-json-patch": "^3.1.0",
-    "lodash": "4.17.21",
     "vscode-jsonrpc": "8.2.0",
     "winston": "^3.3.3",
     "ws": "^8.12.1"
   },
   "devDependencies": {
-    "@types/lodash": "4.14.191",
     "@types/ws": "^8.5.4"
   },
   "peerDependencies": {
-    "inversify": "^6.1.3"
+    "inversify": "^6.1.3",
+    "reflect-metadata": "^0.2.2"
   },
   "publishConfig": {
     "access": "public"

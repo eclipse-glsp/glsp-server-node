@@ -5,51 +5,29 @@ The implementation of this server is aligned with the default Java based [GLSP S
 
 The server consists of three components:
 
--   [`@eclipse-glsp/server`](packages/server/) The base framework for building GLSP servers
--   [`@eclipse-glsp/graph`](packages/graph/) The Typescript based implementation of the graphical model used in GLSP (GModel).
--   [`@eclipse-glsp-examples/workflow-server`](examples/workflow-server) GLSP example server using the workflow model.
+- [`@eclipse-glsp/server`](packages/server/) The base framework for building GLSP servers
+- [`@eclipse-glsp/graph`](packages/graph/) The Typescript based implementation of the graphical model used in GLSP (GModel).
+- [`@eclipse-glsp-examples/workflow-server`](examples/workflow-server) GLSP example server using the workflow model.
 
 The main target environment is node, nevertheless, all components are implemented in an ismorphic fashion and also provide
 an entrypoint to target browser environments (e.g. running the server in a web worker)
 
-## Build
+## Developer Documentation
 
-Install dependencies and build via
+### First time setup
 
-```console
-yarn
-```
+- Install [node.js](https://nodejs.org/) (requires Node v22+)
+- Install pnpm: <https://pnpm.io/installation> (use pnpm 10+); a recent pnpm automatically switches to the version pinned in the `packageManager` field
+- Clone this repository
+- Install dependencies: `pnpm i` or `pnpm i --frozen-lockfile`
 
-Only build via
+### Build & Testing
 
-```console
-yarn build
-```
-
-Lint packages via
-
-```console
-yarn lint
-```
-
-or do all of the above via
-
-```console
-yarn all
-```
-
-## Testing
-
-### Unit tests
-
-To execute all available test suits use:
-
-```console
-yarn test
-```
-
-It's also possible to execute and debug a single test file in VSCode/Theia via the File explorer.
-Simply select a test file (`*.spec.ts`), then go to the `Run & Debug` View (`Ctrl+Shift+D`), select the 'Run current test" launch config and start debugging (`Ctrl+F11`)
+- Build (all packages): `pnpm build`
+- Test (all packages): `pnpm test`
+- Lint (all packages): `pnpm lint`
+- Clean (all packages): `pnpm clean`
+- Full validation: `pnpm check:all`
 
 ## Workflow Diagram Example
 
@@ -65,9 +43,9 @@ https://user-images.githubusercontent.com/588090/154459938-849ca684-11b3-472c-8a
 
 To see the diagram in action, you need to choose and launch one diagram client, see [here for an overview of available clients](https://www.eclipse.org/glsp/examples/#workflowoverview).
 
--   [`glsp-theia-integration`](https://github.com/eclipse-glsp/glsp-theia-integration): Diagrams clients integrated into [Theia](https://github.com/theia-ide/theia).
--   [`glsp-vscode-integration`](https://github.com/eclipse-glsp/glsp-vscode-integration): Diagram clients integrated into [VSCode](https://github.com/microsoft/vscode).
--   [`glsp-eclipse-integration`](https://github.com/eclipse-glsp/glsp-eclipse-integration): Diagram clients integrated into Eclipse IDE.
+- [`glsp-theia-integration`](https://github.com/eclipse-glsp/glsp-theia-integration): Diagrams clients integrated into [Theia](https://github.com/theia-ide/theia).
+- [`glsp-vscode-integration`](https://github.com/eclipse-glsp/glsp-vscode-integration): Diagram clients integrated into [VSCode](https://github.com/microsoft/vscode).
+- [`glsp-eclipse-integration`](https://github.com/eclipse-glsp/glsp-eclipse-integration): Diagram clients integrated into Eclipse IDE.
 
 Please look at the workflow example guides in the repository linked above to get more information on building and running the respective GLSP clients.
 
@@ -78,7 +56,7 @@ Please look at the workflow example guides in the repository linked above to get
 To launch the server for TCP sockets use:
 
 ```console
-yarn start
+pnpm start
 ```
 
 This starts a server that is listening on port 5007 for incoming client requests.
@@ -92,7 +70,7 @@ We recommend to use the client provided by the [`glsp-integration`](https://gith
 To launch the server for WebSockets use:
 
 ```console
-yarn start:websocket
+pnpm start:websocket
 ```
 
 This starts a server that is listening on the `ws://localhost:8081/workflow` endpoint for incoming client requests.

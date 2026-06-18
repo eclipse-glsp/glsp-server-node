@@ -4,17 +4,17 @@
 
 ## Table of Contents
 
--   [Architecture](#architecture)
-    -   [Container Scopes](#container-scopes)
-    -   [Session Lifecycle](#session-lifecycle)
-    -   [Supported MCP Features](#supported-mcp-features)
--   [Security & Threat Model](#security--threat-model)
--   [Diagram-Specific Overrides](#diagram-specific-overrides)
--   [Server Configuration](#server-configuration)
--   [Deployment Model](#deployment-model)
--   [Resource vs. Tool Mode](#resource-vs-tool-mode)
--   [ID Aliasing](#id-aliasing)
--   [Extending with Custom Handlers](#extending-with-custom-handlers)
+- [Architecture](#architecture)
+    - [Container Scopes](#container-scopes)
+    - [Session Lifecycle](#session-lifecycle)
+    - [Supported MCP Features](#supported-mcp-features)
+- [Security & Threat Model](#security--threat-model)
+- [Diagram-Specific Overrides](#diagram-specific-overrides)
+- [Server Configuration](#server-configuration)
+- [Deployment Model](#deployment-model)
+- [Resource vs. Tool Mode](#resource-vs-tool-mode)
+- [ID Aliasing](#id-aliasing)
+- [Extending with Custom Handlers](#extending-with-custom-handlers)
 
 ---
 
@@ -24,8 +24,8 @@ A GLSP server process creates a GLSP server per connecting application, and each
 
 Two session terminologies coexist and are kept distinct in code:
 
--   **GLSP client session** — one open diagram, identified by `clientSessionId`.
--   **MCP session** — one MCP client (e.g., an editor's chat panel) connected to the HTTP endpoint, identified by the MCP protocol's `mcp-session-id` header.
+- **GLSP client session** — one open diagram, identified by `clientSessionId`.
+- **MCP session** — one MCP client (e.g., an editor's chat panel) connected to the HTTP endpoint, identified by the MCP protocol's `mcp-session-id` header.
 
 The two have independent lifetimes. The same MCP client can talk to multiple GLSP client sessions through one MCP HTTP connection.
 
@@ -157,8 +157,8 @@ The MCP server is configured through the GLSP `InitializeParameters`. **The pres
 
 The configuration surface is split along an **init/deploy axis**:
 
--   **Init-controllable** (table below) — the IDE/MCP-aware GLSP client sets these per `initialize` call. Behavioral and tuning fields whose blast radius is bounded.
--   **Deploy-only** — the adopter sets these on the server-module defaults at deploy time. Security-sensitive bind/policy fields are intentionally _not_ reachable from the wire-protocol init payload (e.g., to avoid LLM-driven init payloads widening the network attack surface or weakening the DNS-rebinding mitigation). `port` lives on the init side because pinning a specific port is a legitimate IDE concern with a local blast radius; `host` lives on the deploy side because letting an init payload widen the bind from loopback would re-open the DNS-rebinding attack pattern.
+- **Init-controllable** (table below) — the IDE/MCP-aware GLSP client sets these per `initialize` call. Behavioral and tuning fields whose blast radius is bounded.
+- **Deploy-only** — the adopter sets these on the server-module defaults at deploy time. Security-sensitive bind/policy fields are intentionally _not_ reachable from the wire-protocol init payload (e.g., to avoid LLM-driven init payloads widening the network attack surface or weakening the DNS-rebinding mitigation). `port` lives on the init side because pinning a specific port is a legitimate IDE concern with a local blast radius; `host` lives on the deploy side because letting an init payload widen the bind from loopback would re-open the DNS-rebinding attack pattern.
 
 ### Init-controllable options
 
@@ -216,8 +216,8 @@ A periodic server-initiated `ping` keeps the SSE GET stream alive across chat-id
 
 The launcher exposes a Fetch-API `handleRequest(req: Request): Promise<Response>` that any runtime with a `fetch`-shaped listener can drive — Node (via `@hono/node-server`), Bun, Deno, Cloudflare Workers, and in-page Web Workers. Two concrete launcher subclasses ship:
 
--   `McpServerLauncher` (Node) binds a Hono listener and announces the loopback URL.
--   `WebMcpServerLauncher` (browser / web-runtime) returns no transport endpoint; the adopter wires `launcher.getRequestHandler()` into their own listener.
+- `McpServerLauncher` (Node) binds a Hono listener and announces the loopback URL.
+- `WebMcpServerLauncher` (browser / web-runtime) returns no transport endpoint; the adopter wires `launcher.getRequestHandler()` into their own listener.
 
 For the browser/Web-Worker case where the GLSP client and the MCP server share a tab, `McpWorkerBridge` (in `@eclipse-glsp/server-mcp/browser`) plumbs Service-Worker→Web-Worker `MessageChannel` traffic into the launcher. The matching page-side proxy — a Service Worker that intercepts `fetch('/mcp', …)` and forwards each `Request` over a `MessageChannel` — is host-side scaffolding that adopters own. The browser demo at `examples/workflow-server-mcp-demo/` is the canonical end-to-end reference, including a working `mcp-service-worker.js`.
 
@@ -231,9 +231,9 @@ The MCP server runs **inside each GLSP server** (which is per connecting app, no
 
 ### Single-process scenarios (the common case)
 
--   **Standalone**: `node app.js` → one GLSP process, one MCP server.
--   **VS Code per-window**: each VS Code window spawns its own GLSP process. Within a window, all diagrams share that process. No port conflict.
--   **Theia per-frontend**: each Theia frontend has its own GLSP process; same shape.
+- **Standalone**: `node app.js` → one GLSP process, one MCP server.
+- **VS Code per-window**: each VS Code window spawns its own GLSP process. Within a window, all diagrams share that process. No port conflict.
+- **Theia per-frontend**: each Theia frontend has its own GLSP process; same shape.
 
 ### Multi-process: not auto-supported
 
@@ -241,25 +241,25 @@ If two GLSP processes start on the same machine at the same time and both reques
 
 A few alternatives were considered and rejected:
 
--   **Discovery files + standalone aggregator daemon.** Adds a long-lived companion process and a new shipping artifact with its own versioning, lifecycle, and security model — substantial cost for a use case (multi-window-on-one-machine) that's rare in practice.
--   **Shared launcher process across applications.** Would require IDE integrations (e.g. the GLSP VS Code integration) to detect-or-spawn rather than always-spawn their GLSP child process. The detect-or-spawn pattern doesn't exist in the upstream integrations today, so this is conditional on prior work landing there.
--   **In-process multi-application MCP.** Re-binding the MCP launcher above the per-`GLSPServer` containers so one process could host multiple applications behind one MCP server. Doesn't apply under the current per-window-process deployment, which yields one `GLSPServer` per process — there's nothing to multiplex inside the process. Only meaningful as a follow-up to shared-launcher mode.
+- **Discovery files + standalone aggregator daemon.** Adds a long-lived companion process and a new shipping artifact with its own versioning, lifecycle, and security model — substantial cost for a use case (multi-window-on-one-machine) that's rare in practice.
+- **Shared launcher process across applications.** Would require IDE integrations (e.g. the GLSP VS Code integration) to detect-or-spawn rather than always-spawn their GLSP child process. The detect-or-spawn pattern doesn't exist in the upstream integrations today, so this is conditional on prior work landing there.
+- **In-process multi-application MCP.** Re-binding the MCP launcher above the per-`GLSPServer` containers so one process could host multiple applications behind one MCP server. Doesn't apply under the current per-window-process deployment, which yields one `GLSPServer` per process — there's nothing to multiplex inside the process. Only meaningful as a follow-up to shared-launcher mode.
 
 ### Choosing a port: random vs. fixed
 
 Both the GLSP server itself and this MCP server default to **random port allocation** (`port: 0`). The chosen port is announced via the resolved `InitializeResult.mcpServer.url` and the stdout `[GLSP-MCP-Server]:Ready.` marker.
 
--   **Random (default)** is correct when the IDE integration consumes the resolved URL programmatically (e.g., reads the stdout marker and registers the URL with its native MCP infrastructure). It avoids `EADDRINUSE` entirely.
--   **Fixed** is correct when an external MCP client (Claude Desktop, web client, etc.) is configured statically with the URL. The adopter pins `port` per init call so the URL is stable across restarts.
+- **Random (default)** is correct when the IDE integration consumes the resolved URL programmatically (e.g., reads the stdout marker and registers the URL with its native MCP infrastructure). It avoids `EADDRINUSE` entirely.
+- **Fixed** is correct when an external MCP client (Claude Desktop, web client, etc.) is configured statically with the URL. The adopter pins `port` per init call so the URL is stable across restarts.
 
 ### Connecting MCP clients
 
 Two paths, depending on the client class:
 
--   **IDE-internal MCP clients** (VS Code Copilot chat, Theia AI, etc.) consume the resolved URL programmatically — the GLSP IDE integration reads it from `InitializeResult.mcpServer` (or, on the spawn side, the `MCP_SERVER_READY_MSG` stdout marker) and registers it with the host IDE's native MCP infrastructure:
-    -   **Theia**: `@eclipse-glsp/theia-mcp-integration` ships a `FrontendApplicationContribution` that auto-registers every GLSP server's MCP URL with `@theia/ai-mcp` on startup. No adopter wiring beyond installing the package.
-    -   **VS Code**: `@eclipse-glsp/vscode-integration` exposes a `GlspMcpServerProvider` (a `vscode.McpServerDefinitionProvider` implementation). Adopters declare an `mcpServerDefinitionProviders` contribution in their extension's `package.json`, register the provider via `vscode.lm.registerMcpServerDefinitionProvider`, and feed it the GLSP `InitializeResult` via `addServer(...)`. See `example/workflow/extension/src/workflow-extension.ts` in the integration repo for the canonical wiring.
--   **External MCP clients** (Claude Desktop, web clients, etc.) are configured separately by the user with a stable URL. For these, pick a fixed port and document it in the adopter's setup guide.
+- **IDE-internal MCP clients** (VS Code Copilot chat, Theia AI, etc.) consume the resolved URL programmatically — the GLSP IDE integration reads it from `InitializeResult.mcpServer` (or, on the spawn side, the `MCP_SERVER_READY_MSG` stdout marker) and registers it with the host IDE's native MCP infrastructure:
+    - **Theia**: `@eclipse-glsp/theia-mcp-integration` ships a `FrontendApplicationContribution` that auto-registers every GLSP server's MCP URL with `@theia/ai-mcp` on startup. No adopter wiring beyond installing the package.
+    - **VS Code**: `@eclipse-glsp/vscode-integration` exposes a `GlspMcpServerProvider` (a `vscode.McpServerDefinitionProvider` implementation). Adopters declare an `mcpServerDefinitionProviders` contribution in their extension's `package.json`, register the provider via `vscode.lm.registerMcpServerDefinitionProvider`, and feed it the GLSP `InitializeResult` via `addServer(...)`. See `example/workflow/extension/src/workflow-extension.ts` in the integration repo for the canonical wiring.
+- **External MCP clients** (Claude Desktop, web clients, etc.) are configured separately by the user with a stable URL. For these, pick a fixed port and document it in the adopter's setup guide.
 
 ---
 
@@ -267,8 +267,8 @@ Two paths, depending on the client class:
 
 `options.dataMode` controls how data handlers are surfaced. Two values:
 
--   `'tools'` (default) — handlers register as MCP tools. Most in-the-wild MCP clients support tools more reliably than resources, so this is the safer default.
--   `'resources'` — handlers register as URI-addressable resources (the spec-aligned form). Use this when the client is known to handle resources well.
+- `'tools'` (default) — handlers register as MCP tools. Most in-the-wild MCP clients support tools more reliably than resources, so this is the safer default.
+- `'resources'` — handlers register as URI-addressable resources (the spec-aligned form). Use this when the client is known to handle resources well.
 
 Handlers that don't represent URI-addressable data (text-only reads, all write tools) are always plain tools regardless of `dataMode`.
 
@@ -332,9 +332,9 @@ class MyMcpServerModule extends DefaultMcpServerModule {
 
 The same pattern carries over to the other handler kinds:
 
--   **Operation tools** dispatch a GLSP `Operation` from `createResult` and inherit a read-only-mode gate. Set `override readonly destructiveHint = true;` for irreversible operations so MCP clients can warn before invocation. A `requestAction(action, timeoutMs)` helper wraps `RequestAction` round-trips with consistent timeout/error handling.
--   **Resources** declare `mimeType` + `uri` (string or templated `{ template: 'glsp://…' }`); the per-session base ships sensible defaults for `list()` and `complete()` covering the common single-resource-per-session case. Setting `toolAlternativeInputSchema` opts the resource into the tool fallback used in `dataMode: 'tools'`.
--   **Prompts** declare `argsSchema` and return `messages` from `createResult`.
+- **Operation tools** dispatch a GLSP `Operation` from `createResult` and inherit a read-only-mode gate. Set `override readonly destructiveHint = true;` for irreversible operations so MCP clients can warn before invocation. A `requestAction(action, timeoutMs)` helper wraps `RequestAction` round-trips with consistent timeout/error handling.
+- **Resources** declare `mimeType` + `uri` (string or templated `{ template: 'glsp://…' }`); the per-session base ships sensible defaults for `list()` and `complete()` covering the common single-resource-per-session case. Setting `toolAlternativeInputSchema` opts the resource into the tool fallback used in `dataMode: 'tools'`.
+- **Prompts** declare `argsSchema` and return `messages` from `createResult`.
 
 For **single-instance services** (model serializer, alias service, …), override the matching `bind*` hook on your module subclass and return the replacement class. For **multi-binding handlers**, use `binding.rebind(StandardHandler, MyHandler)` inside the relevant `configure*Handlers` hook.
 

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2024 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -22,9 +22,9 @@ import {
     JsonPrimitive,
     MaybeArray,
     Point,
-    flatPush
+    flatPush,
+    generateUuid
 } from '@eclipse-glsp/protocol';
-import * as uuid from 'uuid';
 
 export type GModelElementConstructor<G extends GModelElement = GModelElement> = new () => G;
 
@@ -93,7 +93,7 @@ export abstract class GModelElementBuilder<G extends GModelElement> {
         this.proxy = new elementConstructor();
         this.proxy.cssClasses = [];
         this.proxy.children = [];
-        this.proxy.id = uuid.v4();
+        this.proxy.id = generateUuid();
     }
 
     reset(): this {

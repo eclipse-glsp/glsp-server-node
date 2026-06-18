@@ -16,11 +16,11 @@
   "scripts": {
     "build": "node esbuild.js",
     "clean": "rimraf dist",
-    "prestart": "node ./scripts/prepare-dist.mjs && yarn build",
+    "prestart": "node ./scripts/prepare-dist.mjs && pnpm build",
     "start": "npx -y serve -l 8000 ./dist"
   },
   "dependencies": {
-    "@eclipse-glsp-examples/workflow-server-bundled-web": "2.8.0-next"
+    "@eclipse-glsp-examples/workflow-server-bundled-web": "workspace:*"
   },
   "devDependencies": {
     "esbuild": "~0.28.0",

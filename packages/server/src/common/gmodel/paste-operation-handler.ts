@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,9 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GBoundsAware, GEdge, GModelElement, isGBoundsAware } from '@eclipse-glsp/graph';
-import { EditorContext, GModelElementSchema, MaybePromise, PasteOperation, Point } from '@eclipse-glsp/protocol';
+import { EditorContext, GModelElementSchema, MaybePromise, PasteOperation, Point, generateUuid } from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
-import * as uuid from 'uuid';
 import { Command } from '../command/command';
 import { GModelSerializer } from '../features/model/gmodel-serializer';
 import { GModelOperationHandler } from './gmodel-operation-handler';
@@ -67,22 +66,23 @@ export class GModelPasteOperationHandler extends GModelOperationHandler {
 
     protected getReferenceElementForPasteOffset(elements: GModelElement[]): GBoundsAware | undefined {
         let minY = Number.MAX_VALUE;
+        let referenceElement: GBoundsAware | undefined;
         for (const element of elements) {
             if (isGBoundsAware(element)) {
                 const position = element.position ?? Point.ORIGIN;
                 if (minY > position.y) {
                     minY = position.y;
-                    return element;
+                    referenceElement = element;
                 }
             }
         }
-        return undefined;
+        return referenceElement;
     }
 
     protected reassignIds(elements: GModelElement[]): Map<string, string> {
         const idMap = new Map<string, string>();
         elements.forEach(element => {
-            const newId = uuid.v4();
+            const newId = generateUuid();
             idMap.set(element.id, newId);
             element.id = newId;
             const childMap = this.reassignIds(element.children);

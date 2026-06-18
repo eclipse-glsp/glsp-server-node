@@ -14,8 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { GModelElement } from '@eclipse-glsp/graph';
-import { Dimension, GModelSerializer, Logger, Point } from '@eclipse-glsp/server';
+import { Dimension, GModelElement, GModelSerializer, Logger, Point } from '@eclipse-glsp/server';
 import { inject, injectable, postConstruct } from 'inversify';
 import { McpStructuredContent } from '../../server/mcp-handler-shared';
 import { McpIdAliasService } from '../../server/mcp-id-alias-service';

@@ -14,16 +14,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { McpServerOptions as McpServerOptionsType } from '@eclipse-glsp/protocol';
-import { BindingContext } from '@eclipse-glsp/protocol/lib/di';
 import {
     AbstractMultiBinding,
     applyBindingTarget,
+    BindingContext,
     BindingTarget,
     GLSPModule,
     GLSPServerInitializer,
     GLSPServerListener,
-    Logger
+    Logger,
+    McpServerOptions as McpServerOptionsType
 } from '@eclipse-glsp/server';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { interfaces } from 'inversify';

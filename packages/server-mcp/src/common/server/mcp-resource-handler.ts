@@ -379,7 +379,7 @@ export abstract class AbstractMcpDiagramResourceHandler<
 export function toParams(variables: Variables): Record<string, string> {
     const out: Record<string, string> = {};
     for (const [key, value] of Object.entries(variables)) {
-        out[key] = Array.isArray(value) ? value[0] ?? '' : value;
+        out[key] = Array.isArray(value) ? (value[0] ?? '') : value;
     }
     return out;
 }

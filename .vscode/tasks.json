@@ -7,7 +7,7 @@
       "label": "Build glsp-server packages",
       "type": "shell",
       "group": "build",
-      "command": "yarn",
+      "command": "pnpm",
       "presentation": {
         "reveal": "always",
         "panel": "new"
@@ -15,21 +15,10 @@
       "problemMatcher": ["$tsc", "$eslint-stylish"]
     },
     {
-      "label": "Watch glsp-server packages",
-      "type": "shell",
-      "group": "build",
-      "command": "yarn watch",
-      "presentation": {
-        "reveal": "always",
-        "panel": "new"
-      },
-      "problemMatcher": ["$tsc-watch"]
-    },
-    {
       "label": "Start Example GLSP server (dev, hot reload)",
       "type": "shell",
       "group": "none",
-      "command": "yarn dev",
+      "command": "pnpm dev",
       "presentation": {
         "reveal": "always",
         "panel": "dedicated"
@@ -40,7 +29,7 @@
       "label": "Execute all glsp-server tests",
       "type": "shell",
       "group": "test",
-      "command": "yarn test",
+      "command": "pnpm test",
       "presentation": {
         "reveal": "always",
         "panel": "dedicated"
@@ -51,7 +40,7 @@
       "label": "Start Example GLSP server",
       "type": "shell",
       "group": "none",
-      "command": "yarn start",
+      "command": "pnpm start",
       "presentation": {
         "reveal": "always",
         "panel": "dedicated"
