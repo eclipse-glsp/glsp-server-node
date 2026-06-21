@@ -42,17 +42,17 @@
     "browser.js",
     "browser.d.ts",
     "common.js",
-    "common.d.ts"
+    "common.d.ts",
+    "!**/*.spec.ts",
+    "!**/*.spec.tsx",
+    "!**/test/**"
   ],
   "scripts": {
     "build": "tsc -b",
-    "clean": "rimraf lib *.tsbuildinfo coverage .nyc_output",
+    "clean": "rimraf lib *.tsbuildinfo coverage",
     "generate:index": "glsp generateIndex src/browser src/common src/node -f -s",
     "lint": "eslint --ext .ts,.tsx ./src",
-    "prepublishOnly": "pnpm build",
-    "test": "mocha --config ../../.mocharc \"./src/**/*.spec.?(ts|tsx)\"",
-    "test:ci": "pnpm test --reporter mocha-ctrf-json-reporter",
-    "test:coverage": "nyc pnpm test"
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "@eclipse-glsp/server": "workspace:*",

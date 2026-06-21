@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -15,60 +15,84 @@
  ********************************************************************************/
 
 import { GLSPServer } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Container } from 'inversify';
 import * as net from 'net';
-import * as sinon from 'sinon';
-import { DefaultGLSPServer } from '../../common/protocol/glsp-server';
 import { createAppModule } from '../di/app-module';
 import { defaultSocketLaunchOptions } from './socket-cli-parser';
 import { SocketServerLauncher } from './socket-server-launcher';
-const severPort = 5008;
-describe('test SocketServerLauncher', () => {
-    it('starts and stops', async () => {
-        const appContainer = new Container();
-        const serverStub = sinon.createStubInstance(DefaultGLSPServer);
-        appContainer.load(createAppModule(defaultSocketLaunchOptions));
 
+const serverPort = 5008;
+
+function delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Resolves whether a TCP connection to the given port is currently accepted.
+ *
+ * The outcome is routed through the returned promise rather than asserted inside the socket event
+ * callbacks on purpose: an assertion thrown from a detached socket listener escapes the test's
+ * promise chain and surfaces as a Vitest "unhandled error" that fails the run *without* turning any
+ * individual test red. Resolving/rejecting keeps every outcome attributable to this test.
+ */
+function isReachable(port: number): Promise<boolean> {
+    return new Promise(resolve => {
+        const socket = new net.Socket();
+        socket.setTimeout(1000);
+        const finish = (reachable: boolean): void => {
+            socket.destroy();
+            resolve(reachable);
+        };
+        socket
+            .on('connect', () => finish(true))
+            .on('error', () => finish(false))
+            .on('timeout', () => finish(false))
+            .connect(port);
+    });
+}
+
+/** Polls until the port reaches the expected reachability, or fails the test once the deadline elapses. */
+async function waitForReachable(port: number, expected: boolean, deadlineMs = 5000): Promise<void> {
+    const start = Date.now();
+    while (Date.now() - start < deadlineMs) {
+        if ((await isReachable(port)) === expected) {
+            return;
+        }
+
+        await delay(50);
+    }
+    expect.fail(`Port ${port} did not become ${expected ? 'reachable' : 'unreachable'} within ${deadlineMs}ms`);
+}
+
+describe('test SocketServerLauncher', () => {
+    let launcher: SocketServerLauncher | undefined;
+
+    afterEach(() => {
+        launcher?.shutdown();
+        launcher = undefined;
+    });
+
+    it('starts and stops', async () => {
+        const serverStub = {
+            initialize: vi.fn().mockResolvedValue({}),
+            initializeClientSession: vi.fn().mockResolvedValue(undefined),
+            disposeClientSession: vi.fn().mockResolvedValue(undefined),
+            process: vi.fn(),
+            shutdown: vi.fn(),
+            addListener: vi.fn().mockReturnValue(true),
+            removeListener: vi.fn().mockReturnValue(true)
+        } as unknown as GLSPServer;
+
+        const appContainer = new Container();
+        appContainer.load(createAppModule(defaultSocketLaunchOptions));
         appContainer.bind(GLSPServer).toConstantValue(serverStub);
-        const launcher = appContainer.resolve(SocketServerLauncher);
-        launcher.start({ port: severPort });
-        const sockStart = new net.Socket();
-        sockStart.setTimeout(100);
-        const startPromise = new Promise(res => {
-            sockStart
-                .on('connect', () => {
-                    expect(true);
-                    sockStart.destroy();
-                    res(true);
-                })
-                .on('error', e => {
-                    expect.fail('Server is not reachable: ' + e.message);
-                })
-                .on('timeout', () => {
-                    expect.fail('Connection time outed.');
-                })
-                .connect(severPort);
-        });
-        await startPromise;
+        launcher = appContainer.resolve(SocketServerLauncher);
+
+        launcher.start({ port: serverPort });
+        await waitForReachable(serverPort, true);
+
         launcher.shutdown();
-        const sockStop = new net.Socket();
-        sockStop.setTimeout(100);
-        const stopPromise = new Promise(res => {
-            sockStop
-                .on('connect', () => {
-                    expect.fail('Server still reachable.');
-                })
-                .on('error', () => {
-                    expect(true);
-                    sockStop.destroy();
-                    res(true);
-                })
-                .on('timeout', () => {
-                    expect.fail('Connection time outed.');
-                })
-                .connect(severPort);
-        });
-        await stopPromise;
+        await waitForReachable(serverPort, false);
     });
 });

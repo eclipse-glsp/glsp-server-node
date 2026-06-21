@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import * as path from 'path';
 import { LogLevel } from '../../common/utils/logger';
 import { createCliParser, defaultLaunchOptions } from './cli-parser';
@@ -26,11 +26,11 @@ describe('test createCliParser', () => {
 
     it('parse - no args', () => {
         const options = parser.parse(argv);
-        expect(options).to.deep.equal(defaultLaunchOptions);
+        expect(options).toEqual(defaultLaunchOptions);
     });
 
     it('parse - invalid log dir', () => {
-        expect(() => parser.parse([...argv, '--logDir', 'invalid.Path'])).to.throw();
+        expect(() => parser.parse([...argv, '--logDir', 'invalid.Path'])).toThrow();
     });
 
     it('parse - valid log dir', () => {
@@ -40,12 +40,12 @@ describe('test createCliParser', () => {
     });
 
     it('parse - invalid logLevel', () => {
-        expect(() => parser.parse([...argv, '--logLevel', 'someRandomLevel'])).to.throw();
+        expect(() => parser.parse([...argv, '--logLevel', 'someRandomLevel'])).toThrow();
     });
 
     it('parse - valid logLevel', () => {
         const result = parser.parse([...argv, '--logLevel', 'error']);
-        expect(result.logLevel).to.be.equal(LogLevel.error);
+        expect(result.logLevel).toBe(LogLevel.error);
     });
 
     it('parse- no args with custom default options', () => {
@@ -56,6 +56,6 @@ describe('test createCliParser', () => {
             fileLog: true
         };
         const result = createCliParser(options).parse(argv);
-        expect(result).to.deep.equal(options);
+        expect(result).toEqual(options);
     });
 });

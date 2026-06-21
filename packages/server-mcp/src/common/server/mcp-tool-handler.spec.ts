@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import * as z from 'zod/v4';
 import { McpToolResult } from './mcp-handler-shared';
 import { CreateEdgesMcpToolHandler, CreateEdgesOutputSchema } from '../tools/handlers/create-edges-mcp-tool-handler';
@@ -63,28 +63,28 @@ class WithOutputSchemaHandler extends AbstractMcpToolHandler {
 describe('Dual-emit framework', () => {
     it('success(message) without structured payload omits structuredContent', () => {
         const result = new WithoutOutputSchemaHandler().testSuccess('hi');
-        expect(result.content).to.deep.equal([{ type: 'text', text: 'hi' }]);
-        expect(result.structuredContent).to.equal(undefined);
-        expect(result.isError).to.equal(false);
+        expect(result.content).toEqual([{ type: 'text', text: 'hi' }]);
+        expect(result.structuredContent).toBe(undefined);
+        expect(result.isError).toBe(false);
     });
 
     it('success(message, structured) emits structuredContent', () => {
         const result = new WithoutOutputSchemaHandler().testSuccess('hi', { count: 3, ids: ['a'] });
-        expect(result.content).to.deep.equal([{ type: 'text', text: 'hi' }]);
-        expect(result.structuredContent).to.deep.equal({ count: 3, ids: ['a'] });
+        expect(result.content).toEqual([{ type: 'text', text: 'hi' }]);
+        expect(result.structuredContent).toEqual({ count: 3, ids: ['a'] });
     });
 
     it('toRegistrationConfig() omits outputSchema when not declared', () => {
         const config = new WithoutOutputSchemaHandler().toRegistrationConfig();
-        expect(config.outputSchema).to.equal(undefined);
+        expect(config.outputSchema).toBe(undefined);
     });
 
     it('toRegistrationConfig() forwards outputSchema when declared', () => {
         const config = new WithOutputSchemaHandler().toRegistrationConfig();
-        expect(config.outputSchema).to.not.equal(undefined);
+        expect(config.outputSchema).not.toBe(undefined);
         // The SDK accepts a full `ZodObject` (or its raw shape); we pass the wrapped object so
         // strict-mode rejection of unknown keys can extend uniformly to outputs.
-        expect(Object.keys(config.outputSchema!.shape)).to.deep.equal(['ok']);
+        expect(Object.keys(config.outputSchema!.shape)).toEqual(['ok']);
     });
 });
 
@@ -171,11 +171,11 @@ describe('Tool output schemas · per-handler matrix', () => {
     matrix.forEach(({ name, Constructor, schema, sample }) => {
         describe(name, () => {
             it('declares outputSchema referencing the exported schema constant', () => {
-                expect(new Constructor().outputSchema).to.equal(schema);
+                expect(new Constructor().outputSchema).toBe(schema);
             });
 
             it('schema accepts a representative structured payload', () => {
-                expect(() => schema.parse(sample)).to.not.throw();
+                expect(() => schema.parse(sample)).not.toThrow();
             });
         });
     });

@@ -5,61 +5,61 @@
       "name": "Run current test file",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/node_modules/.bin/mocha",
-      "args": ["--config", "${workspaceFolder}/.mocharc", "${relativeFile}"],
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "${relativeFile}"],
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**"],
+      "smartStep": true,
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "env": {
-        "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json"
-      }
+      "internalConsoleOptions": "neverOpen"
     },
     {
-      "name": "Run server-node tests",
+      "name": "Run server tests",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/node_modules/.bin/mocha",
-      "args": [
-        "--config",
-        "${workspaceFolder}/.mocharc",
-        "${workspaceFolder}/packages/server/src/**/*.spec.ts"
-      ],
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "packages/server/src"],
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**"],
+      "smartStep": true,
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "env": {
-        "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json"
-      }
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Run server-mcp tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "packages/server-mcp/src"],
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**"],
+      "smartStep": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     },
     {
       "name": "Run graph tests",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/node_modules/.bin/mocha",
-      "args": [
-        "--config",
-        "${workspaceFolder}/.mocharc",
-        "${workspaceFolder}/packages/graph/src/**/*.spec.ts"
-      ],
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "packages/graph/src"],
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**"],
+      "smartStep": true,
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "env": {
-        "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json"
-      }
+      "internalConsoleOptions": "neverOpen"
     },
     {
       "name": "Run layout-elk tests",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/node_modules/.bin/mocha",
-      "args": [
-        "--config",
-        "${workspaceRoot}/.mocharc",
-        "${workspaceRoot}/packages/layout-elk/src/**/*.spec.ts"
-      ],
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "packages/layout-elk/src"],
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**"],
+      "smartStep": true,
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "env": {
-        "TS_NODE_PROJECT": "${workspaceFolder}/tsconfig.json"
-      }
+      "internalConsoleOptions": "neverOpen"
     },
     {
       "type": "node",

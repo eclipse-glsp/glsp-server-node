@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { expect } from 'chai';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { NullLogger } from './logger';
 import { MultiRegistry, Registry } from './registry';
 
@@ -92,7 +92,7 @@ describe('Test Registry', () => {
         registry.register(e3.key, e3.value);
         // Test execution
         const result = registry.getAll();
-        expect(result).to.have.length(3);
+        expect(result).toHaveLength(3);
         expect(result.includes(e1.value)).true;
         expect(result.includes(e2.value)).true;
         expect(result.includes(e3.value)).true;
@@ -108,7 +108,7 @@ describe('Test Registry', () => {
         registry.register(e3.key, e3.value);
         // Test execution
         const result = registry.keys();
-        expect(result).to.have.length(3);
+        expect(result).toHaveLength(3);
         expect(result.includes(e1.key)).true;
         expect(result.includes(e2.key)).true;
         expect(result.includes(e3.key)).true;
@@ -131,8 +131,8 @@ describe('Test MapMultiRegistry', () => {
         multiRegistry.register(e2.key, e2.value);
 
         const resultValue = multiRegistry.get(e1.key);
-        expect(resultValue).to.not.be.undefined;
-        expect(resultValue!.length).to.be.equal(2);
+        expect(resultValue).toBeDefined();
+        expect(resultValue!.length).toBe(2);
         expect(resultValue!.includes(e1.value)).true;
         expect(resultValue!.includes(e2.value)).true;
     });
@@ -146,7 +146,7 @@ describe('Test MapMultiRegistry', () => {
         // Test execution
         expect(multiRegistry.deregister(key, existingValue[1])).true;
         const result = multiRegistry.get(key);
-        expect(result.length).to.be.equal(1);
+        expect(result.length).toBe(1);
         expect(result[0], existingValue[0]);
     });
 
@@ -161,7 +161,7 @@ describe('Test MapMultiRegistry', () => {
         multiRegistry.register(key, existingValue[0]);
         multiRegistry.register(key, existingValue[1]);
         expect(multiRegistry.deregisterAll(key)).true;
-        expect(multiRegistry.get(key)).to.have.length(0);
+        expect(multiRegistry.get(key)).toHaveLength(0);
     });
 
     it('deregisterAll - with unregistered key', () => {
@@ -187,12 +187,12 @@ describe('Test MapMultiRegistry', () => {
         const existingValue = 'value';
         multiRegistry.register(key, existingValue);
         // Test execution
-        expect(multiRegistry.get(key).length).to.be.equal(1);
+        expect(multiRegistry.get(key).length).toBe(1);
         expect(multiRegistry.get(key).includes(existingValue)).true;
     });
 
     it('get - with unregistered key', () => {
-        expect(multiRegistry.get('unregisteredKey')).to.have.length(0);
+        expect(multiRegistry.get('unregisteredKey')).toHaveLength(0);
     });
 
     it('getAll', () => {
@@ -204,7 +204,7 @@ describe('Test MapMultiRegistry', () => {
         multiRegistry.register(e2.key, e2.value[0]);
         // Test execution
         const result = multiRegistry.getAll();
-        expect(result).to.have.length(3);
+        expect(result).toHaveLength(3);
         expect(e1.value.every(v => result.includes(v))).true;
         expect(e2.value.every(v => result.includes(v))).true;
     });
@@ -218,7 +218,7 @@ describe('Test MapMultiRegistry', () => {
         multiRegistry.register(e2.key, e2.value[0]);
         // Test execution
         const result = multiRegistry.keys();
-        expect(result.length).to.be.equal(2);
+        expect(result.length).toBe(2);
         expect(result.includes(e1.key)).true;
         expect(result.includes(e2.key)).true;
     });

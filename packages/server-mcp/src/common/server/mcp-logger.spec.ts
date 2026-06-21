@@ -16,7 +16,7 @@
 
 import { Logger, NullLogger } from '@eclipse-glsp/server';
 import { ServerNotification } from '@modelcontextprotocol/sdk/types.js';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { DefaultMcpLogLevelRegistry, McpLogLevelRegistry } from './mcp-log-level-registry';
 import { McpLogger } from './mcp-logger';
@@ -91,7 +91,7 @@ describe('McpLogger', () => {
             logger.error('boom');
             logger.debug('trace');
 
-            expect(glspLogger.entries).to.deep.equal([
+            expect(glspLogger.entries).toEqual([
                 { level: 'info', message: 'hello' },
                 { level: 'warn', message: 'careful' },
                 { level: 'error', message: 'boom' },
@@ -114,14 +114,14 @@ describe('McpLogger', () => {
                 await new Promise(resolve => setImmediate(resolve));
             });
 
-            expect(glspLogger.entries.map(e => e.message)).to.deep.equal(['one', 'two', 'three', 'four']);
+            expect(glspLogger.entries.map(e => e.message)).toEqual(['one', 'two', 'three', 'four']);
             expect(
                 sent.map(n => ({
                     method: n.method,
                     level: (n.params as { level: string }).level,
                     data: (n.params as { data: string }).data
                 }))
-            ).to.deep.equal([
+            ).toEqual([
                 { method: 'notifications/message', level: 'info', data: 'one' },
                 { method: 'notifications/message', level: 'warning', data: 'two' }, // GLSP warn → MCP warning
                 { method: 'notifications/message', level: 'error', data: 'three' },
@@ -138,12 +138,12 @@ describe('McpLogger', () => {
             } as unknown as McpRequestExtra;
 
             await requestContext.run(failingExtra, async () => {
-                expect(() => logger.error('still works')).to.not.throw();
+                expect(() => logger.error('still works')).not.toThrow();
                 await new Promise(resolve => setImmediate(resolve));
             });
 
             // Server-side log still fired.
-            expect(glspLogger.entries).to.deep.equal([{ level: 'error', message: 'still works' }]);
+            expect(glspLogger.entries).toEqual([{ level: 'error', message: 'still works' }]);
         });
     });
 
@@ -166,8 +166,8 @@ describe('McpLogger', () => {
                 })
             ]);
 
-            expect(sentA.map(n => (n.params as { data: string }).data)).to.deep.equal(['A', 'A-after-yield']);
-            expect(sentB.map(n => (n.params as { data: string }).data)).to.deep.equal(['B', 'B-after-yield']);
+            expect(sentA.map(n => (n.params as { data: string }).data)).toEqual(['A', 'A-after-yield']);
+            expect(sentB.map(n => (n.params as { data: string }).data)).toEqual(['B', 'B-after-yield']);
         });
     });
 
@@ -187,9 +187,9 @@ describe('McpLogger', () => {
             });
 
             // GLSP-side log path is independent of the MCP threshold — keeps adopter logs intact.
-            expect(glspLogger.entries.map(entry => entry.message)).to.deep.equal(['chatty', 'verbose', 'important', 'critical']);
+            expect(glspLogger.entries.map(entry => entry.message)).toEqual(['chatty', 'verbose', 'important', 'critical']);
             // MCP side: only warn + error survive.
-            expect(sent.map(n => (n.params as { level: string }).level)).to.deep.equal(['warning', 'error']);
+            expect(sent.map(n => (n.params as { level: string }).level)).toEqual(['warning', 'error']);
         });
 
         it('isolates thresholds across sessions (different setLevel per session id)', async () => {
@@ -212,8 +212,8 @@ describe('McpLogger', () => {
                 })
             ]);
 
-            expect(sentA.map(n => (n.params as { data: string }).data)).to.deep.equal(['A-error']);
-            expect(sentB.map(n => (n.params as { data: string }).data).sort()).to.deep.equal(['B-error', 'B-info']);
+            expect(sentA.map(n => (n.params as { data: string }).data)).toEqual(['A-error']);
+            expect(sentB.map(n => (n.params as { data: string }).data).sort()).toEqual(['B-error', 'B-info']);
         });
 
         it('default threshold (no setLevel sent) lets every level through (preserves prior behavior)', async () => {
@@ -229,7 +229,7 @@ describe('McpLogger', () => {
                 await new Promise(resolve => setImmediate(resolve));
             });
 
-            expect(sent.map(n => (n.params as { level: string }).level)).to.deep.equal(['debug', 'info', 'warning', 'error']);
+            expect(sent.map(n => (n.params as { level: string }).level)).toEqual(['debug', 'info', 'warning', 'error']);
         });
     });
 });

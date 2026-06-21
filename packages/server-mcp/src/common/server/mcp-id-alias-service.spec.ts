@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { DefaultMcpIdAliasService, NullMcpIdAliasService } from './mcp-id-alias-service';
 
 describe('DefaultMcpIdAliasService', () => {
@@ -25,18 +25,18 @@ describe('DefaultMcpIdAliasService', () => {
         const aliasA2 = service.alias('uuid-a');
         const aliasB = service.alias('uuid-b');
 
-        expect(aliasA).to.equal(aliasA2);
-        expect(aliasA).to.not.equal(aliasB);
+        expect(aliasA).toBe(aliasA2);
+        expect(aliasA).not.toBe(aliasB);
         // Aliases are integer strings, starting at "1".
-        expect(aliasA).to.match(/^\d+$/);
-        expect(aliasB).to.match(/^\d+$/);
+        expect(aliasA).toMatch(/^\d+$/);
+        expect(aliasB).toMatch(/^\d+$/);
     });
 
     it('lookup(alias) returns the original id (round-trip)', () => {
         const service = new DefaultMcpIdAliasService();
 
         const alias = service.alias('uuid-foo');
-        expect(service.lookup(alias)).to.equal('uuid-foo');
+        expect(service.lookup(alias)).toBe('uuid-foo');
     });
 
     it('lookup(unknown) returns the input verbatim (best-effort fallback)', () => {
@@ -44,7 +44,7 @@ describe('DefaultMcpIdAliasService', () => {
 
         // Unknown ids may come from manual user input, copy-paste, or earlier server-side
         // state. The service passes them through; downstream existence checks decide.
-        expect(service.lookup('never-issued')).to.equal('never-issued');
+        expect(service.lookup('never-issued')).toBe('never-issued');
     });
 
     it('skips alias candidates that collide with a known real id (no shadowing)', () => {
@@ -57,18 +57,18 @@ describe('DefaultMcpIdAliasService', () => {
         const aliasOf1 = service.alias('1');
         const aliasOfX = service.alias('uuid-other');
 
-        expect(aliasOf1).to.not.equal('1');
-        expect(aliasOfX).to.not.equal('1');
-        expect(service.lookup('1')).to.equal('1');
-        expect(service.lookup(aliasOf1)).to.equal('1');
-        expect(service.lookup(aliasOfX)).to.equal('uuid-other');
+        expect(aliasOf1).not.toBe('1');
+        expect(aliasOfX).not.toBe('1');
+        expect(service.lookup('1')).toBe('1');
+        expect(service.lookup(aliasOf1)).toBe('1');
+        expect(service.lookup(aliasOfX)).toBe('uuid-other');
 
         // Multiple pre-known real ids: every issued alias is outside the known-real set.
         const service2 = new DefaultMcpIdAliasService();
         const knownReals = ['1', '2', '3'];
         knownReals.forEach(id => service2.alias(id));
         const fresh = service2.alias('uuid-fresh');
-        expect(knownReals).to.not.include(fresh);
+        expect(knownReals).not.toContain(fresh);
     });
 
     it('keeps independent counters and maps across separate instances (per-session isolation)', () => {
@@ -81,17 +81,17 @@ describe('DefaultMcpIdAliasService', () => {
         const aliasB1 = sessionB.alias('uuid-z');
 
         // Counters are independent: B's first alias is "1", same as A's first.
-        expect(aliasA1).to.equal('1');
-        expect(aliasA2).to.equal('2');
-        expect(aliasB1).to.equal('1');
+        expect(aliasA1).toBe('1');
+        expect(aliasA2).toBe('2');
+        expect(aliasB1).toBe('1');
 
         // Bleed-isolation: alias "1" in B resolves to uuid-z, NOT to uuid-x (A's "1").
-        expect(sessionA.lookup('1')).to.equal('uuid-x');
-        expect(sessionB.lookup('1')).to.equal('uuid-z');
+        expect(sessionA.lookup('1')).toBe('uuid-x');
+        expect(sessionB.lookup('1')).toBe('uuid-z');
 
         // Unknown ids in either session fall through to the input verbatim.
-        expect(sessionA.lookup('3')).to.equal('3');
-        expect(sessionB.lookup('2')).to.equal('2');
+        expect(sessionA.lookup('3')).toBe('3');
+        expect(sessionB.lookup('2')).toBe('2');
     });
 });
 
@@ -99,8 +99,8 @@ describe('NullMcpIdAliasService', () => {
     it('alias and lookup return the argument unchanged', () => {
         const service = new NullMcpIdAliasService();
 
-        expect(service.alias('uuid-foo')).to.equal('uuid-foo');
-        expect(service.lookup('uuid-foo')).to.equal('uuid-foo');
-        expect(service.lookup('never-seen')).to.equal('never-seen');
+        expect(service.alias('uuid-foo')).toBe('uuid-foo');
+        expect(service.lookup('uuid-foo')).toBe('uuid-foo');
+        expect(service.lookup('never-seen')).toBe('never-seen');
     });
 });

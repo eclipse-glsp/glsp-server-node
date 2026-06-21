@@ -16,8 +16,7 @@
 
 import { NullLogger } from '@eclipse-glsp/server';
 import { McpServer, RegisteredResource } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { expect } from 'chai';
-import * as sinon from 'sinon';
+import { describe, expect, it, vi } from 'vitest';
 import * as z from 'zod/v4';
 import { DefaultGLSPMcpServer } from './glsp-mcp-server';
 
@@ -34,8 +33,8 @@ describe('DefaultGLSPMcpServer', () => {
         wrapper.registerTool('beta', { description: 'second' }, async () => ({ content: [] }));
 
         const names = wrapper.listTools().map(tool => tool.description);
-        expect(names).to.have.members(['first', 'second']);
-        expect(wrapper.listTools()).to.have.lengthOf(2);
+        expect([...names].sort()).toEqual(['first', 'second'].sort());
+        expect(wrapper.listTools()).toHaveLength(2);
     });
 
     it('tracks registerResource (static URI) and listResources reflects it by name', () => {
@@ -45,9 +44,9 @@ describe('DefaultGLSPMcpServer', () => {
         }));
 
         const resources = wrapper.listResources();
-        expect(resources).to.have.lengthOf(1);
-        expect((resources[0] as RegisteredResource).name).to.equal('my-resource');
-        expect((resources[0] as RegisteredResource).title).to.equal('res');
+        expect(resources).toHaveLength(1);
+        expect((resources[0] as RegisteredResource).name).toBe('my-resource');
+        expect((resources[0] as RegisteredResource).title).toBe('res');
     });
 
     it('tracks registerPrompt and listPrompts reflects it by description', () => {
@@ -55,19 +54,19 @@ describe('DefaultGLSPMcpServer', () => {
         wrapper.registerPrompt('describe', { description: 'desc' }, async () => ({ messages: [] }));
 
         const prompts = wrapper.listPrompts();
-        expect(prompts).to.have.lengthOf(1);
-        expect(prompts[0].description).to.equal('desc');
+        expect(prompts).toHaveLength(1);
+        expect(prompts[0].description).toBe('desc');
     });
 
     it('getRawServer() returns the exact SDK instance passed in (escape hatch identity)', () => {
         const { wrapper, sdk } = makeServer();
-        expect(wrapper.getRawServer()).to.equal(sdk);
+        expect(wrapper.getRawServer()).toBe(sdk);
     });
 
     it('dispose() invokes close() on the underlying SDK server', () => {
         const { wrapper, sdk } = makeServer();
-        const closeSpy = sinon.spy(sdk, 'close');
+        const closeSpy = vi.spyOn(sdk, 'close');
         wrapper.dispose();
-        expect(closeSpy.calledOnce).to.be.true;
+        expect(closeSpy).toHaveBeenCalledOnce();
     });
 });

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { CompoundOperation, CreateEdgeOperation, CreateNodeOperation } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import * as mock from '../test/mock-util';
 import { CompoundOperationHandler } from './compound-operation-handler';
 import { OperationHandlerRegistry } from './operation-handler-registry';
@@ -28,9 +28,9 @@ describe('Test OperationHandlerRegistry', () => {
 
     it('register OperationActionHandler', () => {
         operationHandlerRegistry.registerHandler(new CompoundOperationHandler());
-        expect(operationHandlerRegistry.keys()).to.have.length(1);
-        expect(operationHandlerRegistry.keys()).to.contain(CompoundOperation.KIND);
-        expect(operationHandlerRegistry.get(CompoundOperation.KIND)).to.be.an.instanceOf(CompoundOperationHandler);
+        expect(operationHandlerRegistry.keys()).toHaveLength(1);
+        expect(operationHandlerRegistry.keys()).toContain(CompoundOperation.KIND);
+        expect(operationHandlerRegistry.get(CompoundOperation.KIND)).toBeInstanceOf(CompoundOperationHandler);
     });
 
     it('register CreateOperationActionHandlers', () => {
@@ -38,13 +38,13 @@ describe('Test OperationHandlerRegistry', () => {
         operationHandlerRegistry.registerHandler(stubBNode);
         operationHandlerRegistry.registerHandler(stubAEdge);
         operationHandlerRegistry.registerHandler(stubBEdge);
-        expect(operationHandlerRegistry.keys()).to.contain(`${CreateNodeOperation.KIND}_ANode`);
-        expect(operationHandlerRegistry.get(`${CreateNodeOperation.KIND}_ANode`)).to.be.equal(stubANode);
-        expect(operationHandlerRegistry.keys()).to.contain(`${CreateNodeOperation.KIND}_BNode`);
-        expect(operationHandlerRegistry.get(`${CreateNodeOperation.KIND}_BNode`)).to.be.equal(stubBNode);
-        expect(operationHandlerRegistry.keys()).to.contain(`${CreateEdgeOperation.KIND}_AEdge`);
-        expect(operationHandlerRegistry.get(`${CreateEdgeOperation.KIND}_AEdge`)).to.be.equal(stubAEdge);
-        expect(operationHandlerRegistry.keys()).to.contain(`${CreateEdgeOperation.KIND}_BEdge`);
-        expect(operationHandlerRegistry.get(`${CreateEdgeOperation.KIND}_BEdge`)).to.be.equal(stubBEdge);
+        expect(operationHandlerRegistry.keys()).toContain(`${CreateNodeOperation.KIND}_ANode`);
+        expect(operationHandlerRegistry.get(`${CreateNodeOperation.KIND}_ANode`)).toBe(stubANode);
+        expect(operationHandlerRegistry.keys()).toContain(`${CreateNodeOperation.KIND}_BNode`);
+        expect(operationHandlerRegistry.get(`${CreateNodeOperation.KIND}_BNode`)).toBe(stubBNode);
+        expect(operationHandlerRegistry.keys()).toContain(`${CreateEdgeOperation.KIND}_AEdge`);
+        expect(operationHandlerRegistry.get(`${CreateEdgeOperation.KIND}_AEdge`)).toBe(stubAEdge);
+        expect(operationHandlerRegistry.keys()).toContain(`${CreateEdgeOperation.KIND}_BEdge`);
+        expect(operationHandlerRegistry.get(`${CreateEdgeOperation.KIND}_BEdge`)).toBe(stubBEdge);
     });
 });

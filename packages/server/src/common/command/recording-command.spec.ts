@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { AnyObject, MaybePromise } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { AbstractRecordingCommand } from './recording-command';
 
 interface TestModel {
@@ -54,9 +54,9 @@ describe('RecordingCommand', () => {
 
     it('should be undoable after execution', async () => {
         const command = new TestRecordingCommand(jsonObject, () => {});
-        expect(command.canUndo()).to.be.false;
+        expect(command.canUndo()).toBe(false);
         await command.execute();
-        expect(command.canUndo()).to.be.true;
+        expect(command.canUndo()).toBe(true);
     });
 
     it('should restore the pre execution state when undo is called', async () => {
@@ -66,9 +66,9 @@ describe('RecordingCommand', () => {
             jsonObject.maybe = { hello: 'world' };
         });
         await command.execute();
-        expect(jsonObject).to.not.be.deep.equals(beforeState);
+        expect(jsonObject).not.toEqual(beforeState);
         await command.undo();
-        expect(jsonObject).to.be.deep.equals(beforeState);
+        expect(jsonObject).toEqual(beforeState);
     });
 
     it('should restore the post execution state when redo is called', async () => {
@@ -81,6 +81,6 @@ describe('RecordingCommand', () => {
         const afterState = JSON.parse(JSON.stringify(jsonObject));
         jsonObject = JSON.parse(JSON.stringify(afterState));
         await command.redo();
-        expect(jsonObject).to.be.deep.equals(afterState);
+        expect(jsonObject).toEqual(afterState);
     });
 });

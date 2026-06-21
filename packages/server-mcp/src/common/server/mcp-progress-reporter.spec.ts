@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { ServerNotification } from '@modelcontextprotocol/sdk/types.js';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { McpProgressReporter } from './mcp-progress-reporter';
 import { Container } from 'inversify';
 import { NodeMcpRequestContext } from '../../node/server/node-mcp-request-context';
@@ -49,7 +49,7 @@ describe('McpProgressReporter', () => {
             await reporter.emit({ progress: 0, message: 'starting' });
         });
 
-        expect(sent).to.have.lengthOf(0);
+        expect(sent).toHaveLength(0);
     });
 
     it('emits notifications/progress when the request carries a progressToken', async () => {
@@ -61,12 +61,12 @@ describe('McpProgressReporter', () => {
             await reporter.emit({ progress: 1, total: 3, message: 'step 1/3' });
         });
 
-        expect(sent).to.have.lengthOf(2);
-        expect(sent[0]).to.deep.equal({
+        expect(sent).toHaveLength(2);
+        expect(sent[0]).toEqual({
             method: 'notifications/progress',
             params: { progressToken: 'tok-42', progress: 0, message: 'starting' }
         });
-        expect(sent[1]).to.deep.equal({
+        expect(sent[1]).toEqual({
             method: 'notifications/progress',
             params: { progressToken: 'tok-42', progress: 1, total: 3, message: 'step 1/3' }
         });
@@ -80,8 +80,8 @@ describe('McpProgressReporter', () => {
             await reporter.emit({ progress: 0 });
         });
 
-        expect(sent).to.have.lengthOf(1);
-        expect(sent[0].params).to.deep.equal({ progressToken: 7, progress: 0 });
+        expect(sent).toHaveLength(1);
+        expect(sent[0].params).toEqual({ progressToken: 7, progress: 0 });
     });
 
     it('swallows transport failures so a broken send never breaks the producing tool', async () => {

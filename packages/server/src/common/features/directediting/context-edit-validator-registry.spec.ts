@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { TestContextEditValidator, TestLabelEditValidator } from '../../test/mock-util';
 import { DefaultModelState } from '../model/model-state';
 import { ContextEditValidator } from './context-edit-validator';
@@ -23,13 +23,13 @@ describe('Test DefaultContextEditValidatorRegistry', () => {
     it('check if default registry is empty', () => {
         const contextEditValidators: ContextEditValidator[] = [];
         const contextEditValidatorRegistry = new DefaultContextEditValidatorRegistry(new DefaultModelState(), contextEditValidators);
-        expect(contextEditValidatorRegistry.keys()).to.have.length(0);
+        expect(contextEditValidatorRegistry.keys()).toHaveLength(0);
     });
 
     it('register TestContextEditValidator via ContextEditValidators list', () => {
         const contextEditValidators: ContextEditValidator[] = [new TestContextEditValidator()];
         const contextEditValidatorsRegistry = new DefaultContextEditValidatorRegistry(new DefaultModelState(), contextEditValidators);
-        expect(contextEditValidatorsRegistry.keys()).to.have.length(1);
+        expect(contextEditValidatorsRegistry.keys()).toHaveLength(1);
     });
 
     it('register TestLabelEditValidator via LabelEditValidator', () => {
@@ -39,7 +39,7 @@ describe('Test DefaultContextEditValidatorRegistry', () => {
             contextEditValidators,
             new TestLabelEditValidator()
         );
-        expect(contextEditValidatorsRegistry.keys()).to.have.length(1);
+        expect(contextEditValidatorsRegistry.keys()).toHaveLength(1);
     });
 
     it('register via ContextEditValidators list and LabelEditValidator', () => {
@@ -49,6 +49,6 @@ describe('Test DefaultContextEditValidatorRegistry', () => {
             contextEditValidators,
             new TestLabelEditValidator()
         );
-        expect(contextEditValidatorsRegistry.keys()).to.have.length(2);
+        expect(contextEditValidatorsRegistry.keys()).toHaveLength(2);
     });
 });

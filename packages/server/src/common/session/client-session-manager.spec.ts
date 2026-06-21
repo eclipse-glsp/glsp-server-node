@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,9 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { expect } from 'chai';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
-import * as sinon from 'sinon';
 import * as mock from '../test/mock-util';
 import { Logger } from '../utils/logger';
 import { ClientSessionFactory } from './client-session-factory';
@@ -26,7 +25,10 @@ describe('test DefaultClientSessionManager', () => {
     const testSessionListener = new mock.StubClientSessionListener();
 
     const sessionFactory = new mock.StubClientSessionFactory();
-    sinon.stub(sessionFactory, 'create').returns(testSession);
+
+    beforeEach(() => {
+        vi.spyOn(sessionFactory, 'create').mockReturnValue(testSession);
+    });
 
     const container = new Container();
     container.load(
@@ -43,41 +45,41 @@ describe('test DefaultClientSessionManager', () => {
 
     it('add create client session', () => {
         // Mock setup
-        const listener_create = sinon.spy(testSessionListener, 'sessionCreated');
+        const listener_create = vi.spyOn(testSessionListener, 'sessionCreated');
         // Test execution
         const createdSession = sessionManager.getOrCreateClientSession({
             clientSessionId: testSession.id,
             diagramType: testSession.diagramType,
             clientActionKinds: []
         });
-        expect(createdSession).to.not.be.undefined;
-        expect(createdSession.id).to.be.equal(testSession.id);
-        expect(createdSession.diagramType).to.be.equal(testSession.diagramType);
+        expect(createdSession).toBeDefined();
+        expect(createdSession.id).toBe(testSession.id);
+        expect(createdSession.diagramType).toBe(testSession.diagramType);
 
         const retrievedSession = sessionManager.getSession(testSession.id);
-        expect(retrievedSession).to.not.be.undefined;
-        expect(retrievedSession).to.be.equal(createdSession);
-        expect(listener_create.calledWith(testSession));
+        expect(retrievedSession).toBeDefined();
+        expect(retrievedSession).toBe(createdSession);
+        expect(listener_create).toHaveBeenCalledWith(testSession);
     });
 
     it('get sessions by type', () => {
         const clientSessions = sessionManager.getSessionsByType(testSession.diagramType);
-        expect(clientSessions.length).to.be.equal(1);
-        expect(clientSessions[0]).to.be.equal(testSession);
+        expect(clientSessions.length).toBe(1);
+        expect(clientSessions[0]).toBe(testSession);
     });
 
     it('get sessions by type that does no exist', async () => {
         const clientSessions = sessionManager.getSessionsByType('wrongType');
-        expect(clientSessions.length).to.be.equal(0);
+        expect(clientSessions.length).toBe(0);
     });
 
     it('dispose client session', () => {
         // Mock setup
-        const listener_dispose = sinon.spy(testSessionListener, 'sessionDisposed');
+        const listener_dispose = vi.spyOn(testSessionListener, 'sessionDisposed');
         // Test execution
-        expect(sessionManager.disposeClientSession(testSession.id)).to.be.equal(true);
+        expect(sessionManager.disposeClientSession(testSession.id)).toBe(true);
         const session = sessionManager.getSession(testSession.id);
-        expect(session).to.be.undefined;
-        expect(listener_dispose.calledWith(testSession));
+        expect(session).toBeUndefined();
+        expect(listener_dispose).toHaveBeenCalledWith(testSession);
     });
 });

@@ -14,9 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { Action, Deferred, RejectAction, RequestAction, ResponseAction, UpdateModelAction } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
+import { beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
-import * as sinon from 'sinon';
 import { ActionDispatchScope, DefaultActionDispatcher } from '../../common/actions/action-dispatcher';
 import { ActionHandler } from '../../common/actions/action-handler';
 import { ActionHandlerRegistry } from '../../common/actions/action-handler-registry';
@@ -39,10 +38,12 @@ describe('test DefaultActionDispatcher', () => {
     const container = new Container();
     const clientId = 'myClientId';
     const actionHandlerRegistry = new ActionHandlerRegistry();
-    let registry_get_stub: sinon.SinonStub<[string], ActionHandler[]>;
-    const sandbox = sinon.createSandbox();
+    let registry_get_stub: MockInstance<(kind: string) => ActionHandler[]>;
 
-    const clientActionForwarderStub = sinon.createStubInstance(ClientActionForwarder);
+    const clientActionForwarderStub = {
+        shouldForwardToClient: vi.fn(),
+        handle: vi.fn()
+    } as unknown as ClientActionForwarder;
 
     container.load(
         new ContainerModule(bind => {
@@ -58,16 +59,12 @@ describe('test DefaultActionDispatcher', () => {
     const actionDispatcher = container.resolve(DefaultActionDispatcher);
 
     beforeEach(() => {
-        registry_get_stub = sandbox.stub(actionHandlerRegistry, 'get');
-    });
-
-    afterEach(() => {
-        sandbox.restore();
+        registry_get_stub = vi.spyOn(actionHandlerRegistry, 'get');
     });
 
     describe('test with one-way actions (no response actions)', () => {
         it('dispatch- unhandled action', async () => {
-            mock.expectToThrowAsync(() => actionDispatcher.dispatch({ kind: 'unhandled' }));
+            await expect(actionDispatcher.dispatch({ kind: 'unhandled' })).rejects.toThrow();
         });
 
         it('dispatch - one action', async () => {
@@ -75,11 +72,11 @@ describe('test DefaultActionDispatcher', () => {
             const action = 'action';
             const handler = new mock.StubActionHandler([action]);
             const getHandler = (kind: string): ActionHandler[] => (kind === action ? [handler] : []);
-            registry_get_stub.callsFake(getHandler);
-            const spy_handler_execute = sinon.spy(handler, 'execute');
+            registry_get_stub.mockImplementation(getHandler);
+            const spy_handler_execute = vi.spyOn(handler, 'execute');
             // Test execution
             await actionDispatcher.dispatch({ kind: action });
-            expect(spy_handler_execute.calledOnce).true;
+            expect(spy_handler_execute).toHaveBeenCalledOnce();
         });
 
         describe('test multi dispatch with single-handled actions', () => {
@@ -92,15 +89,15 @@ describe('test DefaultActionDispatcher', () => {
             const handler2 = new mock.StubActionHandler([action2]);
             const handler3 = new mock.StubActionHandler([action3]);
 
-            const spy_handler1_execute = sinon.stub(handler1, 'execute').returns([]);
-            const spy_handler2_execute = sinon.stub(handler2, 'execute').returns([]);
-            const spy_handler3_execute = sinon.stub(handler3, 'execute').returns([]);
-            // Stubs created at the describe-level survive sandbox.restore(), so call counts
-            // would accumulate across tests and break `.calledOnce` assertions.
+            let spy_handler1_execute: MockInstance;
+            let spy_handler2_execute: MockInstance;
+            let spy_handler3_execute: MockInstance;
+            // restoreMocks: true (from the shared Vitest preset) restores these spies between tests,
+            // dropping the mockReturnValue setup, so they have to be re-created here before each test.
             beforeEach(() => {
-                spy_handler1_execute.resetHistory();
-                spy_handler2_execute.resetHistory();
-                spy_handler3_execute.resetHistory();
+                spy_handler1_execute = vi.spyOn(handler1, 'execute').mockReturnValue([]);
+                spy_handler2_execute = vi.spyOn(handler2, 'execute').mockReturnValue([]);
+                spy_handler3_execute = vi.spyOn(handler3, 'execute').mockReturnValue([]);
             });
             const handlerMockImpl = (kind: string): ActionHandler[] => {
                 switch (kind) {
@@ -117,44 +114,46 @@ describe('test DefaultActionDispatcher', () => {
 
             it('dispatch - multiple actions', async () => {
                 // Mock setup
-                registry_get_stub.callsFake(handlerMockImpl);
+                registry_get_stub.mockImplementation(handlerMockImpl);
                 // Test execution
                 actionDispatcher.dispatch({ kind: action1 });
                 actionDispatcher.dispatch({ kind: action2 });
                 await actionDispatcher.dispatch({ kind: action3 });
                 // Check if all handlers have been called
-                expect(spy_handler1_execute.called).true;
-                expect(spy_handler2_execute.called).true;
-                expect(spy_handler3_execute.called).true;
+                expect(spy_handler1_execute).toHaveBeenCalled();
+                expect(spy_handler2_execute).toHaveBeenCalled();
+                expect(spy_handler3_execute).toHaveBeenCalled();
                 // Check if all handlers have been called in the right order
-                sinon.assert.callOrder(spy_handler1_execute, spy_handler2_execute, spy_handler3_execute);
+                expect(spy_handler1_execute.mock.invocationCallOrder[0]).toBeLessThan(spy_handler2_execute.mock.invocationCallOrder[0]);
+                expect(spy_handler2_execute.mock.invocationCallOrder[0]).toBeLessThan(spy_handler3_execute.mock.invocationCallOrder[0]);
             });
 
             it('dispatchAll- multiple actions', async () => {
                 // Mock setup
-                registry_get_stub.callsFake(handlerMockImpl);
+                registry_get_stub.mockImplementation(handlerMockImpl);
                 // Test execution
                 await actionDispatcher.dispatchAll([{ kind: action1 }, { kind: action2 }, { kind: action3 }]);
                 // Check if all handlers have been called
-                expect(spy_handler1_execute.calledOnce).to.be.true;
-                expect(spy_handler2_execute.calledOnce).to.be.true;
-                expect(spy_handler3_execute.calledOnce).to.be.true;
+                expect(spy_handler1_execute).toHaveBeenCalledOnce();
+                expect(spy_handler2_execute).toHaveBeenCalledOnce();
+                expect(spy_handler3_execute).toHaveBeenCalledOnce();
                 // Check if all handlers have been called in the right order
-                sinon.assert.callOrder(spy_handler1_execute, spy_handler2_execute, spy_handler3_execute);
+                expect(spy_handler1_execute.mock.invocationCallOrder[0]).toBeLessThan(spy_handler2_execute.mock.invocationCallOrder[0]);
+                expect(spy_handler2_execute.mock.invocationCallOrder[0]).toBeLessThan(spy_handler3_execute.mock.invocationCallOrder[0]);
             });
 
             it('dispatch - multiple actions (racing execution times)', async () => {
                 // Mock setup
-                registry_get_stub.callsFake(handlerMockImpl);
-                spy_handler1_execute.callsFake((_action: Action) => {
+                registry_get_stub.mockImplementation(handlerMockImpl);
+                spy_handler1_execute.mockImplementation((_action: Action) => {
                     waitSync(500);
                     return [];
                 });
-                spy_handler2_execute.callsFake((_action: Action) => {
+                spy_handler2_execute.mockImplementation((_action: Action) => {
                     waitSync(200);
                     return [];
                 });
-                spy_handler3_execute.callsFake((_action: Action) => {
+                spy_handler3_execute.mockImplementation((_action: Action) => {
                     waitSync(100);
                     return [];
                 });
@@ -163,11 +162,12 @@ describe('test DefaultActionDispatcher', () => {
                 actionDispatcher.dispatch({ kind: action2 });
                 await actionDispatcher.dispatch({ kind: action3 });
                 // Check if all handlers have been called
-                expect(spy_handler1_execute.calledOnce).to.be.true;
-                expect(spy_handler2_execute.calledOnce).to.be.true;
-                expect(spy_handler3_execute.calledOnce).to.be.true;
+                expect(spy_handler1_execute).toHaveBeenCalledOnce();
+                expect(spy_handler2_execute).toHaveBeenCalledOnce();
+                expect(spy_handler3_execute).toHaveBeenCalledOnce();
                 // Check if all handlers have been called in the right order
-                sinon.assert.callOrder(spy_handler1_execute, spy_handler2_execute, spy_handler3_execute);
+                expect(spy_handler1_execute.mock.invocationCallOrder[0]).toBeLessThan(spy_handler2_execute.mock.invocationCallOrder[0]);
+                expect(spy_handler2_execute.mock.invocationCallOrder[0]).toBeLessThan(spy_handler3_execute.mock.invocationCallOrder[0]);
             });
         });
 
@@ -178,14 +178,14 @@ describe('test DefaultActionDispatcher', () => {
             const handler1 = new mock.StubActionHandler([action1]);
             const handler2 = new mock.StubActionHandler([action1]);
 
-            registry_get_stub.callsFake((kind: string) => (kind === action1 ? [handler1, handler2] : []));
-            const spy_handler1_execute = sinon.spy(handler1, 'execute');
-            const spy_handler2_execute = sinon.spy(handler2, 'execute');
+            registry_get_stub.mockImplementation((kind: string) => (kind === action1 ? [handler1, handler2] : []));
+            const spy_handler1_execute = vi.spyOn(handler1, 'execute');
+            const spy_handler2_execute = vi.spyOn(handler2, 'execute');
             // Test execution
             await actionDispatcher.dispatch({ kind: action1 });
-            expect(spy_handler1_execute.calledOnce).to.be.true;
-            expect(spy_handler2_execute.calledOnce).to.be.true;
-            sinon.assert.callOrder(spy_handler1_execute, spy_handler2_execute);
+            expect(spy_handler1_execute).toHaveBeenCalledOnce();
+            expect(spy_handler2_execute).toHaveBeenCalledOnce();
+            expect(spy_handler1_execute.mock.invocationCallOrder[0]).toBeLessThan(spy_handler2_execute.mock.invocationCallOrder[0]);
         });
     });
 
@@ -198,9 +198,9 @@ describe('test DefaultActionDispatcher', () => {
             const requestHandler = new mock.StubActionHandler([request]);
             const responseHandler = new mock.StubActionHandler([response]);
 
-            const spy_requestHandler_execute = sinon.stub(requestHandler, 'execute').returns([{ kind: response }]);
-            const spy_responseHandler_execute = sinon.spy(responseHandler, 'execute');
-            registry_get_stub.callsFake((kind: string) => {
+            const spy_requestHandler_execute = vi.spyOn(requestHandler, 'execute').mockReturnValue([{ kind: response }]);
+            const spy_responseHandler_execute = vi.spyOn(responseHandler, 'execute');
+            registry_get_stub.mockImplementation((kind: string) => {
                 switch (kind) {
                     case request:
                         return [requestHandler];
@@ -215,8 +215,8 @@ describe('test DefaultActionDispatcher', () => {
             // Add a delay so that the action dispatcher has time to dispatch the handler response
             await mock.delay(200);
             // Check if all handlers have been called
-            expect(spy_requestHandler_execute.calledOnce).to.be.true;
-            expect(spy_responseHandler_execute.calledOnce).to.be.true;
+            expect(spy_requestHandler_execute).toHaveBeenCalledOnce();
+            expect(spy_responseHandler_execute).toHaveBeenCalledOnce();
         });
 
         it('dispatch - multiple actions & multiple response', async () => {
@@ -231,11 +231,13 @@ describe('test DefaultActionDispatcher', () => {
             const requestHandler1 = new mock.StubActionHandler([request1]);
             const requestHandler2 = new mock.StubActionHandler([request2]);
 
-            const spy_requestHandler1_execute = sinon.stub(requestHandler1, 'execute').returns([{ kind: response1 }, { kind: response2 }]);
-            const spy_requestHandler2_execute = sinon.stub(requestHandler2, 'execute').returns([{ kind: response2 }]);
-            const spy_responseHandler1_execute = sinon.spy(responseHandler1, 'execute');
-            const spy_responseHandler2_execute = sinon.spy(responseHandler2, 'execute');
-            registry_get_stub.callsFake((kind: string) => {
+            const spy_requestHandler1_execute = vi
+                .spyOn(requestHandler1, 'execute')
+                .mockReturnValue([{ kind: response1 }, { kind: response2 }]);
+            const spy_requestHandler2_execute = vi.spyOn(requestHandler2, 'execute').mockReturnValue([{ kind: response2 }]);
+            const spy_responseHandler1_execute = vi.spyOn(responseHandler1, 'execute');
+            const spy_responseHandler2_execute = vi.spyOn(responseHandler2, 'execute');
+            registry_get_stub.mockImplementation((kind: string) => {
                 switch (kind) {
                     case request1:
                         return [requestHandler1];
@@ -256,13 +258,17 @@ describe('test DefaultActionDispatcher', () => {
             // Add a delay so that the action dispatcher has time to dispatch the handler response
             await mock.delay(100);
             // Check if all handlers have been called correctly
-            expect(spy_requestHandler1_execute.calledOnce).to.be.true;
-            expect(spy_requestHandler2_execute.calledOnce).to.be.true;
-            expect(spy_responseHandler1_execute.calledOnce).to.be.true;
-            expect(spy_responseHandler2_execute.calledThrice).to.be.true;
+            expect(spy_requestHandler1_execute).toHaveBeenCalledOnce();
+            expect(spy_requestHandler2_execute).toHaveBeenCalledOnce();
+            expect(spy_responseHandler1_execute).toHaveBeenCalledOnce();
+            expect(spy_responseHandler2_execute).toHaveBeenCalledTimes(3);
             // Check if all handlers have been called in the right order
-            sinon.assert.callOrder(spy_requestHandler1_execute, spy_requestHandler2_execute);
-            sinon.assert.callOrder(spy_responseHandler1_execute, spy_responseHandler2_execute);
+            expect(spy_requestHandler1_execute.mock.invocationCallOrder[0]).toBeLessThan(
+                spy_requestHandler2_execute.mock.invocationCallOrder[0]
+            );
+            expect(spy_responseHandler1_execute.mock.invocationCallOrder[0]).toBeLessThan(
+                spy_responseHandler2_execute.mock.invocationCallOrder[0]
+            );
         });
     });
 
@@ -284,19 +290,19 @@ describe('test DefaultActionDispatcher', () => {
 
                 return [];
             };
-            registry_get_stub.callsFake(getHandler);
-            const spy_postUpdateHandler_execute = sinon.spy(postUpdateHandler, 'execute');
+            registry_get_stub.mockImplementation(getHandler);
+            const spy_postUpdateHandler_execute = vi.spyOn(postUpdateHandler, 'execute');
 
             // Test execution
             actionDispatcher.dispatchAfterNextUpdate({ kind: postUpdateAction });
-            expect(spy_postUpdateHandler_execute.called).to.be.false;
+            expect(spy_postUpdateHandler_execute).not.toHaveBeenCalled();
             await actionDispatcher.dispatch({ kind: intermediateAction });
-            expect(spy_postUpdateHandler_execute.called).to.be.false;
+            expect(spy_postUpdateHandler_execute).not.toHaveBeenCalled();
             await actionDispatcher.dispatch(updateModelAction);
-            expect(spy_postUpdateHandler_execute.calledOnce).to.be.true;
+            expect(spy_postUpdateHandler_execute).toHaveBeenCalledOnce();
             // Check that action does not get dispatched again
             await actionDispatcher.dispatch(updateModelAction);
-            expect(spy_postUpdateHandler_execute.calledOnce).to.be.true;
+            expect(spy_postUpdateHandler_execute).toHaveBeenCalledOnce();
         });
     });
 
@@ -312,15 +318,15 @@ describe('test DefaultActionDispatcher', () => {
             };
 
             // Configure forwarder: testRequest is forwarded to the client
-            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
-            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
-            registry_get_stub.callsFake(() => []);
+            vi.mocked(clientActionForwarderStub.shouldForwardToClient).mockImplementation(action => action.kind === 'testRequest');
+            vi.mocked(clientActionForwarderStub.handle).mockImplementation(action => action.kind === 'testRequest');
+            registry_get_stub.mockImplementation(() => []);
 
             const responsePromise = actionDispatcher.request(requestAction);
             await actionDispatcher.dispatch(responseAction);
 
             const result = await responsePromise;
-            expect(result.responseId).to.equal('req_1');
+            expect(result.responseId).toBe('req_1');
         });
 
         it('request - response bypasses queue even when queue is busy', async () => {
@@ -333,8 +339,8 @@ describe('test DefaultActionDispatcher', () => {
                 responseId: 'req_deadlock'
             };
 
-            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
-            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
+            vi.mocked(clientActionForwarderStub.shouldForwardToClient).mockImplementation(action => action.kind === 'testRequest');
+            vi.mocked(clientActionForwarderStub.handle).mockImplementation(action => action.kind === 'testRequest');
 
             const handlerRunning = new Deferred<void>();
 
@@ -344,10 +350,10 @@ describe('test DefaultActionDispatcher', () => {
                 const resultPromise = actionDispatcher.request(requestAction);
                 handlerRunning.resolve();
                 const result = await resultPromise;
-                expect(result.responseId).to.equal('req_deadlock');
+                expect(result.responseId).toBe('req_deadlock');
                 return [];
             };
-            registry_get_stub.callsFake((kind: string) => (kind === slowAction ? [slowHandler] : []));
+            registry_get_stub.mockImplementation((kind: string) => (kind === slowAction ? [slowHandler] : []));
 
             const dispatchPromise = actionDispatcher.dispatch({ kind: slowAction });
             await handlerRunning.promise;
@@ -362,11 +368,11 @@ describe('test DefaultActionDispatcher', () => {
             const localResponseKind = 'localResponse';
 
             const handler = new mock.StubActionHandler([localRequestKind]);
-            sinon.stub(handler, 'execute').callsFake(() => {
+            vi.spyOn(handler, 'execute').mockImplementation(() => {
                 const response: ResponseAction = { kind: localResponseKind, responseId: '' };
                 return [response];
             });
-            registry_get_stub.callsFake((kind: string) => (kind === localRequestKind ? [handler] : []));
+            registry_get_stub.mockImplementation((kind: string) => (kind === localRequestKind ? [handler] : []));
 
             const requestAction: RequestAction<ResponseAction> = {
                 kind: localRequestKind,
@@ -374,8 +380,8 @@ describe('test DefaultActionDispatcher', () => {
             };
 
             const result = await actionDispatcher.request(requestAction);
-            expect(result).to.exist;
-            expect(result.responseId).to.equal(requestAction.requestId);
+            expect(result).toBeDefined();
+            expect(result.responseId).toBe(requestAction.requestId);
         });
 
         it('request - resolves for locally handled request called from inside a handler', async () => {
@@ -384,7 +390,7 @@ describe('test DefaultActionDispatcher', () => {
             const outerActionKind = 'outerAction';
 
             const innerHandler = new mock.StubActionHandler([innerRequestKind]);
-            sinon.stub(innerHandler, 'execute').callsFake(() => {
+            vi.spyOn(innerHandler, 'execute').mockImplementation(() => {
                 const response: ResponseAction = { kind: innerResponseKind, responseId: '' };
                 return [response];
             });
@@ -396,11 +402,11 @@ describe('test DefaultActionDispatcher', () => {
                     requestId: ''
                 };
                 const result = await actionDispatcher.request(innerRequest);
-                expect(result).to.exist;
+                expect(result).toBeDefined();
                 return [];
             };
 
-            registry_get_stub.callsFake((kind: string) => {
+            registry_get_stub.mockImplementation((kind: string) => {
                 if (kind === outerActionKind) return [outerHandler];
                 if (kind === innerRequestKind) return [innerHandler];
                 return [];
@@ -416,15 +422,15 @@ describe('test DefaultActionDispatcher', () => {
                 requestId: 'req_hard'
             };
 
-            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
-            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
-            registry_get_stub.callsFake(() => []);
+            vi.mocked(clientActionForwarderStub.shouldForwardToClient).mockImplementation(action => action.kind === 'testRequest');
+            vi.mocked(clientActionForwarderStub.handle).mockImplementation(action => action.kind === 'testRequest');
+            registry_get_stub.mockImplementation(() => []);
 
             try {
                 await actionDispatcher.requestUntil(requestAction, 100, true);
                 expect.fail('Should have thrown');
             } catch (error: unknown) {
-                expect((error as Error).message).to.include('timed out');
+                expect((error as Error).message).toContain('timed out');
             }
         });
 
@@ -434,12 +440,12 @@ describe('test DefaultActionDispatcher', () => {
                 requestId: 'req_soft'
             };
 
-            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
-            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
-            registry_get_stub.callsFake(() => []);
+            vi.mocked(clientActionForwarderStub.shouldForwardToClient).mockImplementation(action => action.kind === 'testRequest');
+            vi.mocked(clientActionForwarderStub.handle).mockImplementation(action => action.kind === 'testRequest');
+            registry_get_stub.mockImplementation(() => []);
 
             const result = await actionDispatcher.requestUntil(requestAction, 100, false);
-            expect(result).to.be.undefined;
+            expect(result).toBeUndefined();
         });
 
         it('request - auto-generates requestId when empty', async () => {
@@ -448,12 +454,12 @@ describe('test DefaultActionDispatcher', () => {
                 requestId: ''
             };
 
-            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
-            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
-            registry_get_stub.callsFake(() => []);
+            vi.mocked(clientActionForwarderStub.shouldForwardToClient).mockImplementation(action => action.kind === 'testRequest');
+            vi.mocked(clientActionForwarderStub.handle).mockImplementation(action => action.kind === 'testRequest');
+            registry_get_stub.mockImplementation(() => []);
 
             const responsePromise = actionDispatcher.request(requestAction);
-            expect(requestAction.requestId).to.match(/^server_.*_\d+$/);
+            expect(requestAction.requestId).toMatch(/^server_.*_\d+$/);
 
             await actionDispatcher.dispatch({
                 kind: 'testResponse',
@@ -461,7 +467,7 @@ describe('test DefaultActionDispatcher', () => {
             } as ResponseAction);
 
             const result = await responsePromise;
-            expect(result).to.exist;
+            expect(result).toBeDefined();
         });
 
         it('request - rejects when dispatch fails (no handler, not a client action)', async () => {
@@ -471,15 +477,15 @@ describe('test DefaultActionDispatcher', () => {
             };
 
             // NOT forwarded to client, no handler registered → dispatch throws
-            clientActionForwarderStub.shouldForwardToClient.returns(false);
-            clientActionForwarderStub.handle.returns(false);
-            registry_get_stub.callsFake(() => []);
+            vi.mocked(clientActionForwarderStub.shouldForwardToClient).mockReturnValue(false);
+            vi.mocked(clientActionForwarderStub.handle).mockReturnValue(false);
+            registry_get_stub.mockImplementation(() => []);
 
             try {
                 await actionDispatcher.request(requestAction);
                 expect.fail('Should have thrown');
             } catch (error: unknown) {
-                expect((error as Error).message).to.include('No handler registered');
+                expect((error as Error).message).toContain('No handler registered');
             }
         });
 
@@ -489,24 +495,24 @@ describe('test DefaultActionDispatcher', () => {
                 requestId: 'req_late'
             };
 
-            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
-            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
+            vi.mocked(clientActionForwarderStub.shouldForwardToClient).mockImplementation(action => action.kind === 'testRequest');
+            vi.mocked(clientActionForwarderStub.handle).mockImplementation(action => action.kind === 'testRequest');
             // Register a no-op handler for testResponse so the late response can be dispatched normally
             const noopHandler = new mock.StubActionHandler(['testResponse']);
-            registry_get_stub.callsFake((kind: string) => (kind === 'testResponse' ? [noopHandler] : []));
+            registry_get_stub.mockImplementation((kind: string) => (kind === 'testResponse' ? [noopHandler] : []));
 
             // Request times out
             try {
                 await actionDispatcher.requestUntil(requestAction, 50, true);
                 expect.fail('Should have thrown');
             } catch (error: unknown) {
-                expect((error as Error).message).to.include('timed out');
+                expect((error as Error).message).toContain('timed out');
             }
 
             // Late response arrives — responseId should be cleared, dispatched as normal action
             const lateResponse: ResponseAction = { kind: 'testResponse', responseId: 'req_late' };
             await actionDispatcher.dispatch(lateResponse);
-            expect(lateResponse.responseId).to.equal('');
+            expect(lateResponse.responseId).toBe('');
         });
 
         it('dispatch - drops a stale ResponseAction with no matching pending request and no handler', async () => {
@@ -514,9 +520,9 @@ describe('test DefaultActionDispatcher', () => {
             // pending request is gone) used to throw "No handler registered" because the dispatcher
             // tried to route them as regular actions. They are protocol signals, not handler
             // invocations — `doDispatch` swallows them with a debug log instead.
-            clientActionForwarderStub.shouldForwardToClient.returns(false);
-            clientActionForwarderStub.handle.returns(false);
-            registry_get_stub.callsFake(() => []);
+            vi.mocked(clientActionForwarderStub.shouldForwardToClient).mockReturnValue(false);
+            vi.mocked(clientActionForwarderStub.handle).mockReturnValue(false);
+            registry_get_stub.mockImplementation(() => []);
 
             const lateReject = RejectAction.create('late reject', { responseId: 'never-pending' });
 
@@ -532,13 +538,13 @@ describe('test DefaultActionDispatcher', () => {
             const responseKind = 'inlineResponse';
 
             const handler = new mock.StubActionHandler([requestKind]);
-            sinon.stub(handler, 'execute').callsFake(() => [{ kind: responseKind, responseId: '' } as ResponseAction]);
-            registry_get_stub.callsFake((kind: string) => (kind === requestKind ? [handler] : []));
+            vi.spyOn(handler, 'execute').mockImplementation(() => [{ kind: responseKind, responseId: '' } as ResponseAction]);
+            registry_get_stub.mockImplementation((kind: string) => (kind === requestKind ? [handler] : []));
 
             const requestAction: RequestAction<ResponseAction> = { kind: requestKind, requestId: '' };
             const result = await actionDispatcher.request(requestAction);
 
-            expect(result.responseId).to.equal(requestAction.requestId);
+            expect(result.responseId).toBe(requestAction.requestId);
         });
     });
 
@@ -551,7 +557,7 @@ describe('test DefaultActionDispatcher', () => {
             const events: string[] = [];
 
             const innerHandler = new mock.StubActionHandler([innerKind]);
-            sinon.stub(innerHandler, 'execute').callsFake(() => {
+            vi.spyOn(innerHandler, 'execute').mockImplementation(() => {
                 events.push('inner');
                 return [];
             });
@@ -565,12 +571,12 @@ describe('test DefaultActionDispatcher', () => {
             };
 
             const followerHandler = new mock.StubActionHandler([followerKind]);
-            sinon.stub(followerHandler, 'execute').callsFake(() => {
+            vi.spyOn(followerHandler, 'execute').mockImplementation(() => {
                 events.push('follower');
                 return [];
             });
 
-            registry_get_stub.callsFake((kind: string) => {
+            registry_get_stub.mockImplementation((kind: string) => {
                 if (kind === outerKind) return [outerHandler];
                 if (kind === innerKind) return [innerHandler];
                 if (kind === followerKind) return [followerHandler];
@@ -580,7 +586,7 @@ describe('test DefaultActionDispatcher', () => {
             actionDispatcher.dispatch({ kind: outerKind });
             await actionDispatcher.dispatch({ kind: followerKind });
 
-            expect(events).to.deep.equal(['outer-start', 'inner', 'outer-end', 'follower']);
+            expect(events).toEqual(['outer-start', 'inner', 'outer-end', 'follower']);
         });
 
         it('handler response actions are dispatched in order without an ephemeral queue', async () => {
@@ -590,22 +596,22 @@ describe('test DefaultActionDispatcher', () => {
             const order: string[] = [];
 
             const requestHandler = new mock.StubActionHandler([requestKind]);
-            sinon.stub(requestHandler, 'execute').callsFake(() => [{ kind: firstResponse }, { kind: secondResponse }]);
+            vi.spyOn(requestHandler, 'execute').mockImplementation(() => [{ kind: firstResponse }, { kind: secondResponse }]);
 
             const firstHandler = new mock.StubActionHandler([firstResponse]);
-            sinon.stub(firstHandler, 'execute').callsFake(async () => {
+            vi.spyOn(firstHandler, 'execute').mockImplementation(async () => {
                 await mock.delay(20);
                 order.push(firstResponse);
                 return [];
             });
 
             const secondHandler = new mock.StubActionHandler([secondResponse]);
-            sinon.stub(secondHandler, 'execute').callsFake(() => {
+            vi.spyOn(secondHandler, 'execute').mockImplementation(() => {
                 order.push(secondResponse);
                 return [];
             });
 
-            registry_get_stub.callsFake((kind: string) => {
+            registry_get_stub.mockImplementation((kind: string) => {
                 if (kind === requestKind) return [requestHandler];
                 if (kind === firstResponse) return [firstHandler];
                 if (kind === secondResponse) return [secondHandler];
@@ -613,7 +619,7 @@ describe('test DefaultActionDispatcher', () => {
             });
 
             await actionDispatcher.dispatch({ kind: requestKind });
-            expect(order).to.deep.equal([firstResponse, secondResponse]);
+            expect(order).toEqual([firstResponse, secondResponse]);
         });
     });
 
@@ -624,9 +630,9 @@ describe('test DefaultActionDispatcher', () => {
                 requestId: 'req_dispose'
             };
 
-            clientActionForwarderStub.shouldForwardToClient.callsFake(action => action.kind === 'testRequest');
-            clientActionForwarderStub.handle.callsFake(action => action.kind === 'testRequest');
-            registry_get_stub.callsFake(() => []);
+            vi.mocked(clientActionForwarderStub.shouldForwardToClient).mockImplementation(action => action.kind === 'testRequest');
+            vi.mocked(clientActionForwarderStub.handle).mockImplementation(action => action.kind === 'testRequest');
+            registry_get_stub.mockImplementation(() => []);
 
             const responsePromise = actionDispatcher.request(requestAction);
             actionDispatcher.dispose();
@@ -635,8 +641,8 @@ describe('test DefaultActionDispatcher', () => {
                 await responsePromise;
                 expect.fail('Should have thrown');
             } catch (error: unknown) {
-                expect((error as Error).message).to.include('cancelled');
-                expect((error as Error).message).to.include('req_dispose');
+                expect((error as Error).message).toContain('cancelled');
+                expect((error as Error).message).toContain('req_dispose');
             }
         });
 
@@ -655,7 +661,7 @@ describe('test DefaultActionDispatcher', () => {
                 return [];
             };
 
-            registry_get_stub.callsFake((kind: string) => (kind === slowKind ? [slowHandler] : []));
+            registry_get_stub.mockImplementation((kind: string) => (kind === slowKind ? [slowHandler] : []));
 
             const slowPromise = localDispatcher.dispatch({ kind: slowKind });
             await slowStarted.promise;
@@ -667,7 +673,7 @@ describe('test DefaultActionDispatcher', () => {
                 await queuedPromise;
                 expect.fail('Queued dispatch should have rejected');
             } catch (error: unknown) {
-                expect((error as Error).message).to.include('ActionDispatcher disposed');
+                expect((error as Error).message).toContain('ActionDispatcher disposed');
             }
 
             // Let the slow handler finish so the local dispatcher's consumer loop can exit cleanly.

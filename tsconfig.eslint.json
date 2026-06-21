@@ -1,7 +1,7 @@
 {
-  "extends": "@eclipse-glsp/ts-config/mocha",
+  "extends": "@eclipse-glsp/ts-config",
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["packages/*/src", "examples/*/src"]
+  "include": ["packages/*/src", "examples/*/src", "vite.config.ts"]
 }

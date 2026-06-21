@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { LogLevel } from '../../common/utils/logger';
 import { createSocketCliParser, defaultSocketLaunchOptions, SocketLaunchOptions } from './socket-cli-parser';
 
@@ -25,21 +25,21 @@ describe('test createCliParser', () => {
 
     it('parse - no args', () => {
         const options = parser.parse(argv);
-        expect(options).to.deep.equal(defaultSocketLaunchOptions);
+        expect(options).toEqual(defaultSocketLaunchOptions);
     });
 
     it('parse - invalid port (below lower range)', () => {
-        expect(() => parser.parse([...argv, '--port', '-1'])).to.throw();
+        expect(() => parser.parse([...argv, '--port', '-1'])).toThrow();
     });
 
     it('parse - invalid port (below upper range)', () => {
-        expect(() => parser.parse([...argv, '--port', '65536'])).to.throw();
+        expect(() => parser.parse([...argv, '--port', '65536'])).toThrow();
     });
 
     it('parse - valid port', () => {
         const port = 3000;
         const result = parser.parse([...argv, '--port', '3000']);
-        expect(result.port).to.equal(port);
+        expect(result.port).toBe(port);
     });
 
     it('parse - --no-consoleLog', () => {
@@ -68,6 +68,6 @@ describe('test createCliParser', () => {
             port: 3000
         };
         const result = createSocketCliParser(options).parse(argv);
-        expect(result).to.deep.equal(options);
+        expect(result).toEqual(options);
     });
 });

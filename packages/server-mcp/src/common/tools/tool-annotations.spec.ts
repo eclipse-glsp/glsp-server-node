@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { interfaces } from 'inversify';
 import { SetViewMcpToolHandler } from './handlers/set-view-mcp-tool-handler';
 import { CreateEdgesMcpToolHandler } from './handlers/create-edges-mcp-tool-handler';
@@ -75,7 +75,7 @@ describe('Tool annotations · per-handler matrix', () => {
         ];
         readStyleHandlers.forEach(([name, Constructor]) => {
             it(`${name} matches the read-style default`, () => {
-                expect(hintsOf(Constructor)).to.deep.equal(READ_DEFAULT);
+                expect(hintsOf(Constructor)).toEqual(READ_DEFAULT);
             });
         });
     });
@@ -91,14 +91,14 @@ describe('Tool annotations · per-handler matrix', () => {
         ];
         operationStyleHandlers.forEach(([name, Constructor]) => {
             it(`${name} matches the operation-style default`, () => {
-                expect(hintsOf(Constructor)).to.deep.equal(OPERATION_DEFAULT);
+                expect(hintsOf(Constructor)).toEqual(OPERATION_DEFAULT);
             });
         });
     });
 
     describe('per-handler overrides', () => {
         it('delete-elements is destructiveHint:true (single-flag override)', () => {
-            expect(hintsOf(DeleteElementsMcpToolHandler)).to.deep.equal({ ...OPERATION_DEFAULT, destructiveHint: true });
+            expect(hintsOf(DeleteElementsMcpToolHandler)).toEqual({ ...OPERATION_DEFAULT, destructiveHint: true });
         });
 
         it('save-model is NOT readOnly (writes to disk) and NOT destructive (creative)', () => {
@@ -106,7 +106,7 @@ describe('Tool annotations · per-handler matrix', () => {
             // `destructiveHint` is for irreversible deletion / data loss; save is creative.
             // Save-model extends the read base (not the operation base) because it doesn't
             // dispatch a model-mutating Operation, but we override the flat fields explicitly.
-            expect(hintsOf(SaveModelMcpToolHandler)).to.deep.equal({
+            expect(hintsOf(SaveModelMcpToolHandler)).toEqual({
                 readOnlyHint: false,
                 destructiveHint: false,
                 idempotentHint: false,
@@ -118,7 +118,7 @@ describe('Tool annotations · per-handler matrix', () => {
             // Inherits from the read base, which would claim readOnlyHint:true. Override flips
             // it: dispatching a viewport action mutates client-side state, even though no
             // diagram model bytes change.
-            expect(hintsOf(SetViewMcpToolHandler)).to.deep.equal({
+            expect(hintsOf(SetViewMcpToolHandler)).toEqual({
                 readOnlyHint: false,
                 destructiveHint: undefined,
                 idempotentHint: undefined,
@@ -130,7 +130,7 @@ describe('Tool annotations · per-handler matrix', () => {
     describe('toRegistrationConfig() assembles the annotations object the SDK expects', () => {
         it('aggregates the flat fields into the SDK ToolAnnotations shape', () => {
             const config = new DeleteElementsMcpToolHandler().toRegistrationConfig();
-            expect(config.annotations).to.deep.equal({
+            expect(config.annotations).toEqual({
                 readOnlyHint: false,
                 destructiveHint: true,
                 idempotentHint: false,

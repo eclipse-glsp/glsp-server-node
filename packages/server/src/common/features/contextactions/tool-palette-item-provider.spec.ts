@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -16,7 +16,7 @@
 import { OperationHandlerRegistry } from '../../operations/operation-handler-registry';
 import * as mock from '../../test/mock-util';
 import { DefaultToolPaletteItemProvider } from './tool-palette-item-provider';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 
 describe('Test DefaultToolPaletteItemProvider', () => {
     const operationHandlerRegistry = new OperationHandlerRegistry();
@@ -33,14 +33,14 @@ describe('Test DefaultToolPaletteItemProvider', () => {
         const toolPaletteItemProvider = new DefaultToolPaletteItemProvider();
         toolPaletteItemProvider.operationHandlerRegistry = operationHandlerRegistry;
         const items = toolPaletteItemProvider.getItems();
-        expect(items).to.have.length(2);
-        expect(items[0].label).to.be.equal('Nodes');
-        expect(items[0].children).to.have.length(2);
-        expect(items[0].children?.[0].label).to.be.equal('ANode');
-        expect(items[0].children?.[1].label).to.be.equal('BNode');
-        expect(items[1].label).to.be.equal('Edges');
-        expect(items[1].children).to.have.length(2);
-        expect(items[1].children?.[0].label).to.be.equal('AEdge');
-        expect(items[1].children?.[1].label).to.be.equal('BEdge');
+        expect(items).toHaveLength(2);
+        expect(items[0].label).toBe('Nodes');
+        expect(items[0].children).toHaveLength(2);
+        expect(items[0].children?.[0].label).toBe('ANode');
+        expect(items[0].children?.[1].label).toBe('BNode');
+        expect(items[1].label).toBe('Edges');
+        expect(items[1].children).toHaveLength(2);
+        expect(items[1].children?.[0].label).toBe('AEdge');
+        expect(items[1].children?.[1].label).toBe('BEdge');
     });
 });

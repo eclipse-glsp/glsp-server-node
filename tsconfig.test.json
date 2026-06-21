@@ -1,0 +1,22 @@
+{
+  "extends": "@eclipse-glsp/ts-config",
+  "compilerOptions": {
+    "composite": true
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./packages/graph/tsconfig.test.json"
+    },
+    {
+      "path": "./packages/layout-elk/tsconfig.test.json"
+    },
+    {
+      "path": "./packages/server/tsconfig.test.json"
+    },
+    {
+      "path": "./packages/server-mcp/tsconfig.test.json"
+    }
+  ]
+}

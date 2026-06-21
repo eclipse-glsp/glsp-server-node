@@ -26,7 +26,7 @@ import {
     ModelState,
     NullLogger
 } from '@eclipse-glsp/server';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { McpToolResult } from '../../server/mcp-handler-shared';
 import { McpIdAliasService } from '../../server/mcp-id-alias-service';
@@ -146,12 +146,12 @@ describe('CreateNodesMcpToolHandler', () => {
         });
 
         const structured = result.structuredContent as unknown as CreatedElementsStructured;
-        expect(structured.createdNodes).to.have.lengthOf(2);
-        expect(structured.createdNodes[0].id).to.equal('task:manual#1');
-        expect(structured.createdNodes[1].id).to.equal('task:manual#2');
-        expect(structured.errors).to.deep.equal([]);
-        expect(structured.warnings).to.deep.equal([]);
-        expect(dispatcher.dispatched.filter(CreateNodeOperation.is)).to.have.lengthOf(2);
+        expect(structured.createdNodes).toHaveLength(2);
+        expect(structured.createdNodes[0].id).toBe('task:manual#1');
+        expect(structured.createdNodes[1].id).toBe('task:manual#2');
+        expect(structured.errors).toEqual([]);
+        expect(structured.warnings).toEqual([]);
+        expect(dispatcher.dispatched.filter(CreateNodeOperation.is)).toHaveLength(2);
     });
 
     it('dispatches ApplyLabelEditOperation when `text` is supplied and the new element has a label', async () => {
@@ -163,9 +163,9 @@ describe('CreateNodesMcpToolHandler', () => {
         });
 
         const edits = dispatcher.dispatched.filter(ApplyLabelEditOperation.is);
-        expect(edits).to.have.lengthOf(1);
-        expect(edits[0].text).to.equal('Hello');
-        expect(edits[0].labelId).to.equal('task:manual#1_label');
+        expect(edits).toHaveLength(1);
+        expect(edits[0].text).toBe('Hello');
+        expect(edits[0].labelId).toBe('task:manual#1_label');
     });
 
     it('emits a warning (no ApplyLabelEditOperation) when `text` is supplied but the element type has no label', async () => {
@@ -177,9 +177,9 @@ describe('CreateNodesMcpToolHandler', () => {
         });
 
         const structured = result.structuredContent as unknown as CreatedElementsStructured;
-        expect(structured.warnings).to.have.lengthOf(1);
-        expect(structured.warnings[0]).to.match(/no editable label/i);
-        expect(dispatcher.dispatched.filter(ApplyLabelEditOperation.is)).to.have.lengthOf(0);
+        expect(structured.warnings).toHaveLength(1);
+        expect(structured.warnings[0]).toMatch(/no editable label/i);
+        expect(dispatcher.dispatched.filter(ApplyLabelEditOperation.is)).toHaveLength(0);
     });
 
     it('records an error and skips label-edit when the CreateNodeOperation produces no new element', async () => {
@@ -191,9 +191,9 @@ describe('CreateNodesMcpToolHandler', () => {
         });
 
         const structured = result.structuredContent as unknown as CreatedElementsStructured;
-        expect(structured.createdNodes).to.deep.equal([]);
-        expect(structured.errors).to.have.lengthOf(1);
-        expect(structured.errors[0]).to.include('ghost');
-        expect(dispatcher.dispatched.filter(ApplyLabelEditOperation.is)).to.have.lengthOf(0);
+        expect(structured.createdNodes).toEqual([]);
+        expect(structured.errors).toHaveLength(1);
+        expect(structured.errors[0]).toContain('ghost');
+        expect(dispatcher.dispatched.filter(ApplyLabelEditOperation.is)).toHaveLength(0);
     });
 });

@@ -25,7 +25,7 @@ import {
     SelectAction,
     SelectAllAction
 } from '@eclipse-glsp/server';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { McpElementsNotFoundError, McpToolResult } from '../../server/mcp-handler-shared';
 import { McpIdAliasService } from '../../server/mcp-id-alias-service';
@@ -87,10 +87,10 @@ describe('SetSelectionMcpToolHandler', () => {
 
         await callCreateResult(handler, { sessionId: 's', selectedElementIds: ['n1'], clear: true });
 
-        expect(dispatched).to.have.lengthOf(2);
-        expect(SelectAllAction.is(dispatched[0])).to.equal(true);
-        expect((dispatched[0] as SelectAllAction).select).to.equal(false);
-        expect(SelectAction.is(dispatched[1])).to.equal(true);
+        expect(dispatched).toHaveLength(2);
+        expect(SelectAllAction.is(dispatched[0])).toBe(true);
+        expect((dispatched[0] as SelectAllAction).select).toBe(false);
+        expect(SelectAction.is(dispatched[1])).toBe(true);
     });
 
     it('dispatches SelectAction with resolved selected and deselected ids', async () => {
@@ -99,10 +99,10 @@ describe('SetSelectionMcpToolHandler', () => {
 
         await callCreateResult(handler, { sessionId: 's', selectedElementIds: ['a', 'b'], deselectedElementIds: ['c'] });
 
-        expect(dispatched).to.have.lengthOf(1);
+        expect(dispatched).toHaveLength(1);
         const action = dispatched[0] as SelectAction;
-        expect(action.selectedElementsIDs).to.deep.equal(['a', 'b']);
-        expect(action.deselectedElementsIDs).to.deep.equal(['c']);
+        expect(action.selectedElementsIDs).toEqual(['a', 'b']);
+        expect(action.deselectedElementsIDs).toEqual(['c']);
     });
 
     it('throws McpElementsNotFoundError when an id is missing from the model', async () => {
@@ -115,6 +115,6 @@ describe('SetSelectionMcpToolHandler', () => {
         } catch (err: unknown) {
             error = err;
         }
-        expect(error).to.be.instanceOf(McpElementsNotFoundError);
+        expect(error).toBeInstanceOf(McpElementsNotFoundError);
     });
 });

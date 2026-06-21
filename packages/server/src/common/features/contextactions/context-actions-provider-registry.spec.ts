@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { GModelElement } from '@eclipse-glsp/graph';
 import { Args, LabeledAction, Point } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { CommandPaletteActionProvider } from './command-palette-action-provider';
 import { ContextActionsProvider } from './context-actions-provider';
 import { ContextActionsProviderRegistry } from './context-actions-provider-registry';
@@ -25,13 +25,13 @@ describe('Test DefaultContextActionsProviderRegistry', () => {
     it('check if default registry is empty', () => {
         const contextActionsProvider: ContextActionsProvider[] = [];
         const contextActionsProviderRegistry = new ContextActionsProviderRegistry(contextActionsProvider);
-        expect(contextActionsProviderRegistry.keys()).to.have.length(0);
+        expect(contextActionsProviderRegistry.keys()).toHaveLength(0);
     });
 
     it('register DefaultToolPaletteItemProvider via ContextActionsProviders list', () => {
         const contextActionsProvider: ContextActionsProvider[] = [new DefaultToolPaletteItemProvider()];
         const contextActionsProviderRegistry = new ContextActionsProviderRegistry(contextActionsProvider);
-        expect(contextActionsProviderRegistry.keys()).to.have.length(1);
+        expect(contextActionsProviderRegistry.keys()).toHaveLength(1);
     });
 
     it('register DefaultToolPaletteItemProvider via ToolPaletteItemProvider', () => {
@@ -42,7 +42,7 @@ describe('Test DefaultContextActionsProviderRegistry', () => {
             undefined,
             new DefaultToolPaletteItemProvider()
         );
-        expect(contextActionsProviderRegistry.keys()).to.have.length(1);
+        expect(contextActionsProviderRegistry.keys()).toHaveLength(1);
     });
 
     it('register CustomCommandPaletteActionProvider via CommandPaletteActionProvider', () => {
@@ -64,6 +64,6 @@ describe('Test DefaultContextActionsProviderRegistry', () => {
             new CustomCommandPaletteActionProvider(),
             undefined
         );
-        expect(contextActionsProviderRegistry.keys()).to.have.length(1);
+        expect(contextActionsProviderRegistry.keys()).toHaveLength(1);
     });
 });

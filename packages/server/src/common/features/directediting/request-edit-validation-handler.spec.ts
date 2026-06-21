@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -15,8 +15,7 @@
  ********************************************************************************/
 import { GNode } from '@eclipse-glsp/graph';
 import { RequestEditValidationAction, SetEditValidationResultAction, ValidationStatus } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
-import * as sinon from 'sinon';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestContextEditValidator, TestLabelEditValidator } from '../../test/mock-util';
 import { GModelIndex } from '../model/gmodel-index';
 import { DefaultModelState } from '../model/model-state';
@@ -29,7 +28,9 @@ describe('Test RequestEditValidationHandler', () => {
     const contextEditValidators: ContextEditValidator[] = [new TestContextEditValidator()];
     const modelState = new DefaultModelState();
     Object.defineProperty(modelState, 'index', { value: new GModelIndex() });
-    sinon.stub(modelState.index, 'get').callsFake(() => new GNode());
+    beforeEach(() => {
+        vi.spyOn(modelState.index, 'get').mockImplementation(() => new GNode());
+    });
     const contextEditValidatorsRegistry = new DefaultContextEditValidatorRegistry(
         modelState,
         contextEditValidators,
@@ -43,89 +44,89 @@ describe('Test RequestEditValidationHandler', () => {
         const actions = await requestEditValidationHandler.execute(
             RequestEditValidationAction.create({ contextId: 'test', modelElementId: '', text: 'ok' })
         );
-        expect(actions).to.have.length(1);
+        expect(actions).toHaveLength(1);
         const action = actions[0];
 
-        expect(SetEditValidationResultAction.is(action)).to.be.true;
+        expect(SetEditValidationResultAction.is(action)).toBe(true);
         const setEditValidationResultAction = action as SetEditValidationResultAction;
         const status = setEditValidationResultAction.status;
 
-        expect(status.severity).to.be.equal(ValidationStatus.Severity.OK);
-        expect(status.message).to.be.equal('ok');
+        expect(status.severity).toBe(ValidationStatus.Severity.OK);
+        expect(status.message).toBe('ok');
     });
 
     it('requestContextEditValidation with warning result', async () => {
         const actions = await requestEditValidationHandler.execute(
             RequestEditValidationAction.create({ contextId: 'test', modelElementId: '', text: 'warning' })
         );
-        expect(actions).to.have.length(1);
+        expect(actions).toHaveLength(1);
         const action = actions[0];
 
-        expect(SetEditValidationResultAction.is(action)).to.be.true;
+        expect(SetEditValidationResultAction.is(action)).toBe(true);
         const setEditValidationResultAction = action as SetEditValidationResultAction;
         const status = setEditValidationResultAction.status;
 
-        expect(status.severity).to.be.equal(ValidationStatus.Severity.WARNING);
-        expect(status.message).to.be.equal('warning');
+        expect(status.severity).toBe(ValidationStatus.Severity.WARNING);
+        expect(status.message).toBe('warning');
     });
 
     it('requestContextEditValidation with error result', async () => {
         const actions = await requestEditValidationHandler.execute(
             RequestEditValidationAction.create({ contextId: 'test', modelElementId: '', text: 'error' })
         );
-        expect(actions).to.have.length(1);
+        expect(actions).toHaveLength(1);
         const action = actions[0];
 
-        expect(SetEditValidationResultAction.is(action)).to.be.true;
+        expect(SetEditValidationResultAction.is(action)).toBe(true);
         const setEditValidationResultAction = action as SetEditValidationResultAction;
         const status = setEditValidationResultAction.status;
 
-        expect(status.severity).to.be.equal(ValidationStatus.Severity.ERROR);
-        expect(status.message).to.be.equal('error');
+        expect(status.severity).toBe(ValidationStatus.Severity.ERROR);
+        expect(status.message).toBe('error');
     });
 
     it('requestLabelEditValidation with ok result', async () => {
         const actions = await requestEditValidationHandler.execute(
             RequestEditValidationAction.create({ contextId: LabelEditValidator.CONTEXT_ID, modelElementId: '', text: 'ok' })
         );
-        expect(actions).to.have.length(1);
+        expect(actions).toHaveLength(1);
         const action = actions[0];
 
-        expect(SetEditValidationResultAction.is(action)).to.be.true;
+        expect(SetEditValidationResultAction.is(action)).toBe(true);
         const setEditValidationResultAction = action as SetEditValidationResultAction;
         const status = setEditValidationResultAction.status;
 
-        expect(status.severity).to.be.equal(ValidationStatus.Severity.OK);
-        expect(status.message).to.be.equal('ok');
+        expect(status.severity).toBe(ValidationStatus.Severity.OK);
+        expect(status.message).toBe('ok');
     });
 
     it('requestLabelEditValidation with warning result', async () => {
         const actions = await requestEditValidationHandler.execute(
             RequestEditValidationAction.create({ contextId: LabelEditValidator.CONTEXT_ID, modelElementId: '', text: 'warning' })
         );
-        expect(actions).to.have.length(1);
+        expect(actions).toHaveLength(1);
         const action = actions[0];
 
-        expect(SetEditValidationResultAction.is(action)).to.be.true;
+        expect(SetEditValidationResultAction.is(action)).toBe(true);
         const setEditValidationResultAction = action as SetEditValidationResultAction;
         const status = setEditValidationResultAction.status;
 
-        expect(status.severity).to.be.equal(ValidationStatus.Severity.WARNING);
-        expect(status.message).to.be.equal('warning');
+        expect(status.severity).toBe(ValidationStatus.Severity.WARNING);
+        expect(status.message).toBe('warning');
     });
 
     it('requestLabelEditValidation with error result', async () => {
         const actions = await requestEditValidationHandler.execute(
             RequestEditValidationAction.create({ contextId: LabelEditValidator.CONTEXT_ID, modelElementId: '', text: 'error' })
         );
-        expect(actions).to.have.length(1);
+        expect(actions).toHaveLength(1);
         const action = actions[0];
 
-        expect(SetEditValidationResultAction.is(action)).to.be.true;
+        expect(SetEditValidationResultAction.is(action)).toBe(true);
         const setEditValidationResultAction = action as SetEditValidationResultAction;
         const status = setEditValidationResultAction.status;
 
-        expect(status.severity).to.be.equal(ValidationStatus.Severity.ERROR);
-        expect(status.message).to.be.equal('error');
+        expect(status.severity).toBe(ValidationStatus.Severity.ERROR);
+        expect(status.message).toBe('error');
     });
 });

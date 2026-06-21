@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { ClientSessionManager } from '@eclipse-glsp/server';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { McpToolError, resolveActiveSessionId } from './mcp-handler-shared';
 
 function stubSessionManager(sessionIds: string[]): ClientSessionManager {
@@ -25,29 +25,29 @@ function stubSessionManager(sessionIds: string[]): ClientSessionManager {
 describe('resolveActiveSessionId', () => {
     it('returns the explicit session id when it matches an open session', () => {
         const result = resolveActiveSessionId(stubSessionManager(['alpha', 'beta']), 'alpha');
-        expect(result).to.equal('alpha');
+        expect(result).toBe('alpha');
     });
 
     it('defaults to the only open session when sessionId is omitted', () => {
         const result = resolveActiveSessionId(stubSessionManager(['solo']), undefined);
-        expect(result).to.equal('solo');
+        expect(result).toBe('solo');
     });
 
     it('throws McpToolError listing the open sessions when ambiguous', () => {
-        expect(() => resolveActiveSessionId(stubSessionManager(['session-a', 'session-b']), undefined)).to.throw(
-            McpToolError,
-            /Multiple sessions open.*session-a.*session-b/
-        );
+        const act = (): string => resolveActiveSessionId(stubSessionManager(['session-a', 'session-b']), undefined);
+        expect(act).toThrow(McpToolError);
+        expect(act).toThrow(/Multiple sessions open.*session-a.*session-b/);
     });
 
     it('throws McpToolError when no sessions are open', () => {
-        expect(() => resolveActiveSessionId(stubSessionManager([]), undefined)).to.throw(McpToolError, /No open diagram sessions/);
+        const act = (): string => resolveActiveSessionId(stubSessionManager([]), undefined);
+        expect(act).toThrow(McpToolError);
+        expect(act).toThrow(/No open diagram sessions/);
     });
 
     it('throws McpToolError when an explicit sessionId does not match any open session', () => {
-        expect(() => resolveActiveSessionId(stubSessionManager(['real-session']), 'ghost')).to.throw(
-            McpToolError,
-            /Unknown sessionId: ghost/
-        );
+        const act = (): string => resolveActiveSessionId(stubSessionManager(['real-session']), 'ghost');
+        expect(act).toThrow(McpToolError);
+        expect(act).toThrow(/Unknown sessionId: ghost/);
     });
 });

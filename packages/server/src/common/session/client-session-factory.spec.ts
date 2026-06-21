@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GLSPClientProxy } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { ActionDispatcher } from '../actions/action-dispatcher';
 import { DiagramModules, InjectionContainer } from '../di/service-identifiers';
@@ -48,13 +48,13 @@ describe('test DefaultClientSessionFactory', () => {
 
     it('create - new client session', () => {
         const session = factory.create({ clientSessionId, diagramType, clientActionKinds: [] });
-        expect(session.id).to.be.equal(clientSessionId);
-        expect(session.diagramType).to.be.equal(diagramType);
-        expect(session.container.parent).to.be.equal(container);
-        expect(session.actionDispatcher).to.be.an.instanceOf(mock.StubActionDispatcher);
+        expect(session.id).toBe(clientSessionId);
+        expect(session.diagramType).toBe(diagramType);
+        expect(session.container.parent).toBe(container);
+        expect(session.actionDispatcher).toBeInstanceOf(mock.StubActionDispatcher);
     });
 
     it('create - unknown diagram type', () => {
-        expect(() => factory.create({ clientSessionId, diagramType: 'unknown-type', clientActionKinds: [] })).to.throw(GLSPServerError);
+        expect(() => factory.create({ clientSessionId, diagramType: 'unknown-type', clientActionKinds: [] })).toThrow(GLSPServerError);
     });
 });

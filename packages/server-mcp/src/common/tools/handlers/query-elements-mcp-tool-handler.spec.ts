@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { ClientId, GLabel, GModelElement, Logger, ModelState, NullLogger } from '@eclipse-glsp/server';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { McpModelSerializer } from '../../resources/services/mcp-model-serializer';
 import { McpElementsNotFoundError, McpToolResult } from '../../server/mcp-handler-shared';
@@ -110,9 +110,9 @@ describe('QueryElementsMcpToolHandler', () => {
 
             const result = await callCreateResult(handler, { sessionId: 's', types: ['task:manual'] });
             const structured = result.structuredContent as unknown as ListStructured;
-            expect(structured.mode).to.equal('list');
-            expect(structured.matches).to.have.lengthOf(1);
-            expect(structured.matches[0].id).to.equal('n1');
+            expect(structured.mode).toBe('list');
+            expect(structured.matches).toHaveLength(1);
+            expect(structured.matches[0].id).toBe('n1');
         });
 
         it('matches `labelMatch` case-insensitively against direct GLabel children', async () => {
@@ -124,7 +124,7 @@ describe('QueryElementsMcpToolHandler', () => {
 
             const result = await callCreateResult(handler, { sessionId: 's', labelMatch: 'ARTIFACT' });
             const ids = (result.structuredContent as unknown as ListStructured).matches.map(m => m.id);
-            expect(ids).to.have.members(['n1', 'n2']);
+            expect([...ids].sort()).toEqual(['n1', 'n2'].sort());
         });
 
         it('combines `types` and `labelMatch` as AND', async () => {
@@ -139,8 +139,8 @@ describe('QueryElementsMcpToolHandler', () => {
                 labelMatch: 'build'
             });
             const matches = (result.structuredContent as unknown as ListStructured).matches;
-            expect(matches).to.have.lengthOf(1);
-            expect(matches[0].id).to.equal('n1');
+            expect(matches).toHaveLength(1);
+            expect(matches[0].id).toBe('n1');
         });
 
         it('caps results at `limit` and reports `truncated: true`', async () => {
@@ -149,8 +149,8 @@ describe('QueryElementsMcpToolHandler', () => {
 
             const result = await callCreateResult(handler, { sessionId: 's', limit: 3 });
             const structured = result.structuredContent as unknown as ListStructured;
-            expect(structured.matches).to.have.lengthOf(3);
-            expect(structured.truncated).to.equal(true);
+            expect(structured.matches).toHaveLength(3);
+            expect(structured.truncated).toBe(true);
         });
 
         it('surfaces a no-match message and empty matches when nothing matches', async () => {
@@ -158,8 +158,8 @@ describe('QueryElementsMcpToolHandler', () => {
 
             const result = await callCreateResult(handler, { sessionId: 's', types: ['nonexistent'] });
             const text = (result.content[0] as { text: string }).text;
-            expect(text).to.include('No elements matched');
-            expect((result.structuredContent as unknown as ListStructured).matches).to.deep.equal([]);
+            expect(text).toContain('No elements matched');
+            expect((result.structuredContent as unknown as ListStructured).matches).toEqual([]);
         });
     });
 
@@ -175,12 +175,12 @@ describe('QueryElementsMcpToolHandler', () => {
             // GModelElement instances looked up from the model index — not just the ids. Inspect
             // mode also probes per-element to detect container expansion before rendering, so the
             // final array call is what produces the structuredContent — assert on that one.
-            expect(serializer.capturedArrays.length).to.be.greaterThan(0);
+            expect(serializer.capturedArrays.length).toBeGreaterThan(0);
             const finalCall = serializer.capturedArrays[serializer.capturedArrays.length - 1];
-            expect(finalCall).to.deep.equal(elements);
+            expect(finalCall).toEqual(elements);
 
             const structured = result.structuredContent as unknown as InspectStructured;
-            expect(structured.mode).to.equal('inspect');
+            expect(structured.mode).toBe('inspect');
         });
 
         it('throws McpElementsNotFoundError when an id is missing from the model', async () => {
@@ -190,7 +190,7 @@ describe('QueryElementsMcpToolHandler', () => {
                 await callCreateResult(handler, { sessionId: 's', elementIds: ['n1', 'unknown'] });
                 expect.fail('expected McpElementsNotFoundError');
             } catch (err) {
-                expect(err).to.be.instanceOf(McpElementsNotFoundError);
+                expect(err).toBeInstanceOf(McpElementsNotFoundError);
             }
         });
 
@@ -205,8 +205,8 @@ describe('QueryElementsMcpToolHandler', () => {
                 limit: 0 // intentionally would fail validation in list mode
             });
             const structured = result.structuredContent as unknown as InspectStructured;
-            expect(structured.mode).to.equal('inspect');
-            expect(structured.elements.map(e => e.id)).to.deep.equal(['n1']);
+            expect(structured.mode).toBe('inspect');
+            expect(structured.elements.map(e => e.id)).toEqual(['n1']);
         });
     });
 });
