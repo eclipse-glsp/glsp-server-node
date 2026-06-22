@@ -134,7 +134,7 @@ describe('BindingTarget', () => {
             it('Should bind the unbound target service to itself before applying the toService binding', () => {
                 vi.mocked(context.isBound).mockReturnValue(false);
                 applyBindingTarget(context, Target, { service: SubTarget });
-                expect(context.bind).toHaveBeenCalledWith(Target);
+                expect(context.bind).toHaveBeenCalledWith(SubTarget);
             });
             it('The return syntax should be no op and invocation of a syntax function should throw an error', () => {
                 vi.mocked(context.isBound).mockReturnValue(true);
