@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -23,9 +23,8 @@ import {
     ServerLayoutKind,
     ShapeTypeHint
 } from '@eclipse-glsp/server';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { Container, ContainerModule, injectable } from 'inversify';
-import * as sinon from 'sinon';
 import { configureELKLayoutModule } from './di.config';
 import { DefaultElementFilter, ElementFilter } from './element-filter';
 import { AbstractLayoutConfigurator, FallbackLayoutConfigurator, LayoutConfigurator } from './layout-configurator';
@@ -51,12 +50,11 @@ class StubDiagramConfiguration implements DiagramConfiguration {
 }
 
 describe('test configureELKLayoutModule', () => {
-    const sandbox = sinon.createSandbox();
     const mockDiagramConfiguration = new StubDiagramConfiguration();
     const typeMappings = new Map<string, GModelElementConstructor>();
 
     typeMappings.set('graph', GGraph);
-    sandbox.stub(mockDiagramConfiguration, 'typeMapping').value(typeMappings);
+    mockDiagramConfiguration.typeMapping = typeMappings;
     const modelState = new DefaultModelState();
     const baseModule = new ContainerModule(bind => {
         bind(ModelState).toConstantValue(modelState);
@@ -67,12 +65,12 @@ describe('test configureELKLayoutModule', () => {
         const container = new Container();
         container.load(baseModule, elkModule);
         const filter = container.get<ElementFilter>(ElementFilter);
-        expect(filter).to.be.an.instanceOf(DefaultElementFilter);
+        expect(filter).toBeInstanceOf(DefaultElementFilter);
         const configurator = container.get<LayoutConfigurator>(LayoutConfigurator);
-        expect(configurator).to.be.an.instanceOf(FallbackLayoutConfigurator);
+        expect(configurator).toBeInstanceOf(FallbackLayoutConfigurator);
         const graphOptions = configurator.apply(new GGraph());
-        expect(graphOptions).not.to.be.undefined;
-        expect(graphOptions!['elk.algorithm']).to.equal(algorithm);
+        expect(graphOptions).toBeDefined();
+        expect(graphOptions!['elk.algorithm']).toBe(algorithm);
     });
 
     it('configure with additional default layout options', () => {
@@ -86,8 +84,8 @@ describe('test configureELKLayoutModule', () => {
         container.load(baseModule, elkModule);
         const configurator = container.get<LayoutConfigurator>(LayoutConfigurator);
         const graphOptions = configurator.apply(new GGraph());
-        expect(graphOptions).not.to.be.undefined;
-        expect(graphOptions).to.include(defaultLayoutOptions);
+        expect(graphOptions).toBeDefined();
+        expect(graphOptions).toMatchObject(defaultLayoutOptions);
     });
 
     it('configure with custom layout configurator', () => {
@@ -96,7 +94,7 @@ describe('test configureELKLayoutModule', () => {
         const container = new Container();
         container.load(baseModule, elkModule);
         const configurator = container.get<LayoutConfigurator>(LayoutConfigurator);
-        expect(configurator).to.be.an.instanceOf(CustomLayoutConfigurator);
+        expect(configurator).toBeInstanceOf(CustomLayoutConfigurator);
     });
 
     it('configure with custom element filter', () => {
@@ -105,6 +103,6 @@ describe('test configureELKLayoutModule', () => {
         const container = new Container();
         container.load(baseModule, elkModule);
         const filter = container.get<ElementFilter>(ElementFilter);
-        expect(filter).to.be.an.instanceOf(CustomElementFilter);
+        expect(filter).toBeInstanceOf(CustomElementFilter);
     });
 });

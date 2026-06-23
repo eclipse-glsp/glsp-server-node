@@ -5,7 +5,8 @@
     "outDir": "lib",
     "composite": true,
     "reactNamespace": "JSX",
-    "types": ["node", "mocha"]
+    "types": ["node"]
   },
+  "exclude": ["**/*.spec.ts"],
   "include": ["src"]
 }

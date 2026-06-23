@@ -15,7 +15,7 @@
  ********************************************************************************/
 import { delay } from '../test/mock-util';
 
-import { expect } from 'chai';
+import { beforeEach, describe, expect, it } from 'vitest';
 // eslint-disable-next-line import-x/no-deprecated
 import { PromiseQueue } from './promise-queue';
 
@@ -108,7 +108,7 @@ describe('test PromiseQueue', () => {
 
         queue.enqueue(p1.promise);
         const queEnd = queue.enqueue(p2.promise);
-        expect(queue.size).to.be.equal(1);
+        expect(queue.size).toBe(1);
         await queEnd;
     });
 
@@ -121,7 +121,7 @@ describe('test PromiseQueue', () => {
 
         const p2 = newTestPromise(200);
         p2.state.onStart(() => {
-            expect(queue.size).to.be.equal(1);
+            expect(queue.size).toBe(1);
             expect(p1.state.stopped).true;
             expect(p3.state.started).false;
         });
@@ -134,9 +134,9 @@ describe('test PromiseQueue', () => {
 
         queue.enqueue(p1.promise);
         queue.enqueue(p2.promise);
-        expect(queue.size).to.be.equal(1);
+        expect(queue.size).toBe(1);
         const queueEnd = queue.enqueue(p3.promise);
-        expect(queue.size).to.be.equal(2);
+        expect(queue.size).toBe(2);
         await queueEnd;
     });
 });

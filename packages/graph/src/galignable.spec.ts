@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 EclipseSource and others.
+ * Copyright (c) 2024-2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { DefaultTypes } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { GAlignableBuilder, isGAlignable } from './galignable';
 import { GLabel, GLabelBuilder } from './glabel';
 import { GNode, GNodeBuilder } from './gnode';
@@ -27,7 +27,7 @@ describe('GAlignable Tests', () => {
                 .build();
 
             const result = isGAlignable(gLabelElement);
-            expect(result).to.be.true;
+            expect(result).toBe(true);
         });
 
         it('should return false for a non-GAlignable element', () => {
@@ -38,7 +38,7 @@ describe('GAlignable Tests', () => {
                 .build();
 
             const result = isGAlignable(gNodeElement);
-            expect(result).to.be.false;
+            expect(result).toBe(false);
         });
     });
 
@@ -46,29 +46,29 @@ describe('GAlignable Tests', () => {
         it('should set alignment using a point object', () => {
             const builder = new GLabelBuilder(GLabel);
             GAlignableBuilder.alignment(builder, { x: 45, y: 90 });
-            expect(builder['proxy'].alignment).to.deep.equal({ x: 45, y: 90 });
+            expect(builder['proxy'].alignment).toEqual({ x: 45, y: 90 });
         });
 
         it('should set alignment using x and y parameters', () => {
             let builder = new GLabelBuilder(GLabel);
             GAlignableBuilder.alignment(builder, 8, 16);
-            expect(builder['proxy'].alignment).to.deep.equal({ x: 8, y: 16 });
+            expect(builder['proxy'].alignment).toEqual({ x: 8, y: 16 });
 
             builder = new GLabelBuilder(GLabel);
             GAlignableBuilder.alignment(builder, 12, 0);
-            expect(builder['proxy'].alignment).to.deep.equal({ x: 12, y: 0 });
+            expect(builder['proxy'].alignment).toEqual({ x: 12, y: 0 });
         });
 
         it('should set alignment from point object if y is provided too', () => {
             const builder = new GLabelBuilder(GLabel);
             GAlignableBuilder.alignment(builder, { x: 17, y: 71 }, 15);
-            expect(builder['proxy'].alignment).to.deep.equal({ x: 17, y: 71 });
+            expect(builder['proxy'].alignment).toEqual({ x: 17, y: 71 });
         });
 
         it('should default y to 0 if y is not provided', () => {
             const builder = new GLabelBuilder(GLabel);
             GAlignableBuilder.alignment(builder, 77);
-            expect(builder['proxy'].alignment).to.deep.equal({ x: 77, y: 0 });
+            expect(builder['proxy'].alignment).toEqual({ x: 77, y: 0 });
         });
     });
 });

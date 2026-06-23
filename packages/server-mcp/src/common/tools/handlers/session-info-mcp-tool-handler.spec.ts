@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { ClientSession, ClientSessionManager, CommandStack, Logger, ModelState, NullLogger } from '@eclipse-glsp/server';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { McpToolResult } from '../../server/mcp-handler-shared';
 import { SessionInfoMcpToolHandler } from './session-info-mcp-tool-handler';
@@ -110,13 +110,13 @@ describe('SessionInfoMcpToolHandler', () => {
         const result = handler['createResult']({});
         const text = asText(result);
         // Summary lists each session's id and diagram type — the load-bearing referenceable bits.
-        expect(text).to.include('session-alpha');
-        expect(text).to.include('session-beta');
-        expect(text).to.include('workflow-diagram');
-        expect(text).to.include('state-diagram');
+        expect(text).toContain('session-alpha');
+        expect(text).toContain('session-beta');
+        expect(text).toContain('workflow-diagram');
+        expect(text).toContain('state-diagram');
         // Full per-session detail goes via structuredContent.
         const sessions = (result.structuredContent as { sessions: SessionRow[] }).sessions;
-        expect(sessions.map(row => row.sessionId)).to.deep.equal(['session-alpha', 'session-beta']);
+        expect(sessions.map(row => row.sessionId)).toEqual(['session-alpha', 'session-beta']);
     });
 
     it("passes through `sourceUri` and `readOnly` from each session container's ModelState via structuredContent", () => {
@@ -124,12 +124,12 @@ describe('SessionInfoMcpToolHandler', () => {
 
         const result = handler['createResult']({});
         const sessions = (result.structuredContent as { sessions: SessionRow[] }).sessions;
-        expect(sessions).to.have.lengthOf(1);
-        expect(sessions[0].sourceUri).to.equal('file:///only.wf');
-        expect(sessions[0].readOnly).to.equal(true);
-        expect(sessions[0].dirty).to.equal(false);
+        expect(sessions).toHaveLength(1);
+        expect(sessions[0].sourceUri).toBe('file:///only.wf');
+        expect(sessions[0].readOnly).toBe(true);
+        expect(sessions[0].dirty).toBe(false);
         // Read-only state is also surfaced in the text summary so content-only clients can see it.
-        expect(asText(result)).to.include('read-only');
+        expect(asText(result)).toContain('read-only');
     });
 
     it('filters to a single session when `sessionId` matches', () => {
@@ -140,13 +140,13 @@ describe('SessionInfoMcpToolHandler', () => {
 
         const text = asText(handler['createResult']({ sessionId: 'session-beta' }));
 
-        expect(text).to.include('session-beta');
-        expect(text).to.not.include('session-alpha');
+        expect(text).toContain('session-beta');
+        expect(text).not.toContain('session-alpha');
     });
 
     it('throws McpToolError when the requested `sessionId` does not exist', () => {
         const handler = buildHandler([makeSession('session-alpha', 'workflow-diagram', 'file:///alpha.wf', false)]);
 
-        expect(() => handler['createResult']({ sessionId: 'unknown' })).to.throw(/Unknown sessionId: unknown/);
+        expect(() => handler['createResult']({ sessionId: 'unknown' })).toThrow(/Unknown sessionId: unknown/);
     });
 });

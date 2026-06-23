@@ -13,8 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { expect } from 'chai';
-import { expectToThrowAsync } from '../test/mock-util';
+import { describe, expect, it } from 'vitest';
 import { ActionQueue } from './action-queue';
 
 describe('ActionQueue', () => {
@@ -33,7 +32,7 @@ describe('ActionQueue', () => {
         channel.stop();
         await consumer;
 
-        expect(consumed).to.deep.equal([1, 2, 3]);
+        expect(consumed).toEqual([1, 2, 3]);
     });
 
     it('resolves the push promise once the consumer resolves the entry', async () => {
@@ -51,7 +50,7 @@ describe('ActionQueue', () => {
         // Give the consumer a turn to pick up the entry.
         await Promise.resolve();
         await consumer;
-        expect(entryResolver).to.exist;
+        expect(entryResolver).toBeDefined();
         entryResolver!();
         await pushed;
     });
@@ -68,13 +67,13 @@ describe('ActionQueue', () => {
 
         const pushed = channel.push(1);
         await consumer;
-        await expectToThrowAsync(() => pushed, 'boom');
+        await expect(pushed).rejects.toThrow('boom');
     });
 
     it('rejects push() after stop()', async () => {
         const channel = new ActionQueue<number>();
         channel.stop();
-        await expectToThrowAsync(() => channel.push(1), 'ActionQueue is stopped');
+        await expect(channel.push(1)).rejects.toThrow('ActionQueue is stopped');
     });
 
     it('consumer exits after stop() and drain', async () => {
@@ -93,21 +92,21 @@ describe('ActionQueue', () => {
         channel.stop();
         await consumer;
 
-        expect(consumed).to.deep.equal([1, 2]);
-        expect(channel.isStopped).to.be.true;
+        expect(consumed).toEqual([1, 2]);
+        expect(channel.isStopped).toBe(true);
     });
 
     it('rejectPending() rejects all queued push() promises without stopping', async () => {
         const channel = new ActionQueue<number>();
         const pushes = [channel.push(1), channel.push(2)];
-        expect(channel.size).to.equal(2);
+        expect(channel.size).toBe(2);
 
         channel.rejectPending(new Error('cleared'));
 
-        await expectToThrowAsync(() => pushes[0], 'cleared');
-        await expectToThrowAsync(() => pushes[1], 'cleared');
-        expect(channel.size).to.equal(0);
-        expect(channel.isStopped).to.be.false;
+        await expect(pushes[0]).rejects.toThrow('cleared');
+        await expect(pushes[1]).rejects.toThrow('cleared');
+        expect(channel.size).toBe(0);
+        expect(channel.isStopped).toBe(false);
     });
 
     it('size reflects the number of unconsumed entries', async () => {
@@ -115,7 +114,7 @@ describe('ActionQueue', () => {
         channel.push(1);
         channel.push(2);
         channel.push(3);
-        expect(channel.size).to.equal(3);
+        expect(channel.size).toBe(3);
     });
 
     it('throws when a second consumer is started', async () => {
@@ -125,7 +124,7 @@ describe('ActionQueue', () => {
         const firstStep = first.next();
 
         const second = channel.consume();
-        await expectToThrowAsync(() => second.next().then(() => undefined), 'ActionQueue supports only a single consumer');
+        await expect(second.next()).rejects.toThrow('ActionQueue supports only a single consumer');
 
         channel.stop();
         await firstStep;

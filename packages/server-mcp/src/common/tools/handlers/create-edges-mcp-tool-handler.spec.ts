@@ -26,7 +26,7 @@ import {
     ModelState,
     NullLogger
 } from '@eclipse-glsp/server';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { McpToolResult } from '../../server/mcp-handler-shared';
 import { McpIdAliasService } from '../../server/mcp-id-alias-service';
@@ -138,11 +138,11 @@ describe('CreateEdgesMcpToolHandler · dryRun', () => {
         );
 
         const structured = result.structuredContent as unknown as DryRunStructured;
-        expect(structured.validationResults).to.have.lengthOf(1);
-        expect(structured.validationResults[0].isValid).to.equal(true);
-        expect(structured.validationResults[0].reason).to.match(/no dynamic edge-type hint/i);
-        expect(structured.createdEdges).to.deep.equal([]);
-        expect(dispatcher.dispatched).to.have.lengthOf(0);
+        expect(structured.validationResults).toHaveLength(1);
+        expect(structured.validationResults[0].isValid).toBe(true);
+        expect(structured.validationResults[0].reason).toMatch(/no dynamic edge-type hint/i);
+        expect(structured.createdEdges).toEqual([]);
+        expect(dispatcher.dispatched).toHaveLength(0);
     });
 
     it('flags isValid:false with a config-gap reason when edgeType declares a dynamic hint but no checker is bound', async () => {
@@ -154,9 +154,9 @@ describe('CreateEdgesMcpToolHandler · dryRun', () => {
         const result = await callCreateResult(handler, baseInput());
 
         const structured = result.structuredContent as unknown as DryRunStructured;
-        expect(structured.validationResults[0].isValid).to.equal(false);
-        expect(structured.validationResults[0].reason).to.include('EdgeCreationChecker is not bound');
-        expect(dispatcher.dispatched).to.have.lengthOf(0);
+        expect(structured.validationResults[0].isValid).toBe(false);
+        expect(structured.validationResults[0].reason).toContain('EdgeCreationChecker is not bound');
+        expect(dispatcher.dispatched).toHaveLength(0);
     });
 
     it('delegates to EdgeCreationChecker.isValidTarget when target + dynamic hint + checker are present', async () => {
@@ -171,14 +171,14 @@ describe('CreateEdgesMcpToolHandler · dryRun', () => {
 
         const result = await callCreateResult(handler, baseInput());
 
-        expect(checker.lastTargetCall).to.deep.equal({
+        expect(checker.lastTargetCall).toEqual({
             edgeType: 'edge:dynamic',
             source: sourceElement,
             target: targetElement
         });
         const structured = result.structuredContent as unknown as DryRunStructured;
-        expect(structured.validationResults[0].isValid).to.equal(false);
-        expect(dispatcher.dispatched).to.have.lengthOf(0);
+        expect(structured.validationResults[0].isValid).toBe(false);
+        expect(dispatcher.dispatched).toHaveLength(0);
     });
 
     it('reports source/target not-found inline as a per-edge validation failure (does not throw)', async () => {
@@ -192,7 +192,7 @@ describe('CreateEdgesMcpToolHandler · dryRun', () => {
             baseInput({ edges: [{ elementTypeId: 'edge:dynamic', sourceElementId: 's', targetElementId: 'missing' }] })
         );
         const structured = result.structuredContent as unknown as DryRunStructured;
-        expect(structured.validationResults[0].isValid).to.equal(false);
-        expect(structured.validationResults[0].reason).to.include('Target element not found');
+        expect(structured.validationResults[0].isValid).toBe(false);
+        expect(structured.validationResults[0].reason).toContain('Target element not found');
     });
 });

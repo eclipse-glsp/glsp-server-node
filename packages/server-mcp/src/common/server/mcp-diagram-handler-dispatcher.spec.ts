@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { CallToolResult, ReadResourceResult } from '@modelcontextprotocol/sdk/types.js';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { GLSPMcpServer } from './glsp-mcp-server';
 import { DefaultMcpDiagramHandlerDispatcher, DiagramTypeCatalog } from './mcp-diagram-handler-dispatcher';
 
@@ -124,8 +124,8 @@ describe('DefaultMcpDiagramHandlerDispatcher · SDK-callback dispatch error enve
         dispatcher.registerAll(captured as unknown as GLSPMcpServer, false);
 
         const result = await captured.tools.get('fake-tool')!({}, {});
-        expect(result.isError).to.equal(true);
-        expect((result.content as Array<{ text: string }>)[0].text).to.match(/sessionId/);
+        expect(result.isError).toBe(true);
+        expect((result.content as Array<{ text: string }>)[0].text).toMatch(/sessionId/);
     });
 
     it('tool callback returns isError envelope when sessionId is unknown', async () => {
@@ -142,8 +142,8 @@ describe('DefaultMcpDiagramHandlerDispatcher · SDK-callback dispatch error enve
         dispatcher.registerAll(captured as unknown as GLSPMcpServer, false);
 
         const result = await captured.tools.get('fake-tool')!({ sessionId: 'unknown-glsp-id' }, {});
-        expect(result.isError).to.equal(true);
-        expect((result.content as Array<{ text: string }>)[0].text).to.match(/Session not found/);
+        expect(result.isError).toBe(true);
+        expect((result.content as Array<{ text: string }>)[0].text).toMatch(/Session not found/);
     });
 
     it('tool callback returns isError envelope when registered handler is absent for the session', async () => {
@@ -165,8 +165,8 @@ describe('DefaultMcpDiagramHandlerDispatcher · SDK-callback dispatch error enve
         dispatcher.registerAll(captured as unknown as GLSPMcpServer, false);
 
         const result = await captured.tools.get('fake-tool')!({ sessionId: 'session-1' }, {});
-        expect(result.isError).to.equal(true);
-        expect((result.content as Array<{ text: string }>)[0].text).to.match(/No tool handler/);
+        expect(result.isError).toBe(true);
+        expect((result.content as Array<{ text: string }>)[0].text).toMatch(/No tool handler/);
     });
 
     it('resource-as-tool callback returns isError envelope when sessionId is missing', async () => {
@@ -181,8 +181,8 @@ describe('DefaultMcpDiagramHandlerDispatcher · SDK-callback dispatch error enve
         dispatcher.registerAll(captured as unknown as GLSPMcpServer, false);
 
         const result = await captured.tools.get('fake-resource')!({}, {});
-        expect(result.isError).to.equal(true);
-        expect((result.content as Array<{ text: string }>)[0].text).to.match(/sessionId/);
+        expect(result.isError).toBe(true);
+        expect((result.content as Array<{ text: string }>)[0].text).toMatch(/sessionId/);
     });
 
     it('static-URI resource read throws McpToolError when no GLSP session is open', async () => {
@@ -205,8 +205,8 @@ describe('DefaultMcpDiagramHandlerDispatcher · SDK-callback dispatch error enve
         } catch (err: unknown) {
             rejection = err;
         }
-        expect(rejection).to.exist;
-        expect((rejection as Error).message).to.match(/No open GLSP session/);
+        expect(rejection).toBeDefined();
+        expect((rejection as Error).message).toMatch(/No open GLSP session/);
     });
 
     it('prompt callback rejects with McpToolError when sessionId is missing (no envelope wrap — by design)', async () => {
@@ -225,7 +225,7 @@ describe('DefaultMcpDiagramHandlerDispatcher · SDK-callback dispatch error enve
         } catch (err: unknown) {
             rejection = err;
         }
-        expect(rejection).to.exist;
-        expect((rejection as Error).message).to.match(/sessionId/);
+        expect(rejection).toBeDefined();
+        expect((rejection as Error).message).toMatch(/sessionId/);
     });
 });

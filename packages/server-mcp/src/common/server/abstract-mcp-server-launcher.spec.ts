@@ -23,7 +23,7 @@ import {
     McpInitializeResult
 } from '@eclipse-glsp/server';
 import { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
-import { expect } from 'chai';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import * as z from 'zod/v4';
 import { AbstractMcpServerLauncher, FullMcpServerConfiguration, TransportEndpoint } from './abstract-mcp-server-launcher';
@@ -222,8 +222,8 @@ describe('AbstractMcpServerLauncher.handleRequest', () => {
 
     it('POST initialize creates a session and returns 200 with mcp-session-id header', async () => {
         const response = await launcher.handleRequest(postInit());
-        expect(response.status).to.equal(200);
-        expect(response.headers.get('mcp-session-id'), 'must echo a session id after initialize').to.be.a('string');
+        expect(response.status).toBe(200);
+        expect(response.headers.get('mcp-session-id'), 'must echo a session id after initialize').toBeTypeOf('string');
     });
 
     it('POST to a known session dispatches to its transport (tools/call round-trip)', async () => {
@@ -243,29 +243,29 @@ describe('AbstractMcpServerLauncher.handleRequest', () => {
                 params: { name: 'echo', arguments: { message: 'hello' } }
             })
         );
-        expect(callResponse.status).to.equal(200);
+        expect(callResponse.status).toBe(200);
         const payload = (await readSseFirstData(callResponse)) as { result?: { content?: Array<{ text?: string }> } };
-        expect(payload.result?.content?.[0]?.text).to.equal('hello');
+        expect(payload.result?.content?.[0]?.text).toBe('hello');
     });
 
     it('POST without session id, non-initialize body → 400 with JSON-RPC error envelope', async () => {
         const response = await launcher.handleRequest(postJson(undefined, { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }));
-        expect(response.status).to.equal(400);
+        expect(response.status).toBe(400);
         const payload = (await response.json()) as { jsonrpc: string; error: { code: number; message: string }; id: unknown };
-        expect(payload.jsonrpc).to.equal('2.0');
+        expect(payload.jsonrpc).toBe('2.0');
         // eslint-disable-next-line no-null/no-null
-        expect(payload.id).to.equal(null);
-        expect(payload.error.code).to.equal(-32000);
-        expect(payload.error.message).to.match(/No valid session ID/);
+        expect(payload.id).toBe(null);
+        expect(payload.error.code).toBe(-32000);
+        expect(payload.error.message).toMatch(/No valid session ID/);
     });
 
     it('POST with unknown session id → 404 with JSON-RPC error envelope', async () => {
         const response = await launcher.handleRequest(
             postJson('not-a-real-session', { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} })
         );
-        expect(response.status).to.equal(404);
+        expect(response.status).toBe(404);
         const payload = (await response.json()) as { error: { code: number } };
-        expect(payload.error.code).to.equal(-32001);
+        expect(payload.error.code).toBe(-32001);
     });
 
     it('GET with accept: text/event-stream on a known session → 200, text/event-stream', async () => {
@@ -279,8 +279,8 @@ describe('AbstractMcpServerLauncher.handleRequest', () => {
                 headers: { accept: 'text/event-stream', 'mcp-session-id': sessionId }
             })
         );
-        expect(getResponse.status).to.equal(200);
-        expect(getResponse.headers.get('content-type')).to.match(/text\/event-stream/);
+        expect(getResponse.status).toBe(200);
+        expect(getResponse.headers.get('content-type')).toMatch(/text\/event-stream/);
         getResponse.body?.cancel().catch(() => undefined);
     });
 
@@ -291,7 +291,7 @@ describe('AbstractMcpServerLauncher.handleRequest', () => {
                 headers: { accept: 'text/event-stream', 'mcp-session-id': 'nope' }
             })
         );
-        expect(response.status).to.equal(404);
+        expect(response.status).toBe(404);
     });
 
     it('DELETE on known session fires onSessionClosed; subsequent POSTs return 404', async () => {
@@ -305,11 +305,11 @@ describe('AbstractMcpServerLauncher.handleRequest', () => {
         const deleteResponse = await launcher.handleRequest(
             new Request('http://test/mcp', { method: 'DELETE', headers: { 'mcp-session-id': sessionId } })
         );
-        expect(deleteResponse.status).to.be.lessThan(300);
-        expect(closedIds).to.include(sessionId);
+        expect(deleteResponse.status).toBeLessThan(300);
+        expect(closedIds).toContain(sessionId);
 
         const followUp = await launcher.handleRequest(postJson(sessionId, { jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} }));
-        expect(followUp.status).to.equal(404);
+        expect(followUp.status).toBe(404);
     });
 
     it('Non-init POST with unsupported MCP-Protocol-Version → 400 with JSON-RPC error envelope', async () => {
@@ -324,10 +324,10 @@ describe('AbstractMcpServerLauncher.handleRequest', () => {
                 body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} })
             })
         );
-        expect(response.status).to.equal(400);
+        expect(response.status).toBe(400);
         const payload = (await response.json()) as { error: { code: number; message: string } };
-        expect(payload.error.code).to.equal(-32000);
-        expect(payload.error.message).to.match(/Unsupported MCP-Protocol-Version/);
+        expect(payload.error.code).toBe(-32000);
+        expect(payload.error.message).toMatch(/Unsupported MCP-Protocol-Version/);
     });
 
     it('POST with no MCP-Protocol-Version header passes the version gate (falls through to session-id check)', async () => {
@@ -341,9 +341,9 @@ describe('AbstractMcpServerLauncher.handleRequest', () => {
                 body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} })
             })
         );
-        expect(response.status).to.equal(400);
+        expect(response.status).toBe(400);
         const payload = (await response.json()) as { error: { message: string } };
-        expect(payload.error.message).to.match(/No valid session ID/);
+        expect(payload.error.message).toMatch(/No valid session ID/);
     });
 
     it('authInfo from handleRequest reaches the registered tool handler extra', async () => {
@@ -365,9 +365,9 @@ describe('AbstractMcpServerLauncher.handleRequest', () => {
         );
         await readSseFirstData(callResponse).catch(() => undefined);
 
-        expect(launcher.authCapture.invoked).to.equal(true);
-        expect(launcher.authCapture.authInfo?.token).to.equal('bearer-xyz');
-        expect(launcher.authCapture.authInfo?.clientId).to.equal('spec-client');
+        expect(launcher.authCapture.invoked).toBe(true);
+        expect(launcher.authCapture.authInfo?.token).toBe('bearer-xyz');
+        expect(launcher.authCapture.authInfo?.clientId).toBe('spec-client');
     });
 
     it('onSessionInitialized fires on initialize', async () => {
@@ -376,20 +376,20 @@ describe('AbstractMcpServerLauncher.handleRequest', () => {
 
         const response = await launcher.handleRequest(postInit());
         const sessionId = response.headers.get('mcp-session-id')!;
-        expect(sessionIds).to.include(sessionId);
+        expect(sessionIds).toContain(sessionId);
     });
 
     it('Route mismatch (POST /other when launcher route is /mcp) → 404', async () => {
         const response = await launcher.handleRequest(
             new Request('http://test/other', { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } })
         );
-        expect(response.status).to.equal(404);
+        expect(response.status).toBe(404);
     });
 
     it('Unsupported method (PUT /mcp) → 405 with Allow header', async () => {
         const response = await launcher.handleRequest(new Request('http://test/mcp', { method: 'PUT' }));
-        expect(response.status).to.equal(405);
-        expect(response.headers.get('Allow')).to.equal('POST, GET, DELETE');
+        expect(response.status).toBe(405);
+        expect(response.headers.get('Allow')).toBe('POST, GET, DELETE');
     });
 });
 
@@ -405,7 +405,7 @@ describe('AbstractMcpServerLauncher · initializeServer lifecycle', () => {
 
         await initLauncher(launcher);
         await initLauncher(launcher);
-        expect(bindCount).to.equal(1);
+        expect(bindCount).toBe(1);
         launcher.dispose();
     });
 
@@ -413,7 +413,7 @@ describe('AbstractMcpServerLauncher · initializeServer lifecycle', () => {
         const launcher = buildLauncher();
         await initLauncher(launcher);
         const firstResponse = await launcher.handleRequest(postInit());
-        expect(firstResponse.headers.get('mcp-session-id')).to.be.a('string');
+        expect(firstResponse.headers.get('mcp-session-id')).toBeTypeOf('string');
         await readSseFirstData(firstResponse).catch(() => undefined);
 
         launcher.dispose();
@@ -421,8 +421,8 @@ describe('AbstractMcpServerLauncher · initializeServer lifecycle', () => {
         // Re-init from the same instance — proves dispose() cleared the singleton state.
         await initLauncher(launcher, { route: '/mcp', name: 'spec-2' });
         const secondResponse = await launcher.handleRequest(postInit());
-        expect(secondResponse.status).to.equal(200);
-        expect(secondResponse.headers.get('mcp-session-id')).to.be.a('string');
+        expect(secondResponse.status).toBe(200);
+        expect(secondResponse.headers.get('mcp-session-id')).toBeTypeOf('string');
         launcher.dispose();
     });
 
@@ -431,7 +431,7 @@ describe('AbstractMcpServerLauncher · initializeServer lifecycle', () => {
         await initLauncher(launcher, { route: '/custom' });
 
         const wrongRoute = await launcher.handleRequest(postInit());
-        expect(wrongRoute.status).to.equal(404);
+        expect(wrongRoute.status).toBe(404);
 
         const correctRoute = await launcher.handleRequest(
             new Request('http://test/custom', {
@@ -440,7 +440,7 @@ describe('AbstractMcpServerLauncher · initializeServer lifecycle', () => {
                 body: JSON.stringify(INIT_BODY)
             })
         );
-        expect(correctRoute.status).to.equal(200);
+        expect(correctRoute.status).toBe(200);
         launcher.dispose();
     });
 
@@ -451,8 +451,8 @@ describe('AbstractMcpServerLauncher · initializeServer lifecycle', () => {
             url: 'http://announced.example/mcp'
         });
         const result = await initLauncher(launcher);
-        expect(McpInitializeResult.is(result)).to.equal(true);
-        expect(McpInitializeResult.getServer(result)?.url).to.equal('http://announced.example/mcp');
+        expect(McpInitializeResult.is(result)).toBe(true);
+        expect(McpInitializeResult.getServer(result)?.url).toBe('http://announced.example/mcp');
         launcher.dispose();
     });
 });

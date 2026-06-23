@@ -14,9 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { Action } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { ClientAction } from '../../common/protocol/client-action';
-import * as mock from '../../common/test/mock-util';
 import { BrowserActionDispatchScope } from './browser-action-dispatch-scope';
 
 describe('BrowserActionDispatchScope', () => {
@@ -33,14 +32,14 @@ describe('BrowserActionDispatchScope', () => {
     });
 
     it('isReentrant is false outside enter()', () => {
-        expect(scope.isReentrant(action)).to.be.false;
+        expect(scope.isReentrant(action)).toBe(false);
     });
 
     it('isReentrant is true during a synchronous enter()', () => {
         scope.enter(() => {
-            expect(scope.isReentrant(action)).to.be.true;
+            expect(scope.isReentrant(action)).toBe(true);
         });
-        expect(scope.isReentrant(action)).to.be.false;
+        expect(scope.isReentrant(action)).toBe(false);
     });
 
     it('isReentrant is true during an async enter() and false after settle', async () => {
@@ -48,8 +47,8 @@ describe('BrowserActionDispatchScope', () => {
             await Promise.resolve();
             return scope.isReentrant(action);
         });
-        expect(await probe).to.be.true;
-        expect(scope.isReentrant(action)).to.be.false;
+        expect(await probe).toBe(true);
+        expect(scope.isReentrant(action)).toBe(false);
     });
 
     it('resets active flag when callback throws synchronously', () => {
@@ -57,19 +56,19 @@ describe('BrowserActionDispatchScope', () => {
             scope.enter(() => {
                 throw new Error('boom');
             })
-        ).to.throw('boom');
-        expect(scope.isReentrant(action)).to.be.false;
+        ).toThrow('boom');
+        expect(scope.isReentrant(action)).toBe(false);
     });
 
     it('resets active flag when async callback rejects', async () => {
-        await mock.expectToThrowAsync(() => scope.enter(() => Promise.reject(new Error('boom'))), 'boom');
-        expect(scope.isReentrant(action)).to.be.false;
+        await expect(scope.enter(() => Promise.reject(new Error('boom')))).rejects.toThrow('boom');
+        expect(scope.isReentrant(action)).toBe(false);
     });
 
     it('isReentrant is false for client-originated actions even when scope is active', () => {
         scope.enter(() => {
-            expect(scope.isReentrant(markedClientAction)).to.be.false;
-            expect(scope.isReentrant(action)).to.be.true;
+            expect(scope.isReentrant(markedClientAction)).toBe(false);
+            expect(scope.isReentrant(action)).toBe(true);
         });
     });
 });

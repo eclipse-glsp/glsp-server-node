@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 EclipseSource and others.
+ * Copyright (c) 2022-2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,9 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { expect } from 'chai';
-import { Container, ContainerModule, interfaces } from 'inversify';
-import * as sinon from 'sinon';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { interfaces } from 'inversify';
 import { applyBindingTarget } from './binding-target';
 // Simple no op classes to construct inversify binding syntaxes.
 class Target {}
@@ -26,47 +25,81 @@ describe('BindingTarget', () => {
     describe('bindTarget()', () => {
         // Setup nested spies for the fluent inversify binding API
         let context: {
-            bind: sinon.SinonStub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], interfaces.BindingToSyntax<any>>;
-            isBound: sinon.SinonStub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], boolean>;
+            bind: interfaces.Bind;
+            isBound: interfaces.IsBound;
         };
-        let toSyntax: sinon.SinonStubbedInstance<interfaces.BindingToSyntax<any>>;
-        let whenOnSyntax: sinon.SinonStubbedInstance<interfaces.BindingWhenOnSyntax<any>>;
+        let toSyntax: interfaces.BindingToSyntax<any>;
 
         const setupStubs = (): {
             context: {
-                bind: sinon.SinonStub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], interfaces.BindingToSyntax<any>>;
-                isBound: sinon.SinonStub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], boolean>;
+                bind: interfaces.Bind;
+                isBound: interfaces.IsBound;
             };
-            toSyntax: sinon.SinonStubbedInstance<interfaces.BindingToSyntax<any>>;
-            inWhenOnSyntax: sinon.SinonStubbedInstance<interfaces.BindingInWhenOnSyntax<any>>;
-            whenOnSyntax: sinon.SinonStubbedInstance<interfaces.BindingWhenOnSyntax<any>>;
+            toSyntax: interfaces.BindingToSyntax<any>;
+            inWhenOnSyntax: interfaces.BindingInWhenOnSyntax<any>;
+            whenOnSyntax: interfaces.BindingWhenOnSyntax<any>;
         } => {
-            const container = new Container();
-            const bind = sinon.stub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], interfaces.BindingToSyntax<any>>();
-            const isBound = sinon.stub<[serviceIdentifier: interfaces.ServiceIdentifier<any>], boolean>();
+            const bind = vi.fn<interfaces.Bind>();
+            const isBound = vi.fn<interfaces.IsBound>();
 
-            let toSyntax: sinon.SinonStubbedInstance<interfaces.BindingToSyntax<any>> = {} as any;
-            let inWhenOnSyntax: sinon.SinonStubbedInstance<interfaces.BindingInWhenOnSyntax<any>> = {} as any;
-            container.load(
-                new ContainerModule(_bind => {
-                    const toStub = _bind('StubMe');
-                    inWhenOnSyntax = sinon.stub(toStub.to(Target));
-                    whenOnSyntax = sinon.stub(toStub.toConstantValue(''));
-                    toSyntax = sinon.stub(toStub);
+            const inWhenOnSyntax: interfaces.BindingInWhenOnSyntax<any> = {
+                inRequestScope: vi.fn(),
+                inSingletonScope: vi.fn(),
+                inTransientScope: vi.fn(),
+                when: vi.fn(),
+                whenTargetNamed: vi.fn(),
+                whenTargetIsDefault: vi.fn(),
+                whenTargetTagged: vi.fn(),
+                whenInjectedInto: vi.fn(),
+                whenParentNamed: vi.fn(),
+                whenParentTagged: vi.fn(),
+                whenAnyAncestorIs: vi.fn(),
+                whenNoAncestorIs: vi.fn(),
+                whenAnyAncestorNamed: vi.fn(),
+                whenAnyAncestorTagged: vi.fn(),
+                whenNoAncestorNamed: vi.fn(),
+                whenNoAncestorTagged: vi.fn(),
+                whenAnyAncestorMatches: vi.fn(),
+                whenNoAncestorMatches: vi.fn(),
+                onActivation: vi.fn(),
+                onDeactivation: vi.fn()
+            } as unknown as interfaces.BindingInWhenOnSyntax<any>;
 
-                    bind.returns(toSyntax);
-                    toSyntax.to.returns(inWhenOnSyntax);
-                    toSyntax.toSelf.returns(inWhenOnSyntax);
-                    toSyntax.toDynamicValue.returns(inWhenOnSyntax);
-                    toSyntax.toService.returns();
-                })
-            );
+            const _whenOnSyntax: interfaces.BindingWhenOnSyntax<any> = {
+                when: vi.fn(),
+                whenTargetNamed: vi.fn(),
+                whenTargetIsDefault: vi.fn(),
+                whenTargetTagged: vi.fn(),
+                whenInjectedInto: vi.fn(),
+                whenParentNamed: vi.fn(),
+                whenParentTagged: vi.fn(),
+                whenAnyAncestorIs: vi.fn(),
+                whenNoAncestorIs: vi.fn(),
+                whenAnyAncestorNamed: vi.fn(),
+                whenAnyAncestorTagged: vi.fn(),
+                whenNoAncestorNamed: vi.fn(),
+                whenNoAncestorTagged: vi.fn(),
+                whenAnyAncestorMatches: vi.fn(),
+                whenNoAncestorMatches: vi.fn(),
+                onActivation: vi.fn(),
+                onDeactivation: vi.fn()
+            } as unknown as interfaces.BindingWhenOnSyntax<any>;
+
+            const _toSyntax: interfaces.BindingToSyntax<any> = {
+                to: vi.fn().mockReturnValue(inWhenOnSyntax),
+                toSelf: vi.fn().mockReturnValue(inWhenOnSyntax),
+                toConstantValue: vi.fn().mockReturnValue(_whenOnSyntax),
+                toDynamicValue: vi.fn().mockReturnValue(inWhenOnSyntax),
+                toService: vi.fn()
+            } as unknown as interfaces.BindingToSyntax<any>;
+
+            bind.mockReturnValue(_toSyntax);
 
             return {
-                context: { bind, isBound },
-                toSyntax,
+                context: { bind, isBound } as unknown as { bind: interfaces.Bind; isBound: interfaces.IsBound },
+                toSyntax: _toSyntax,
                 inWhenOnSyntax,
-                whenOnSyntax
+                whenOnSyntax: _whenOnSyntax
             };
         };
 
@@ -74,42 +107,41 @@ describe('BindingTarget', () => {
             const stubs = setupStubs();
             context = stubs.context;
             toSyntax = stubs.toSyntax;
-            whenOnSyntax = stubs.whenOnSyntax;
         });
 
         describe('Bind to constructor', () => {
             it('Should bind the service identifier `to` the given target with no scope', () => {
                 applyBindingTarget(context, Target, SubTarget);
-                expect(toSyntax.to.calledOnceWith(SubTarget)).to.be.true;
+                expect(vi.mocked(toSyntax.to)).toHaveBeenCalledExactlyOnceWith(SubTarget);
             });
 
             it('Should bind the service identifier `toSelf` with no scope', () => {
                 applyBindingTarget(context, Target, Target);
-                expect(toSyntax.toSelf.calledOnce).to.be.true;
+                expect(vi.mocked(toSyntax.toSelf)).toHaveBeenCalledOnce();
             });
         });
 
         describe('Bind to service', () => {
             it('Should bind the service identifier `service` using the given target service with no scope', () => {
-                context.isBound.returns(true);
+                vi.mocked(context.isBound).mockReturnValue(true);
                 applyBindingTarget(context, Target, { service: SubTarget });
-                expect(toSyntax.toService.calledOnceWith(SubTarget)).to.be.true;
+                expect(vi.mocked(toSyntax.toService)).toHaveBeenCalledExactlyOnceWith(SubTarget);
             });
             it('Should throw an error because the given target service is not bound', () => {
-                context.isBound.returns(false);
-                expect(() => applyBindingTarget(context, Target, { service: SubTarget, autoBind: false })).to.throw();
+                vi.mocked(context.isBound).mockReturnValue(false);
+                expect(() => applyBindingTarget(context, Target, { service: SubTarget, autoBind: false })).toThrow();
             });
             it('Should bind the unbound target service to itself before applying the toService binding', () => {
-                context.isBound.returns(false);
+                vi.mocked(context.isBound).mockReturnValue(false);
                 applyBindingTarget(context, Target, { service: SubTarget });
-                expect(context.bind.calledWith(Target)).to.be.true;
+                expect(context.bind).toHaveBeenCalledWith(SubTarget);
             });
             it('The return syntax should be no op and invocation of a syntax function should throw an error', () => {
-                context.isBound.returns(true);
+                vi.mocked(context.isBound).mockReturnValue(true);
                 const syntax = applyBindingTarget(context, Target, { service: SubTarget });
                 expect(() => {
                     syntax.inRequestScope();
-                }).to.throw(
+                }).toThrow(
                     `${Target.toString()} has been bound to 'service'.` +
                         "Using 'in','when' or 'on' bindings after" +
                         "a 'toService' binding is not possible."
@@ -121,26 +153,24 @@ describe('BindingTarget', () => {
             it('Should bind the service identifier `toConstantValue` using the given target with no scope', () => {
                 const subTarget = new SubTarget();
                 applyBindingTarget(context, Target, { constantValue: subTarget });
-                expect(toSyntax.toConstantValue.calledOnceWith(subTarget)).to.be.true;
+                expect(vi.mocked(toSyntax.toConstantValue)).toHaveBeenCalledExactlyOnceWith(subTarget);
             });
             it("The return syntax's in functions should be no op and invocation should log a warning", () => {
-                const spy = sinon.spy(console, 'warn');
+                const spy = vi.spyOn(console, 'warn');
                 const subTarget = new SubTarget();
                 const syntax = applyBindingTarget(context, Target, { constantValue: subTarget });
                 syntax.inSingletonScope();
-                expect(
-                    spy.calledWith(
-                        `${Target.toString()} has been bound to 'constantValue'. Binding in Singleton scope has no effect.` +
-                            'Constant value bindings are effectively Singleton bindings.'
-                    )
-                ).to.be.true;
+                expect(spy).toHaveBeenCalledWith(
+                    `${Target.toString()} has been bound to 'constantValue'. Binding in Singleton scope has no effect.` +
+                        'Constant value bindings are effectively Singleton bindings.'
+                );
             });
         });
 
         describe('Bind to dynamic value', () => {
             it('Should bind the service identifier `toDynamicValue` using the given factory function with no scope', () => {
-                applyBindingTarget(context, Target, { dynamicValue: context => new SubTarget() });
-                expect(toSyntax.toDynamicValue.calledOnce);
+                applyBindingTarget(context, Target, { dynamicValue: _context => new SubTarget() });
+                expect(vi.mocked(toSyntax.toDynamicValue)).toHaveBeenCalledOnce();
             });
         });
     });

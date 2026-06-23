@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { EdgeTypeHint, RequestTypeHintsAction, SetTypeHintsAction, ShapeTypeHint } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { DiagramConfiguration } from '../../diagram/diagram-configuration';
 import * as mock from '../../test/mock-util';
@@ -50,9 +50,9 @@ describe('test RequestTypeHintsActionHandler', () => {
     it('execute with correct action', async () => {
         const result = await handler.execute(RequestTypeHintsAction.create());
 
-        expect(result).to.have.length(1);
+        expect(result).toHaveLength(1);
         expect(SetTypeHintsAction.is(result[0])).true;
-        expect(result).to.be.deep.equal([
+        expect(result).toEqual([
             { edgeHints: [edgeTypeHint], kind: 'setTypeHints', shapeHints: [shapeTypeHint], responseId: '' } as SetTypeHintsAction
         ]);
     });

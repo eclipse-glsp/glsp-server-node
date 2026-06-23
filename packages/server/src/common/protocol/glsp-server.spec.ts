@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -21,9 +21,8 @@ import {
     InitializeParameters
 } from '@eclipse-glsp/protocol';
 import * as assert from 'assert';
-import { expect } from 'chai';
+import { beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
-import * as sinon from 'sinon';
 import { GlobalActionProvider } from '../actions/global-action-provider';
 import { ClientSessionManager } from '../session/client-session-manager';
 import * as mock from '../test/mock-util';
@@ -39,14 +38,14 @@ describe('test DefaultGLSPServer', () => {
     const actionKinds = new Map<string, string[]>();
     actionKinds.set(diagramType, ['A1', 'A2']);
     const sessionManager = new mock.StubClientSessionManager();
-    const spy_sessionManager_getOrCreate = sinon.spy(sessionManager, 'getOrCreateClientSession');
-    const spy_sessionManager_dispose = sinon.spy(sessionManager, 'disposeClientSession');
+    let spy_sessionManager_getOrCreate: MockInstance;
+    let spy_sessionManager_dispose: MockInstance;
     const listener1 = new mock.StubGLSPServerListener();
-    const spy_listener1_initialize = sinon.spy(listener1, 'serverInitialized');
-    const spy_listener1_shutdown = sinon.spy(listener1, 'serverShutDown');
+    let spy_listener1_initialize: MockInstance;
+    let spy_listener1_shutdown: MockInstance;
     const listener2 = new mock.StubGLSPServerListener();
-    const spy_listener2_initialize = sinon.spy(listener2, 'serverInitialized');
-    const spy_listener2_shutdown = sinon.spy(listener2, 'serverShutDown');
+    let spy_listener2_initialize: MockInstance;
+    let spy_listener2_shutdown: MockInstance;
 
     container.load(
         new ContainerModule(bind => {
@@ -61,12 +60,13 @@ describe('test DefaultGLSPServer', () => {
     const glspServer = container.resolve(DefaultGLSPServer);
 
     beforeEach(() => {
-        spy_sessionManager_getOrCreate.restore();
-        spy_sessionManager_dispose.restore();
-        spy_listener1_initialize.restore();
-        spy_listener1_shutdown.restore();
-        spy_listener2_initialize.restore();
-        spy_listener2_shutdown.restore();
+        vi.restoreAllMocks();
+        spy_sessionManager_getOrCreate = vi.spyOn(sessionManager, 'getOrCreateClientSession');
+        spy_sessionManager_dispose = vi.spyOn(sessionManager, 'disposeClientSession');
+        spy_listener1_initialize = vi.spyOn(listener1, 'serverInitialized');
+        spy_listener1_shutdown = vi.spyOn(listener1, 'serverShutDown');
+        spy_listener2_initialize = vi.spyOn(listener2, 'serverInitialized');
+        spy_listener2_shutdown = vi.spyOn(listener2, 'serverShutDown');
     });
 
     it('Test calls before server initialization (should throw errors)', async () => {
@@ -78,26 +78,26 @@ describe('test DefaultGLSPServer', () => {
     it('addListener - add existing listener', () => {
         const originalSize = glspServer['serverListeners'].length;
         glspServer.addListener(listener1);
-        expect(glspServer['serverListeners'].length).to.be.equal(originalSize);
+        expect(glspServer['serverListeners'].length).toBe(originalSize);
     });
 
     it('addListener - add new listener', () => {
         const originalSize = glspServer['serverListeners'].length;
         glspServer.addListener(listener2);
-        expect(glspServer['serverListeners']).to.include(listener2);
-        expect(glspServer['serverListeners'].length).to.be.equal(originalSize + 1);
+        expect(glspServer['serverListeners']).toContain(listener2);
+        expect(glspServer['serverListeners'].length).toBe(originalSize + 1);
     });
 
     it('removeListener - remove non-existing listener', () => {
         const originalSize = glspServer['serverListeners'].length;
         glspServer.removeListener({});
-        expect(glspServer['serverListeners'].length).to.be.equal(originalSize);
+        expect(glspServer['serverListeners'].length).toBe(originalSize);
     });
 
     it('removeListener - remove existing listener', () => {
         const originalSize = glspServer['serverListeners'].length;
         glspServer.removeListener(listener2);
-        expect(glspServer['serverListeners'].length).to.be.equal(originalSize - 1);
+        expect(glspServer['serverListeners'].length).toBe(originalSize - 1);
     });
 
     it('initialize - with wrong protocol version', async () => {
@@ -108,19 +108,19 @@ describe('test DefaultGLSPServer', () => {
     it('initialize - with correct parameters', async () => {
         const initializeParameters: InitializeParameters = { applicationId, protocolVersion };
         const result = await glspServer.initialize(initializeParameters);
-        expect(result.protocolVersion).to.be.equal(protocolVersion);
-        expect(result.serverActions[diagramType]).to.be.equal(actionKinds.get(diagramType));
-        expect(result.serverActions[diagramType]).to.be.equal(actionKinds.get(diagramType));
-        expect(spy_listener1_initialize.calledWith(glspServer));
-        expect(spy_listener2_initialize.notCalled);
+        expect(result.protocolVersion).toBe(protocolVersion);
+        expect(result.serverActions[diagramType]).toBe(actionKinds.get(diagramType));
+        expect(result.serverActions[diagramType]).toBe(actionKinds.get(diagramType));
+        expect(spy_listener1_initialize).toHaveBeenCalledWith(glspServer);
+        expect(spy_listener2_initialize).not.toHaveBeenCalled();
     });
 
     it('initialize - subsequent call with same parameters', async () => {
         const initializeParameters: InitializeParameters = { applicationId, protocolVersion };
         const result = await glspServer.initialize(initializeParameters);
-        expect(result.protocolVersion).to.be.equal(protocolVersion);
-        expect(result.serverActions[diagramType]).to.be.equal(actionKinds.get(diagramType));
-        expect(result.serverActions[diagramType]).to.be.equal(actionKinds.get(diagramType));
+        expect(result.protocolVersion).toBe(protocolVersion);
+        expect(result.serverActions[diagramType]).toBe(actionKinds.get(diagramType));
+        expect(result.serverActions[diagramType]).toBe(actionKinds.get(diagramType));
     });
 
     it('initialize -  subsequent call with other parameters', async () => {
@@ -135,7 +135,7 @@ describe('test DefaultGLSPServer', () => {
             clientActionKinds: []
         };
         await glspServer.initializeClientSession(initializeClientSessionParameters);
-        expect(spy_sessionManager_getOrCreate.calledWith(initializeClientSessionParameters));
+        expect(spy_sessionManager_getOrCreate).toHaveBeenCalledWith(initializeClientSessionParameters);
     });
 
     it('dispose client session', async () => {
@@ -143,12 +143,12 @@ describe('test DefaultGLSPServer', () => {
             clientSessionId
         };
         await glspServer.disposeClientSession(disposeClientSessionParameters);
-        expect(spy_sessionManager_dispose.calledWith(clientSessionId));
+        expect(spy_sessionManager_dispose).toHaveBeenCalledWith(clientSessionId);
     });
 
     it('shutdown server', async () => {
         glspServer.shutdown();
-        expect(spy_listener1_shutdown.calledWith(glspServer));
-        expect(spy_listener2_shutdown.notCalled);
+        expect(spy_listener1_shutdown).toHaveBeenCalledWith(glspServer);
+        expect(spy_listener2_shutdown).not.toHaveBeenCalled();
     });
 });

@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { McpServerInitOptions } from '@eclipse-glsp/server';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { version as packageVersion } from '../../../package.json';
 import { SERVER_VERSION, pickInitOptions } from '../../common/server/abstract-mcp-server-launcher';
 import { NodeMcpServerLauncher, assertLoopbackOrAcknowledged, isLoopbackHost } from './node-mcp-server-launcher';
@@ -25,7 +25,7 @@ describe('NodeMcpServerLauncher · SERVER_VERSION', () => {
         // Regression guard: the launcher used to hard-code '1.0.0'. Pull from package.json so
         // adopters and MCP clients can tell builds apart via the `serverInfo.version` handshake
         // field.
-        expect(SERVER_VERSION).to.equal(packageVersion);
+        expect(SERVER_VERSION).toBe(packageVersion);
     });
 });
 
@@ -63,80 +63,79 @@ describe('NodeMcpServerLauncher · buildCapabilities', () => {
 
     it('omits `tools`, `resources`, and `prompts` when nothing is bound (regression: resources/list -32601)', () => {
         const caps = buildCaps({}, /* resourcesAsResources */ true);
-        expect(caps).to.have.property('logging');
-        expect(caps).to.not.have.property('tools');
-        expect(caps).to.not.have.property('resources');
-        expect(caps).to.not.have.property('prompts');
+        expect(caps).toHaveProperty('logging');
+        expect(caps).not.toHaveProperty('tools');
+        expect(caps).not.toHaveProperty('resources');
+        expect(caps).not.toHaveProperty('prompts');
     });
 
     it('declares `tools` with listChanged: false when at least one tool handler binds', () => {
         const caps = buildCaps({ toolHandlers: [{}] }, true);
-        expect(caps.tools).to.deep.equal({ listChanged: false });
-        expect(caps).to.not.have.property('resources');
-        expect(caps).to.not.have.property('prompts');
+        expect(caps.tools).toEqual({ listChanged: false });
+        expect(caps).not.toHaveProperty('resources');
+        expect(caps).not.toHaveProperty('prompts');
     });
 
     it('declares `prompts` when at least one prompt handler binds (server- or diagram-scope)', () => {
-        expect(buildCaps({ promptHandlers: [{}] }, true).prompts).to.deep.equal({ listChanged: false });
-        expect(buildCaps({ hasDiagramPrompts: true }, true).prompts).to.deep.equal({ listChanged: false });
+        expect(buildCaps({ promptHandlers: [{}] }, true).prompts).toEqual({ listChanged: false });
+        expect(buildCaps({ hasDiagramPrompts: true }, true).prompts).toEqual({ listChanged: false });
     });
 
     it('declares `resources` only in dataMode=resources; otherwise resources count toward `tools`', () => {
         // Diagram-scope resources mutate per GLSP session add/remove → `listChanged: true` is honest.
         const asResources = buildCaps({ hasDiagramResources: true }, true);
-        expect(asResources.resources).to.deep.equal({ listChanged: true });
-        expect(asResources).to.not.have.property('tools');
+        expect(asResources.resources).toEqual({ listChanged: true });
+        expect(asResources).not.toHaveProperty('tools');
 
         const asTools = buildCaps({ hasDiagramResources: true }, false);
-        expect(asTools.tools).to.deep.equal({ listChanged: false });
-        expect(asTools).to.not.have.property('resources');
+        expect(asTools.tools).toEqual({ listChanged: false });
+        expect(asTools).not.toHaveProperty('resources');
     });
 
     it('keeps resources.listChanged: false when only server-scope resources are bound (catalog static)', () => {
         const caps = buildCaps({ resourceHandlers: [{}] }, true);
-        expect(caps.resources).to.deep.equal({ listChanged: false });
+        expect(caps.resources).toEqual({ listChanged: false });
     });
 });
 
 describe('NodeMcpServerLauncher · isLoopbackHost', () => {
     it('treats 127.0.0.0/8, localhost, and ::1 as loopback', () => {
-        expect(isLoopbackHost('127.0.0.1')).to.equal(true);
-        expect(isLoopbackHost('127.55.0.1')).to.equal(true);
-        expect(isLoopbackHost('localhost')).to.equal(true);
-        expect(isLoopbackHost('::1')).to.equal(true);
+        expect(isLoopbackHost('127.0.0.1')).toBe(true);
+        expect(isLoopbackHost('127.55.0.1')).toBe(true);
+        expect(isLoopbackHost('localhost')).toBe(true);
+        expect(isLoopbackHost('::1')).toBe(true);
     });
 
     it('treats unspecified, LAN, and public addresses as non-loopback', () => {
-        expect(isLoopbackHost('0.0.0.0')).to.equal(false);
-        expect(isLoopbackHost('::')).to.equal(false);
-        expect(isLoopbackHost('192.168.1.1')).to.equal(false);
-        expect(isLoopbackHost('10.0.0.1')).to.equal(false);
-        expect(isLoopbackHost('203.0.113.5')).to.equal(false);
+        expect(isLoopbackHost('0.0.0.0')).toBe(false);
+        expect(isLoopbackHost('::')).toBe(false);
+        expect(isLoopbackHost('192.168.1.1')).toBe(false);
+        expect(isLoopbackHost('10.0.0.1')).toBe(false);
+        expect(isLoopbackHost('203.0.113.5')).toBe(false);
     });
 });
 
 describe('NodeMcpServerLauncher · assertLoopbackOrAcknowledged (auth footgun)', () => {
     it('passes silently for a loopback bind without acknowledgement', () => {
-        expect(() => assertLoopbackOrAcknowledged('127.0.0.1', undefined)).to.not.throw();
-        expect(() => assertLoopbackOrAcknowledged('localhost', undefined)).to.not.throw();
+        expect(() => assertLoopbackOrAcknowledged('127.0.0.1', undefined)).not.toThrow();
+        expect(() => assertLoopbackOrAcknowledged('localhost', undefined)).not.toThrow();
     });
 
     it('throws an actionable error for a non-loopback bind without acknowledgement', () => {
-        expect(() => assertLoopbackOrAcknowledged('0.0.0.0', undefined))
-            .to.throw(Error)
-            .with.property('message')
-            .that.matches(/Refusing to bind/)
-            .and.matches(/0\.0\.0\.0/)
-            .and.matches(/acknowledgedNoAuth/);
+        const act = (): void => assertLoopbackOrAcknowledged('0.0.0.0', undefined);
+        expect(act).toThrow(Error);
+        expect(act).toThrow(/Refusing to bind/);
+        expect(act).toThrow(/0\.0\.0\.0/);
+        expect(act).toThrow(/acknowledgedNoAuth/);
     });
 
     it('passes for a non-loopback bind when acknowledgedNoAuth is true', () => {
-        expect(() => assertLoopbackOrAcknowledged('0.0.0.0', true)).to.not.throw();
-        expect(() => assertLoopbackOrAcknowledged('192.168.1.50', true)).to.not.throw();
+        expect(() => assertLoopbackOrAcknowledged('0.0.0.0', true)).not.toThrow();
+        expect(() => assertLoopbackOrAcknowledged('192.168.1.50', true)).not.toThrow();
     });
 
     it('still throws for a non-loopback bind when acknowledgedNoAuth is false (explicit denial)', () => {
-        expect(() => assertLoopbackOrAcknowledged('0.0.0.0', false)).to.throw(/Refusing to bind/);
+        expect(() => assertLoopbackOrAcknowledged('0.0.0.0', false)).toThrow(/Refusing to bind/);
     });
 });
 
@@ -153,14 +152,14 @@ assertPickInitKeysExhaustive(true);
 describe('NodeMcpServerLauncher · pickInitOptions (deploy/init split — defense-in-depth)', () => {
     it('passes through every allowed init-side field unchanged', () => {
         const picked = pickInitOptions({ dataMode: 'resources', agentPersona: 'X', eventStoreLimit: 50 });
-        expect(picked).to.deep.equal({ dataMode: 'resources', agentPersona: 'X', eventStoreLimit: 50 });
+        expect(picked).toEqual({ dataMode: 'resources', agentPersona: 'X', eventStoreLimit: 50 });
     });
 
     it('omits init-side fields that the caller did not set (no `undefined` sneak-through)', () => {
         const picked = pickInitOptions({ dataMode: 'tools' });
-        expect(picked).to.deep.equal({ dataMode: 'tools' });
-        expect(picked).to.not.have.property('agentPersona');
-        expect(picked).to.not.have.property('eventStoreLimit');
+        expect(picked).toEqual({ dataMode: 'tools' });
+        expect(picked).not.toHaveProperty('agentPersona');
+        expect(picked).not.toHaveProperty('eventStoreLimit');
     });
 
     it('strips deploy-only keys smuggled in via JSON wire payload (host, allowedHosts, allowedOrigins, acknowledgedNoAuth)', () => {
@@ -175,10 +174,10 @@ describe('NodeMcpServerLauncher · pickInitOptions (deploy/init split — defens
         }`) as McpServerInitOptions;
 
         const picked = pickInitOptions(wirePayload);
-        expect(picked).to.deep.equal({ dataMode: 'tools' });
-        expect(picked).to.not.have.property('host');
-        expect(picked).to.not.have.property('allowedHosts');
-        expect(picked).to.not.have.property('allowedOrigins');
-        expect(picked).to.not.have.property('acknowledgedNoAuth');
+        expect(picked).toEqual({ dataMode: 'tools' });
+        expect(picked).not.toHaveProperty('host');
+        expect(picked).not.toHaveProperty('allowedHosts');
+        expect(picked).not.toHaveProperty('allowedOrigins');
+        expect(picked).not.toHaveProperty('acknowledgedNoAuth');
     });
 });

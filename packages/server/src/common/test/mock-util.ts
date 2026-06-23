@@ -36,12 +36,10 @@ import {
     ShapeTypeHint,
     ValidationStatus
 } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
 import { Container } from 'inversify';
 import { MessageConnection } from 'vscode-jsonrpc';
 import { ActionDispatcher } from '../actions/action-dispatcher';
-import { ActionHandler, ActionHandlerFactory } from '../actions/action-handler';
-import { Command } from '../command/command';
+import { ActionHandler } from '../actions/action-handler';
 import { DiagramConfiguration, ServerLayoutKind } from '../diagram/diagram-configuration';
 import { ContextEditValidator } from '../features/directediting/context-edit-validator';
 import { LabelEditValidator } from '../features/directediting/label-edit-validator';
@@ -56,25 +54,6 @@ import { LogLevel, Logger } from '../utils/logger';
 
 export async function delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
- * Consumes a maybe async function and checks for error
- * @param  method - The function to check
- * @param  message - Optional message to match with error message
- */
-export async function expectToThrowAsync(toEvaluate: () => MaybePromise<void>, message?: string): Promise<void> {
-    let err: Error | undefined = undefined;
-    try {
-        await toEvaluate();
-    } catch (error: any) {
-        err = error;
-    }
-    if (message) {
-        expect(err?.message).to.be.equal(message);
-    } else {
-        expect(err).to.be.an('Error');
-    }
 }
 
 export function createClientSession(
@@ -267,15 +246,6 @@ export class TestContextEditValidator implements ContextEditValidator {
     }
 }
 
-export const stubActionHandlerFactory: ActionHandlerFactory = constructor => new constructor();
-
 export class StubClientSessionInitializer implements ClientSessionInitializer {
     initialize(args?: Args): void {}
-}
-
-export class StubCommand implements Command {
-    execute(): void {}
-    undo(): void {}
-    redo(): void {}
-    canUndo?(): boolean;
 }

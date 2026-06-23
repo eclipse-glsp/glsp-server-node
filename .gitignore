@@ -2,18 +2,15 @@ node_modules/
 lib/
 artifacts/
 coverage/
-.nyc_output/
 
 *.log
 *.jar
 
 /.metadata/
-yarn-error.log
 
-tsconfig.tsbuildinfo
+*.tsbuildinfo
 eslint.xml
 report.xml
-**/ctrf
 
 wf-glsp-server-node.js
 wf-glsp-server-node.js.map

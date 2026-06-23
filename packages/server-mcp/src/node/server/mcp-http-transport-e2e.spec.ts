@@ -17,7 +17,7 @@
 import { ClientSessionManager, InitializeParameters, InitializeResult, Logger, NullLogger } from '@eclipse-glsp/server';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import { expect } from 'chai';
+import { afterEach, describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import * as z from 'zod/v4';
 import { FullMcpServerConfiguration } from '../../common/server/abstract-mcp-server-launcher';
@@ -26,7 +26,7 @@ import { McpDiagramHandlerDispatcher } from '../../common/server/mcp-diagram-han
 import { DefaultMcpLogLevelRegistry, McpLogLevelRegistry } from '../../common/server/mcp-log-level-registry';
 import { McpServerDefaults, McpServerOptions } from '../../common/server/mcp-options';
 import { NodeMcpServerLauncher } from './node-mcp-server-launcher';
-import { rawHttpRequest } from './raw-http.spec';
+import { rawHttpRequest } from './test/raw-http';
 
 class StubDispatcher implements McpDiagramHandlerDispatcher {
     harvest(): void {
@@ -160,20 +160,20 @@ describe('NodeMcpServerLauncher (e2e — real MCP SDK client over HTTP)', () => 
     it('round-trips tools/list and tools/call against a registered echo tool', async () => {
         launcher = buildLauncher();
         const url = await startLauncher(launcher);
-        expect(url, 'launcher must announce a URL after initializeServer').to.be.a('string');
+        expect(url, 'launcher must announce a URL after initializeServer').toBeTypeOf('string');
 
         client = new Client({ name: 'wn-058-test-client', version: '1.0.0' });
         await client.connect(new StreamableHTTPClientTransport(new URL(url)));
 
         const tools = await client.listTools();
-        expect(tools.tools.map(tool => tool.name)).to.include('echo');
+        expect(tools.tools.map(tool => tool.name)).toContain('echo');
 
         const result = await client.callTool({ name: 'echo', arguments: { message: 'hello GLSP' } });
-        expect(result.isError).to.not.equal(true);
-        expect(result.content).to.have.lengthOf(1);
+        expect(result.isError).not.toBe(true);
+        expect(result.content).toHaveLength(1);
         const [block] = result.content as Array<{ type: string; text?: string }>;
-        expect(block.type).to.equal('text');
-        expect(block.text).to.equal('hello GLSP');
+        expect(block.type).toBe('text');
+        expect(block.text).toBe('hello GLSP');
     });
 
     it('DELETE /mcp terminates the session; subsequent POSTs with the same id return 404 (§ #5)', async () => {
@@ -184,12 +184,12 @@ describe('NodeMcpServerLauncher (e2e — real MCP SDK client over HTTP)', () => 
         const clientTransport = new StreamableHTTPClientTransport(new URL(url));
         await client.connect(clientTransport);
         const sessionId = clientTransport.sessionId;
-        expect(sessionId, 'SDK transport should expose the minted session id after initialize').to.be.a('string');
+        expect(sessionId, 'SDK transport should expose the minted session id after initialize').toBeTypeOf('string');
 
         const port = Number(new URL(url).port);
 
         const deleteRes = await rawHttpRequest(port, 'DELETE', { 'mcp-session-id': sessionId! });
-        expect(deleteRes.status, 'DELETE should succeed for an active session').to.be.lessThan(300);
+        expect(deleteRes.status, 'DELETE should succeed for an active session').toBeLessThan(300);
 
         const followUp = await rawHttpRequest(
             port,
@@ -197,9 +197,9 @@ describe('NodeMcpServerLauncher (e2e — real MCP SDK client over HTTP)', () => 
             { 'mcp-session-id': sessionId! },
             { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
         );
-        expect(followUp.status).to.equal(404);
+        expect(followUp.status).toBe(404);
         const payload = JSON.parse(followUp.body);
-        expect(payload.error.code).to.equal(-32001);
+        expect(payload.error.code).toBe(-32001);
     });
 });
 
@@ -220,16 +220,16 @@ describe('NodeMcpServerLauncher (raw HTTP wire validation)', () => {
     it('binds an HTTP listener on a resolvable loopback port', async () => {
         launcher = buildLauncher();
         const url = await startLauncher(launcher);
-        expect(url).to.match(/^http:\/\/(127\.0\.0\.1|localhost):\d+\/mcp$/);
+        expect(url).toMatch(/^http:\/\/(127\.0\.0\.1|localhost):\d+\/mcp$/);
     });
 
     it('rejects a non-initialize POST without an Mcp-Session-Id header with 400 (§ #2)', async () => {
         const port = await startWith({});
         const res = await rawHttpRequest(port, 'POST', {}, { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} });
-        expect(res.status).to.equal(400);
+        expect(res.status).toBe(400);
         const payload = JSON.parse(res.body);
-        expect(payload.error.code).to.equal(-32000);
-        expect(payload.error.message).to.match(/No valid session ID/);
+        expect(payload.error.code).toBe(-32000);
+        expect(payload.error.message).toMatch(/No valid session ID/);
     });
 
     it('rejects a POST with an unknown Mcp-Session-Id with 404 (§ #3)', async () => {
@@ -240,9 +240,9 @@ describe('NodeMcpServerLauncher (raw HTTP wire validation)', () => {
             { 'mcp-session-id': 'no-such-session' },
             { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
         );
-        expect(res.status).to.equal(404);
+        expect(res.status).toBe(404);
         const payload = JSON.parse(res.body);
-        expect(payload.error.code).to.equal(-32001);
+        expect(payload.error.code).toBe(-32001);
     });
 
     it('rejects a non-initialize POST whose MCP-Protocol-Version is unsupported with HTTP 400', async () => {
@@ -253,9 +253,9 @@ describe('NodeMcpServerLauncher (raw HTTP wire validation)', () => {
             { 'mcp-session-id': 'doesnt-matter', 'mcp-protocol-version': '1999-01-01' },
             { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
         );
-        expect(res.status).to.equal(400);
+        expect(res.status).toBe(400);
         const payload = JSON.parse(res.body);
-        expect(payload.error.message).to.match(/Unsupported MCP-Protocol-Version/);
+        expect(payload.error.message).toMatch(/Unsupported MCP-Protocol-Version/);
     });
 
     it('rejects requests with a Host header outside the allowlist', async () => {
@@ -272,7 +272,7 @@ describe('NodeMcpServerLauncher (raw HTTP wire validation)', () => {
                 params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'x', version: '1' } }
             }
         );
-        expect(res.status).to.equal(403);
+        expect(res.status).toBe(403);
     });
 
     it('rejects start when the requested port is already in use with an actionable error', async () => {
@@ -289,9 +289,9 @@ describe('NodeMcpServerLauncher (raw HTTP wire validation)', () => {
             firstLauncher.dispose();
             secondLauncher.dispose();
         }
-        expect(error, 'expected initializeServer to reject').to.not.equal(undefined);
-        expect(error!.message).to.match(/127\.0\.0\.1:\d+/);
-        expect(error!.message).to.include('mcpServer.port');
-        expect(error!.message).to.match(/already in use/);
+        expect(error, 'expected initializeServer to reject').not.toBe(undefined);
+        expect(error!.message).toMatch(/127\.0\.0\.1:\d+/);
+        expect(error!.message).toContain('mcpServer.port');
+        expect(error!.message).toMatch(/already in use/);
     });
 });

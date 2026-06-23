@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -15,7 +15,7 @@
  ********************************************************************************/
 import * as mock from '../test/mock-util';
 import { ActionHandlerRegistry } from './action-handler-registry';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 
 describe('Test ActionHandlerRegistry (only functionality that is not covered by "registry.spec.ts"', () => {
     const singleAction = 'singleHandledAction';
@@ -35,7 +35,7 @@ describe('Test ActionHandlerRegistry (only functionality that is not covered by 
         registry.registerHandler(h4);
 
         const result = registry.getAll();
-        expect(result).to.have.length(4);
+        expect(result).toHaveLength(4);
         expect(result.includes(h1)).true;
         expect(result.includes(h2)).true;
         expect(result.includes(h3)).true;
@@ -44,9 +44,9 @@ describe('Test ActionHandlerRegistry (only functionality that is not covered by 
 
     it('get - should return three handlers sorted by priority', () => {
         const result = registry.get(multiAction);
-        expect(result.length).to.be.equal(3);
-        expect(result[0]).to.be.deep.equal(h4);
-        expect(result[1]).to.be.deep.equal(h2);
-        expect(result[2]).to.be.deep.equal(h3);
+        expect(result.length).toBe(3);
+        expect(result[0]).toEqual(h4);
+        expect(result[1]).toEqual(h2);
+        expect(result[2]).toEqual(h3);
     });
 });

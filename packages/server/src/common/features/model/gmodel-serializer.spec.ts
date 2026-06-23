@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GEdge, getDefaultMapping, GGraph, GNode } from '@eclipse-glsp/graph';
-import { expect } from 'chai';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { DiagramConfiguration } from '../../diagram/diagram-configuration';
 import * as mock from '../../test/mock-util';
@@ -72,61 +72,61 @@ describe('test DefaultGModelSerializer', () => {
 
     it('createElement - unregistered type', () => {
         testNodeSchema['type'] = 'notRegistered';
-        expect(() => serializer.createElement(testNodeSchema)).to.throw(GLSPServerError);
+        expect(() => serializer.createElement(testNodeSchema)).toThrow(GLSPServerError);
     });
 
     it('createElement - with root schema', () => {
-        expect(() => serializer.createElement(testRootSchema)).to.throw(GLSPServerError);
+        expect(() => serializer.createElement(testRootSchema)).toThrow(GLSPServerError);
     });
 
     it('createElement - with node schema', () => {
         const node = serializer.createElement(testNodeSchema);
-        expect(node).to.be.an.instanceOf(TestNode);
-        expect(node).to.be.deep.include(testNodeSchema);
-        expect((node as TestNode).foo).to.not.be.undefined;
+        expect(node).toBeInstanceOf(TestNode);
+        expect(node).toMatchObject(testNodeSchema);
+        expect((node as TestNode).foo).toBeDefined();
     });
 
     it('createElement- with sub type of registered schema', () => {
         testNodeSchema.type = 'node:rectangular';
         const node = serializer.createElement(testNodeSchema);
-        expect(node).to.be.an.instanceOf(TestNode);
-        expect(node).to.be.deep.include(testNodeSchema);
-        expect((node as TestNode).foo).to.not.be.undefined;
+        expect(node).toBeInstanceOf(TestNode);
+        expect(node).toMatchObject(testNodeSchema);
+        expect((node as TestNode).foo).toBeDefined();
     });
 
     it('createElement - with parent', () => {
         const parent = new GNode();
         const child = serializer.createElement(testNodeSchema, parent);
-        expect(child).to.be.an.instanceOf(TestNode);
-        expect(child).to.be.deep.include(testNodeSchemaWithParent);
-        expect(child.parent).to.be.equal(parent);
+        expect(child).toBeInstanceOf(TestNode);
+        expect(child).toMatchObject(testNodeSchemaWithParent);
+        expect(child.parent).toBe(parent);
     });
 
     it('createRoot - unregistered type', () => {
         testRootSchema['type'] = 'notRegistered';
-        expect(() => serializer.createRoot(testNodeSchema)).to.throw(GLSPServerError);
+        expect(() => serializer.createRoot(testNodeSchema)).toThrow(GLSPServerError);
     });
 
     it('createRoot - with child schema ', () => {
-        expect(() => serializer.createRoot(testNodeSchema)).to.throw(GLSPServerError);
+        expect(() => serializer.createRoot(testNodeSchema)).toThrow(GLSPServerError);
     });
 
     it('createRoot - with registered root schema', () => {
         const root = serializer.createRoot(testRootSchema);
-        expect(root).to.be.an.instanceOf(GGraph);
-        expect(root.children.length).to.be.equal(3);
+        expect(root).toBeInstanceOf(GGraph);
+        expect(root.children.length).toBe(3);
         const node1 = root.children[0];
-        expect(node1).to.be.an.instanceOf(TestNode);
+        expect(node1).toBeInstanceOf(TestNode);
         const node2 = root.children[1];
-        expect(node2).to.be.an.instanceOf(TestNode);
-        expect(root.children[2]).to.be.an.instanceOf(GEdge);
+        expect(node2).toBeInstanceOf(TestNode);
+        expect(root.children[2]).toBeInstanceOf(GEdge);
         const edge = root.children[2] as GEdge;
-        expect(edge.sourceId).to.be.equal(node1.id);
-        expect(edge.targetId).to.be.equal(node2.id);
+        expect(edge.sourceId).toBe(node1.id);
+        expect(edge.targetId).toBe(node2.id);
     });
 
     it('createSchema- unregistered type', () => {
-        expect(() => serializer.createRoot({ id: 'id', type: 'unregistered' })).to.throw(GLSPServerError);
+        expect(() => serializer.createRoot({ id: 'id', type: 'unregistered' })).toThrow(GLSPServerError);
     });
 
     it('createSchema- with node', () => {
@@ -136,6 +136,6 @@ describe('test DefaultGModelSerializer', () => {
         testNode.layoutOptions = { ['my']: 'Options' };
         const schema = serializer.createSchema(testNode);
         delete (testNode as Partial<TestNode>).foo;
-        expect(schema).to.be.deep.include(testNode);
+        expect(schema).toMatchObject(testNode);
     });
 });

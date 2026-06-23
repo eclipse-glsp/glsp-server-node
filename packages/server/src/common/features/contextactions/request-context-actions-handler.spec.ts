@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { PaletteItem, RequestContextActions, SetContextActions } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { OperationHandlerRegistry } from '../../operations/operation-handler-registry';
 import * as mock from '../../test/mock-util';
 import { ContextActionsProvider } from './context-actions-provider';
@@ -51,25 +51,25 @@ describe('Test RequestContextActionsHandler', () => {
         const actions = await requestContextActionsHandler.execute(
             RequestContextActions.create({ contextId: 'tool-palette', editorContext: { selectedElementIds: [] } })
         );
-        expect(actions).to.have.length(1);
+        expect(actions).toHaveLength(1);
         const action = actions[0];
 
-        expect(SetContextActions.is(action)).to.be.true;
+        expect(SetContextActions.is(action)).toBe(true);
         const setContextActions = action as SetContextActions;
-        expect(setContextActions.actions).to.have.length(2);
+        expect(setContextActions.actions).toHaveLength(2);
 
-        expect(PaletteItem.is(setContextActions.actions[0])).to.be.true;
+        expect(PaletteItem.is(setContextActions.actions[0])).toBe(true);
         const firstPaletteItem = setContextActions.actions[0] as PaletteItem;
-        expect(firstPaletteItem.label).to.be.equal('Nodes');
-        expect(firstPaletteItem.children).to.have.length(2);
-        expect(firstPaletteItem.children?.[0].label).to.be.equal('ANode');
-        expect(firstPaletteItem.children?.[1].label).to.be.equal('BNode');
+        expect(firstPaletteItem.label).toBe('Nodes');
+        expect(firstPaletteItem.children).toHaveLength(2);
+        expect(firstPaletteItem.children?.[0].label).toBe('ANode');
+        expect(firstPaletteItem.children?.[1].label).toBe('BNode');
 
-        expect(PaletteItem.is(setContextActions.actions[1])).to.be.true;
+        expect(PaletteItem.is(setContextActions.actions[1])).toBe(true);
         const secondPaletteItem = setContextActions.actions[1] as PaletteItem;
-        expect(secondPaletteItem.label).to.be.equal('Edges');
-        expect(secondPaletteItem.children).to.have.length(2);
-        expect(secondPaletteItem.children?.[0].label).to.be.equal('AEdge');
-        expect(secondPaletteItem.children?.[1].label).to.be.equal('BEdge');
+        expect(secondPaletteItem.label).toBe('Edges');
+        expect(secondPaletteItem.children).toHaveLength(2);
+        expect(secondPaletteItem.children?.[0].label).toBe('AEdge');
+        expect(secondPaletteItem.children?.[1].label).toBe('BEdge');
     });
 });

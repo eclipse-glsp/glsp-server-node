@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -13,9 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { expect } from 'chai';
+import { describe, expect, it, vi } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
-import * as sinon from 'sinon';
 import { DiagramModules, InjectionContainer } from '../di/service-identifiers';
 import { ClientSessionInitializer } from '../session/client-session-initializer';
 import * as mock from '../test/mock-util';
@@ -36,7 +35,7 @@ describe('test DefaultGlobalActionProvider', () => {
     const h2 = new mock.StubActionHandler(handler2Actions);
 
     const handlerRegistry = new ActionHandlerRegistry();
-    sinon.stub(handlerRegistry, 'getAll').returns([h1, h2]);
+    vi.spyOn(handlerRegistry, 'getAll').mockReturnValue([h1, h2]);
 
     const diagramModule1 = new ContainerModule(bind => {
         bind(ClientSessionInitializer).toConstantValue(new mock.StubClientSessionInitializer());
@@ -60,9 +59,9 @@ describe('test DefaultGlobalActionProvider', () => {
 
     it('serverActionsKinds', () => {
         const result = actionProvider.actionKinds;
-        expect(result.size).to.be.equal(1);
+        expect(result.size).toBe(1);
         const resultServerActions = result.get(diagramType);
-        expect(resultServerActions).to.not.be.undefined;
+        expect(resultServerActions).toBeDefined();
         expect(serverActions.every(action => resultServerActions!.includes(action))).true;
     });
 });

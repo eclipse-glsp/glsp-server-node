@@ -15,7 +15,7 @@
  ********************************************************************************/
 
 import { ClientId, GModelElement, Logger, ModelState, NullLogger } from '@eclipse-glsp/server';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { McpToolResult } from '../../server/mcp-handler-shared';
 import { McpIdAliasService } from '../../server/mcp-id-alias-service';
@@ -71,7 +71,7 @@ describe('CountElementsMcpToolHandler', () => {
         ]);
 
         const result = await callCreateResult(handler);
-        expect(result.structuredContent).to.deep.equal({
+        expect(result.structuredContent).toEqual({
             total: 4,
             countsByType: { 'task:manual': 2, 'task:automated': 1, edge: 1 }
         });
@@ -95,7 +95,7 @@ describe('CountElementsMcpToolHandler', () => {
         expect(
             indices.every(i => i >= 0),
             'expected all type rows to be rendered'
-        ).to.equal(true);
-        expect(indices).to.deep.equal([...indices].sort((a, b) => a - b));
+        ).toBe(true);
+        expect(indices).toEqual([...indices].sort((a, b) => a - b));
     });
 });

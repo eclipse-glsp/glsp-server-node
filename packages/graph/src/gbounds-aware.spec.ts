@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2024 EclipseSource and others.
+ * Copyright (c) 2024-2026 EclipseSource and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { DefaultTypes } from '@eclipse-glsp/protocol';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { GBoundsAwareBuilder, isGBoundsAware } from './gbounds-aware';
 import { GEdge, GEdgeBuilder } from './gedge';
 import { GNode, GNodeBuilder } from './gnode';
@@ -30,7 +30,7 @@ describe('GBoundsAware Tests', () => {
                 .build();
 
             const result = isGBoundsAware(gNodeElement);
-            expect(result).to.be.true;
+            expect(result).toBe(true);
         });
 
         it('should return false for a non-GBoundsAware element', () => {
@@ -39,7 +39,7 @@ describe('GBoundsAware Tests', () => {
                 .build();
 
             const result = isGBoundsAware(gEdgeElement);
-            expect(result).to.be.false;
+            expect(result).toBe(false);
         });
     });
 
@@ -47,29 +47,29 @@ describe('GBoundsAware Tests', () => {
         it('should set position using a point object', () => {
             const builder = new GShapeElementBuilder(GNode);
             GBoundsAwareBuilder.position(builder, { x: 5, y: 10 });
-            expect(builder['proxy'].position).to.deep.equal({ x: 5, y: 10 });
+            expect(builder['proxy'].position).toEqual({ x: 5, y: 10 });
         });
 
         it('should set position using x and y parameters', () => {
             let builder = new GShapeElementBuilder(GNode);
             GBoundsAwareBuilder.position(builder, 5, 10);
-            expect(builder['proxy'].position).to.deep.equal({ x: 5, y: 10 });
+            expect(builder['proxy'].position).toEqual({ x: 5, y: 10 });
 
             builder = new GShapeElementBuilder(GNode);
             GBoundsAwareBuilder.position(builder, 5, 0);
-            expect(builder['proxy'].position).to.deep.equal({ x: 5, y: 0 });
+            expect(builder['proxy'].position).toEqual({ x: 5, y: 0 });
         });
 
         it('should set position from point object if y is provided too', () => {
             const builder = new GShapeElementBuilder(GNode);
             GBoundsAwareBuilder.position(builder, { x: 17, y: 71 }, 15);
-            expect(builder['proxy'].position).to.deep.equal({ x: 17, y: 71 });
+            expect(builder['proxy'].position).toEqual({ x: 17, y: 71 });
         });
 
         it('should default y to 0 if y is not provided', () => {
             const builder = new GShapeElementBuilder(GNode);
             GBoundsAwareBuilder.position(builder, 35);
-            expect(builder['proxy'].position).to.deep.equal({ x: 35, y: 0 });
+            expect(builder['proxy'].position).toEqual({ x: 35, y: 0 });
         });
     });
 
@@ -77,29 +77,29 @@ describe('GBoundsAware Tests', () => {
         it('should set size using a dimension object', () => {
             const builder = new GShapeElementBuilder(GNode);
             GBoundsAwareBuilder.size(builder, { width: 55, height: 15 });
-            expect(builder['proxy'].size).to.deep.equal({ width: 55, height: 15 });
+            expect(builder['proxy'].size).toEqual({ width: 55, height: 15 });
         });
 
         it('should set size using width and height parameters', () => {
             let builder = new GShapeElementBuilder(GNode);
             GBoundsAwareBuilder.size(builder, 50, 35);
-            expect(builder['proxy'].size).to.deep.equal({ width: 50, height: 35 });
+            expect(builder['proxy'].size).toEqual({ width: 50, height: 35 });
 
             builder = new GShapeElementBuilder(GNode);
             GBoundsAwareBuilder.size(builder, 70, 0);
-            expect(builder['proxy'].size).to.deep.equal({ width: 70, height: 0 });
+            expect(builder['proxy'].size).toEqual({ width: 70, height: 0 });
         });
 
         it('should set size from dimension object if height is provided too', () => {
             const builder = new GShapeElementBuilder(GNode);
             GBoundsAwareBuilder.size(builder, { width: 11, height: 33 }, 15);
-            expect(builder['proxy'].size).to.deep.equal({ width: 11, height: 33 });
+            expect(builder['proxy'].size).toEqual({ width: 11, height: 33 });
         });
 
         it('should default height to 0 if height is not provided', () => {
             const builder = new GShapeElementBuilder(GNode);
             GBoundsAwareBuilder.size(builder, 60);
-            expect(builder['proxy'].size).to.deep.equal({ width: 60, height: 0 });
+            expect(builder['proxy'].size).toEqual({ width: 60, height: 0 });
         });
     });
 });
