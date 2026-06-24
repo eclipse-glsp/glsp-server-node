@@ -51,7 +51,7 @@ describe('test RequestTypeHintsActionHandler', () => {
         const result = await handler.execute(RequestTypeHintsAction.create());
 
         expect(result).toHaveLength(1);
-        expect(SetTypeHintsAction.is(result[0])).true;
+        expect(SetTypeHintsAction.is(result[0])).toBe(true);
         expect(result).toEqual([
             { edgeHints: [edgeTypeHint], kind: 'setTypeHints', shapeHints: [shapeTypeHint], responseId: '' } as SetTypeHintsAction
         ]);

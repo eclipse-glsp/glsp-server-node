@@ -28,7 +28,7 @@ describe('Test Registry', () => {
     it('register - with new key-value pair', () => {
         const key = 'key';
         const value = 'value';
-        expect(registry.register(key, value)).true;
+        expect(registry.register(key, value)).toBe(true);
         expect(registry.get(key), value);
     });
 
@@ -36,9 +36,9 @@ describe('Test Registry', () => {
         // Setup
         const key = 'key';
         const value = 'value';
-        expect(registry.register(key, value)).true;
+        expect(registry.register(key, value)).toBe(true);
         // Test execution
-        expect(registry.register(key, 'newValue')).false;
+        expect(registry.register(key, 'newValue')).toBe(false);
         expect(registry.get(key), value);
     });
 
@@ -46,34 +46,34 @@ describe('Test Registry', () => {
         // Setup
         const key = 'key';
         const value = 'value';
-        expect(registry.register(key, value)).true;
+        expect(registry.register(key, value)).toBe(true);
         // Test execution
-        expect(registry.deregister(key)).true;
+        expect(registry.deregister(key)).toBe(true);
         expect(registry.get(key), undefined);
     });
 
     it('deregister - with unregistered key', () => {
-        expect(registry.deregister('unregisteredKey')).false;
+        expect(registry.deregister('unregisteredKey')).toBe(false);
     });
 
     it('haskey - with registered key', () => {
         // Setup
         const key = 'key';
         const value = 'value';
-        expect(registry.register(key, value)).true;
+        expect(registry.register(key, value)).toBe(true);
         // Test execution
-        expect(registry.hasKey(key)).true;
+        expect(registry.hasKey(key)).toBe(true);
     });
 
     it('haskey - with unregistered key', () => {
-        expect(registry.deregister('unregisteredKey')).false;
+        expect(registry.deregister('unregisteredKey')).toBe(false);
     });
 
     it('get - with registered key', () => {
         // Setup
         const key = 'key';
         const value = 'value';
-        expect(registry.register(key, value)).true;
+        expect(registry.register(key, value)).toBe(true);
         // Test execution
         expect(registry.get(key), value);
     });
@@ -93,9 +93,9 @@ describe('Test Registry', () => {
         // Test execution
         const result = registry.getAll();
         expect(result).toHaveLength(3);
-        expect(result.includes(e1.value)).true;
-        expect(result.includes(e2.value)).true;
-        expect(result.includes(e3.value)).true;
+        expect(result.includes(e1.value)).toBe(true);
+        expect(result.includes(e2.value)).toBe(true);
+        expect(result.includes(e3.value)).toBe(true);
     });
 
     it('keys - should return three keys', () => {
@@ -109,9 +109,9 @@ describe('Test Registry', () => {
         // Test execution
         const result = registry.keys();
         expect(result).toHaveLength(3);
-        expect(result.includes(e1.key)).true;
-        expect(result.includes(e2.key)).true;
-        expect(result.includes(e3.key)).true;
+        expect(result.includes(e1.key)).toBe(true);
+        expect(result.includes(e2.key)).toBe(true);
+        expect(result.includes(e3.key)).toBe(true);
     });
 });
 
@@ -133,8 +133,8 @@ describe('Test MapMultiRegistry', () => {
         const resultValue = multiRegistry.get(e1.key);
         expect(resultValue).toBeDefined();
         expect(resultValue!.length).toBe(2);
-        expect(resultValue!.includes(e1.value)).true;
-        expect(resultValue!.includes(e2.value)).true;
+        expect(resultValue!.includes(e1.value)).toBe(true);
+        expect(resultValue!.includes(e2.value)).toBe(true);
     });
 
     it('deregister - with registered key', () => {
@@ -144,14 +144,14 @@ describe('Test MapMultiRegistry', () => {
         multiRegistry.register(key, existingValue[0]);
         multiRegistry.register(key, existingValue[1]);
         // Test execution
-        expect(multiRegistry.deregister(key, existingValue[1])).true;
+        expect(multiRegistry.deregister(key, existingValue[1])).toBe(true);
         const result = multiRegistry.get(key);
         expect(result.length).toBe(1);
         expect(result[0], existingValue[0]);
     });
 
     it('deregister - with unregistered key', () => {
-        expect(multiRegistry.deregister('unregisteredKey', 'someValue')).false;
+        expect(multiRegistry.deregister('unregisteredKey', 'someValue')).toBe(false);
     });
 
     it('deregisterAll - with registered key', () => {
@@ -160,12 +160,12 @@ describe('Test MapMultiRegistry', () => {
         const existingValue = ['value', 'value2'];
         multiRegistry.register(key, existingValue[0]);
         multiRegistry.register(key, existingValue[1]);
-        expect(multiRegistry.deregisterAll(key)).true;
+        expect(multiRegistry.deregisterAll(key)).toBe(true);
         expect(multiRegistry.get(key)).toHaveLength(0);
     });
 
     it('deregisterAll - with unregistered key', () => {
-        expect(multiRegistry.deregisterAll('unregisteredKey')).false;
+        expect(multiRegistry.deregisterAll('unregisteredKey')).toBe(false);
     });
 
     it('haskey - with registered key', () => {
@@ -174,11 +174,11 @@ describe('Test MapMultiRegistry', () => {
         const existingValue = 'value';
         multiRegistry.register(key, existingValue);
         // Test execution
-        expect(multiRegistry.hasKey(key)).true;
+        expect(multiRegistry.hasKey(key)).toBe(true);
     });
 
     it('haskey - with unregistered key', () => {
-        expect(multiRegistry.hasKey('unregisteredKey')).false;
+        expect(multiRegistry.hasKey('unregisteredKey')).toBe(false);
     });
 
     it('get - with registered key', () => {
@@ -188,7 +188,7 @@ describe('Test MapMultiRegistry', () => {
         multiRegistry.register(key, existingValue);
         // Test execution
         expect(multiRegistry.get(key).length).toBe(1);
-        expect(multiRegistry.get(key).includes(existingValue)).true;
+        expect(multiRegistry.get(key).includes(existingValue)).toBe(true);
     });
 
     it('get - with unregistered key', () => {
@@ -205,8 +205,8 @@ describe('Test MapMultiRegistry', () => {
         // Test execution
         const result = multiRegistry.getAll();
         expect(result).toHaveLength(3);
-        expect(e1.value.every(v => result.includes(v))).true;
-        expect(e2.value.every(v => result.includes(v))).true;
+        expect(e1.value.every(v => result.includes(v))).toBe(true);
+        expect(e2.value.every(v => result.includes(v))).toBe(true);
     });
 
     it('keys', () => {
@@ -219,7 +219,7 @@ describe('Test MapMultiRegistry', () => {
         // Test execution
         const result = multiRegistry.keys();
         expect(result.length).toBe(2);
-        expect(result.includes(e1.key)).true;
-        expect(result.includes(e2.key)).true;
+        expect(result.includes(e1.key)).toBe(true);
+        expect(result.includes(e2.key)).toBe(true);
     });
 });

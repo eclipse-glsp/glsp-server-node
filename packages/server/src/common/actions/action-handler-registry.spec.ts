@@ -36,10 +36,10 @@ describe('Test ActionHandlerRegistry (only functionality that is not covered by 
 
         const result = registry.getAll();
         expect(result).toHaveLength(4);
-        expect(result.includes(h1)).true;
-        expect(result.includes(h2)).true;
-        expect(result.includes(h3)).true;
-        expect(result.includes(h4)).true;
+        expect(result.includes(h1)).toBe(true);
+        expect(result.includes(h2)).toBe(true);
+        expect(result.includes(h3)).toBe(true);
+        expect(result.includes(h4)).toBe(true);
     });
 
     it('get - should return three handlers sorted by priority', () => {

@@ -62,6 +62,6 @@ describe('test DefaultGlobalActionProvider', () => {
         expect(result.size).toBe(1);
         const resultServerActions = result.get(diagramType);
         expect(resultServerActions).toBeDefined();
-        expect(serverActions.every(action => resultServerActions!.includes(action))).true;
+        expect(serverActions.every(action => resultServerActions!.includes(action))).toBe(true);
     });
 });
