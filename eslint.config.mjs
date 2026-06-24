@@ -97,12 +97,4 @@ export default [
             ]
         }
     },
-    // Test file overrides
-    {
-        files: ['**/*.spec.{ts,tsx}'],
-        rules: {
-            '@typescript-eslint/no-unused-expressions': 'off',
-            'import-x/namespace': 'off'
-        }
-    }
 ];

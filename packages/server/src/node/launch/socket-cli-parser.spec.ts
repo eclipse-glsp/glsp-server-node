@@ -44,12 +44,12 @@ describe('test createCliParser', () => {
 
     it('parse - --no-consoleLog', () => {
         const result = parser.parse([...argv, '--no-consoleLog']);
-        expect(result.consoleLog).false;
+        expect(result.consoleLog).toBe(false);
     });
 
     it('parse - --fileLog', () => {
         const result = parser.parse([...argv, '--fileLog']);
-        expect(result.fileLog).true;
+        expect(result.fileLog).toBe(true);
     });
 
     it('parse - custom host name', () => {

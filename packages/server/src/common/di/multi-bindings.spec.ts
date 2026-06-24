@@ -34,7 +34,7 @@ describe('test implementations of MultiBinding', () => {
         const binding = new MultiBinding('TestClass');
         it('add - new binding', () => {
             binding.add(TestClass1);
-            expect(binding.contains(TestClass1)).true;
+            expect(binding.contains(TestClass1)).toBe(true);
 
             const result = binding.getAll();
             expect(result.length).toBe(1);
@@ -48,9 +48,9 @@ describe('test implementations of MultiBinding', () => {
         });
 
         it('remove - existing binding', () => {
-            expect(binding.contains(TestClass1)).true;
+            expect(binding.contains(TestClass1)).toBe(true);
             binding.remove(TestClass1);
-            expect(binding.contains(TestClass1)).false;
+            expect(binding.contains(TestClass1)).toBe(false);
             expect(binding.getAll()).toHaveLength(0);
         });
 
@@ -65,24 +65,24 @@ describe('test implementations of MultiBinding', () => {
 
             const result = binding.getAll();
             expect(result.length).toBe(2);
-            expect(result.includes(TestClass1)).true;
-            expect(result.includes(TestClass2)).true;
+            expect(result.includes(TestClass1)).toBe(true);
+            expect(result.includes(TestClass2)).toBe(true);
         });
 
         it('rebind- TestClass2 to TestClass3', () => {
             binding.rebind(TestClass2, TestClass3);
             const result = binding.getAll();
             expect(result.length).toBe(2);
-            expect(result.includes(TestClass1)).true;
-            expect(result.includes(TestClass3)).true;
+            expect(result.includes(TestClass1)).toBe(true);
+            expect(result.includes(TestClass3)).toBe(true);
         });
 
         it('rebind- TestClass2 to TestClass3- should fail', () => {
             binding.rebind(TestClass2, TestClass3);
             const result = binding.getAll();
             expect(result.length).toBe(2);
-            expect(result.includes(TestClass1)).true;
-            expect(result.includes(TestClass3)).true;
+            expect(result.includes(TestClass1)).toBe(true);
+            expect(result.includes(TestClass3)).toBe(true);
         });
 
         it('removeAll- TestClass1 & TestClass3', () => {
@@ -125,9 +125,9 @@ describe('test implementations of MultiBinding', () => {
             testContainer.load(testModule);
             const result = testContainer.get<string[]>(identifier);
             expect(result).toHaveLength(3);
-            expect(result.includes(t1)).true;
-            expect(result.includes(t2)).true;
-            expect(result.includes(t3)).true;
+            expect(result.includes(t1)).toBe(true);
+            expect(result.includes(t2)).toBe(true);
+            expect(result.includes(t3)).toBe(true);
         });
     });
 });

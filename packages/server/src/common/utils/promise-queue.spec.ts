@@ -88,22 +88,22 @@ describe('test PromiseQueue', () => {
     it('enqueue - one element', async () => {
         const { state, promise } = newTestPromise(100);
         state.onStart(() => {
-            expect(queue.isBusy).true;
+            expect(queue.isBusy).toBe(true);
         });
         const queEnd = queue.enqueue(promise);
-        expect(queue.isEmpty).true;
+        expect(queue.isEmpty).toBe(true);
         await queEnd;
     });
 
     it('enqueue - two elements', async () => {
         const p1 = newTestPromise(100);
-        p1.state.onStop(() => expect(p2.state.started).false);
+        p1.state.onStop(() => expect(p2.state.started).toBe(false));
 
         const p2 = newTestPromise(100);
 
         p2.state.onStart(() => {
-            expect(queue.isEmpty).true;
-            expect(p1.state.stopped).true;
+            expect(queue.isEmpty).toBe(true);
+            expect(p1.state.stopped).toBe(true);
         });
 
         queue.enqueue(p1.promise);
@@ -115,21 +115,21 @@ describe('test PromiseQueue', () => {
     it('enqueue - three elements (first promise in queue has longest resolve time)', async () => {
         const p1 = newTestPromise(300);
         p1.state.onStop(() => {
-            expect(p2.state.started).false;
-            expect(p3.state.started).false;
+            expect(p2.state.started).toBe(false);
+            expect(p3.state.started).toBe(false);
         });
 
         const p2 = newTestPromise(200);
         p2.state.onStart(() => {
             expect(queue.size).toBe(1);
-            expect(p1.state.stopped).true;
-            expect(p3.state.started).false;
+            expect(p1.state.stopped).toBe(true);
+            expect(p3.state.started).toBe(false);
         });
 
         const p3 = newTestPromise(100);
         p3.state.onStart(() => {
-            expect(queue.isEmpty).true;
-            expect(p2.state.stopped).true;
+            expect(queue.isEmpty).toBe(true);
+            expect(p2.state.stopped).toBe(true);
         });
 
         queue.enqueue(p1.promise);

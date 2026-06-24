@@ -15,7 +15,7 @@ importers:
     devDependencies:
       '@eclipse-glsp/dev':
         specifier: next
-        version: 2.8.0-next.16(@types/node@22.19.21)(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(typescript@5.9.3)(vite@8.0.16(@types/node@22.19.21)(esbuild@0.28.1))
+        version: 2.8.0-next.19(@types/node@22.19.21)(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(typescript@5.9.3)(vite@8.0.16(@types/node@22.19.21)(esbuild@0.28.1))
       '@types/node':
         specifier: 22.x
         version: 22.19.21
@@ -66,7 +66,7 @@ importers:
     dependencies:
       '@eclipse-glsp/protocol':
         specifier: next
-        version: 2.8.0-next.12(inversify@6.2.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
+        version: 2.8.0-next.13(inversify@6.2.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
 
   packages/layout-elk:
     dependencies:
@@ -90,7 +90,7 @@ importers:
         version: link:../graph
       '@eclipse-glsp/protocol':
         specifier: next
-        version: 2.8.0-next.12(inversify@6.2.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
+        version: 2.8.0-next.13(inversify@6.2.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       commander:
         specifier: ^14.0.0
         version: 14.0.3
@@ -168,21 +168,21 @@ packages:
   '@dabh/diagnostics@2.0.8':
     resolution: {integrity: sha512-R4MSXTVnuMzGD7bzHdW2ZhhdPC/igELENcq5IjEverBvq5hn1SXCWcsi6eSsdWP0/Ur+SItRRjAktmdoX/8R/Q==}
 
-  '@eclipse-glsp/cli@2.8.0-next.16':
-    resolution: {integrity: sha512-PyIDa2YaXzXCiYEGEfFoDy0U6suclx8dLcX0DCoDQr4mPpfgU6H63zk9k+4FKr+u475XV3ch5kUPHMQVRv/Fag==}
+  '@eclipse-glsp/cli@2.8.0-next.19':
+    resolution: {integrity: sha512-t+PEnSqOjFXznmAexX7Ekc+jLUIqPlIkUnm1laWi/D9mFHo67KRQ7563qmrTn4Wi0NAsdWeXToFBxFxG6/PfaQ==}
     hasBin: true
 
-  '@eclipse-glsp/config-test@2.8.0-next.16':
-    resolution: {integrity: sha512-7ihYKqjTIbfv1mTvrFsGy43f3h0jHNX1RJprAV9bp9zth2hfFQN/Y4xB564EwquE+suRc9ZJJvzJj/HNBa7BRg==}
+  '@eclipse-glsp/config-test@2.8.0-next.19':
+    resolution: {integrity: sha512-kLTnX6MGyKvI9u6TxZek3AQaUcdI/TMuhDBwB0+zGma3lwuGSvXqmqkYDdXrGN5ntuYoq7sfZBuCy+67LO7SXQ==}
 
-  '@eclipse-glsp/config@2.8.0-next.16':
-    resolution: {integrity: sha512-qM1PeD9UxvwKAf3G3ImOYFee7IvAFfL4TzwxPmPLnIdB4dAj7wDCY6COBcifAQD+jDoSuXFniQPcaUnHZKjfig==}
+  '@eclipse-glsp/config@2.8.0-next.19':
+    resolution: {integrity: sha512-Jxb3Zq9pw1waIbBINTEy9+7clcB939bOW+Lo56GB38LBd4HkQX82/Gh0EZN7PZhMP/mCfo4J6XGOK0m7q7qbpg==}
 
-  '@eclipse-glsp/dev@2.8.0-next.16':
-    resolution: {integrity: sha512-WUNk3B6MLkM8HZND1FqyccwQZ7A/DfqUBDGAypjj3JYMiAOTZwseQXB8ea4Z/iCTfEmq3wnYapbnm25SwSoFSQ==}
+  '@eclipse-glsp/dev@2.8.0-next.19':
+    resolution: {integrity: sha512-Kairzb+bgxSVuBcVPBLxWNbJevMm3nYqbTY1WaY8RXjDCRSW03U50et2AgC2L/F8I1gmJGZLfMF4BhxJzehOIg==}
 
-  '@eclipse-glsp/eslint-config@2.8.0-next.16':
-    resolution: {integrity: sha512-FDWiHnTj/vv1+tBg7kNoUbsBm8OMIUhEsQfTNw53lqaXeNdcHRfv5Aur6tArRWbu0EoeEsqe79te3evP/tzReQ==}
+  '@eclipse-glsp/eslint-config@2.8.0-next.19':
+    resolution: {integrity: sha512-QlXER0UYOaYT7WpzYpuHbLgjaeKTTjd0USddgvvuWneIwvsRRjaXk9QI0RKeCIKvJHjpzPOFsmW8RTjzp/EMhw==}
     peerDependencies:
       '@eslint/js': ^10.0.1
       '@stylistic/eslint-plugin': ^5.10.0
@@ -190,17 +190,16 @@ packages:
       eslint: ^10.5.0
       eslint-config-prettier: ^10.0.0
       eslint-import-resolver-typescript: ^4.0.0
-      eslint-plugin-chai-friendly: ^1.0.0
       eslint-plugin-import-x: ^4.16.2
       eslint-plugin-no-null: ^1.0.2
       globals: ^17.6.0
       typescript-eslint: ^8.0.0
 
-  '@eclipse-glsp/prettier-config@2.8.0-next.16':
-    resolution: {integrity: sha512-ZdYR+vVDBlbpiLwQhvPAFktPQMB5hvi15g4hsGBALwCWa7v5FYfzAahTgoH5imCf0zJNXt/VmbsonK7eWCBaEA==}
+  '@eclipse-glsp/prettier-config@2.8.0-next.19':
+    resolution: {integrity: sha512-pBLY7CQYHl0pAwSTiNPr4j182sSi0LH9ZwL+Ka0EhvXMMxUfvPMaEmKFi5nXuxVigeOFpRcTaRyuJU0LH15AqA==}
 
-  '@eclipse-glsp/protocol@2.8.0-next.12':
-    resolution: {integrity: sha512-asaLdnqtREilxO8+5ObuokYS8lh2EsbUlBW5LXIAtVGGrEwbyGMZyetq3nG+bSqNaDwp2qpkfAuMp8uCm6yEgg==}
+  '@eclipse-glsp/protocol@2.8.0-next.13':
+    resolution: {integrity: sha512-hS9APz4RFmlFmCaucnHRbWgbQSfgbNBYQGPNQYy8esVzHwB1MQ8T3NBcnWmHBU+smrXronHYtZcAfOtLIw0dlA==}
     peerDependencies:
       inversify: ^6.1.3
       reflect-metadata: ^0.2.2
@@ -210,13 +209,13 @@ packages:
       reflect-metadata:
         optional: true
 
-  '@eclipse-glsp/ts-config@2.8.0-next.16':
-    resolution: {integrity: sha512-0iLQOrjar/75XDYJjeLlIMBeWStLwf78wqypi+oTAfHpSliGd6hWSR8mHIA9G9YQNHrOZWxPgXI5ISJ6sHT14Q==}
+  '@eclipse-glsp/ts-config@2.8.0-next.19':
+    resolution: {integrity: sha512-zH7UW1+upPxvGljLMTuOP+S7yfXtxyvDcXnkc+iPWtzZORzcLm7IZRYfzoC6EKx45cllyasiLwV5ebhk6a/QOw==}
     peerDependencies:
       typescript: '>=5.5'
 
-  '@eclipse-glsp/vitest-config@2.8.0-next.16':
-    resolution: {integrity: sha512-gK/Unmg+lq9OYTyBxkYsY8H56FxhVrEa1NogvruqLg5HKkJGdNLP4j5DFACCq/jdnVvcfdCHM4Dx+nr+WM69jw==}
+  '@eclipse-glsp/vitest-config@2.8.0-next.19':
+    resolution: {integrity: sha512-Kq2VLBCTbp2keeNnNK6Io06iTSepzsQ/Ql3FCrXsEMyDziYYKsPsmZ1wbMbCWFoziQokWzTf4pkTcwVCymPWCQ==}
     peerDependencies:
       '@vitest/coverage-v8': '>=4.0.0'
       vitest: '>=4.0.0'
@@ -1073,12 +1072,6 @@ packages:
         optional: true
       eslint-plugin-import-x:
         optional: true
-
-  eslint-plugin-chai-friendly@1.2.1:
-    resolution: {integrity: sha512-mV3EOJLDr8+L+LS8uCkP711fnNHz+4PsmPyz18xwkvjJwfLRlnx0Eu6CFnb5B+dW5ahoav2jVer2KFYsmIuv3A==}
-    engines: {node: '>=0.10.0'}
-    peerDependencies:
-      eslint: '>=3.0.0'
 
   eslint-plugin-import-x@4.16.2:
     resolution: {integrity: sha512-rM9K8UBHcWKpzQzStn1YRN2T5NvdeIfSVoKu/lKF41znQXHAUcBbYXe5wd6GNjZjTrP7viQ49n1D83x/2gYgIw==}
@@ -2012,11 +2005,11 @@ snapshots:
       enabled: 2.0.0
       kuler: 2.0.0
 
-  '@eclipse-glsp/cli@2.8.0-next.16': {}
+  '@eclipse-glsp/cli@2.8.0-next.19': {}
 
-  '@eclipse-glsp/config-test@2.8.0-next.16(@types/node@22.19.21)(vite@8.0.16(@types/node@22.19.21)(esbuild@0.28.1))':
+  '@eclipse-glsp/config-test@2.8.0-next.19(@types/node@22.19.21)(vite@8.0.16(@types/node@22.19.21)(esbuild@0.28.1))':
     dependencies:
-      '@eclipse-glsp/vitest-config': 2.8.0-next.16(@vitest/coverage-v8@4.1.9)(vitest@4.1.9)
+      '@eclipse-glsp/vitest-config': 2.8.0-next.19(@vitest/coverage-v8@4.1.9)(vitest@4.1.9)
       '@vitest/coverage-v8': 4.1.9(vitest@4.1.9)
       vitest: 4.1.9(@types/node@22.19.21)(@vitest/coverage-v8@4.1.9)(vite@8.0.16(@types/node@22.19.21)(esbuild@0.28.1))
     transitivePeerDependencies:
@@ -2034,18 +2027,17 @@ snapshots:
       - msw
       - vite
 
-  '@eclipse-glsp/config@2.8.0-next.16(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(typescript@5.9.3)':
+  '@eclipse-glsp/config@2.8.0-next.19(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
-      '@eclipse-glsp/eslint-config': 2.8.0-next.16(@eslint/js@10.0.1(eslint@10.5.0))(@stylistic/eslint-plugin@5.10.0(eslint@10.5.0))(@tony.ganchev/eslint-plugin-header@3.4.4(eslint@10.5.0))(eslint-config-prettier@10.1.8(eslint@10.5.0))(eslint-import-resolver-typescript@4.4.5(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0))(eslint@10.5.0))(eslint-plugin-chai-friendly@1.2.1(eslint@10.5.0))(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0))(eslint-plugin-no-null@1.0.2(eslint@10.5.0))(eslint@10.5.0)(globals@17.6.0)(typescript-eslint@8.61.1(eslint@10.5.0)(typescript@5.9.3))
-      '@eclipse-glsp/prettier-config': 2.8.0-next.16(prettier@3.8.4)
-      '@eclipse-glsp/ts-config': 2.8.0-next.16(typescript@5.9.3)
+      '@eclipse-glsp/eslint-config': 2.8.0-next.19(@eslint/js@10.0.1(eslint@10.5.0))(@stylistic/eslint-plugin@5.10.0(eslint@10.5.0))(@tony.ganchev/eslint-plugin-header@3.4.4(eslint@10.5.0))(eslint-config-prettier@10.1.8(eslint@10.5.0))(eslint-import-resolver-typescript@4.4.5(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0))(eslint@10.5.0))(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0))(eslint-plugin-no-null@1.0.2(eslint@10.5.0))(eslint@10.5.0)(globals@17.6.0)(typescript-eslint@8.61.1(eslint@10.5.0)(typescript@5.9.3))
+      '@eclipse-glsp/prettier-config': 2.8.0-next.19(prettier@3.8.4)
+      '@eclipse-glsp/ts-config': 2.8.0-next.19(typescript@5.9.3)
       '@eslint/js': 10.0.1(eslint@10.5.0)
       '@stylistic/eslint-plugin': 5.10.0(eslint@10.5.0)
       '@tony.ganchev/eslint-plugin-header': 3.4.4(eslint@10.5.0)
       eslint: 10.5.0
       eslint-config-prettier: 10.1.8(eslint@10.5.0)
       eslint-import-resolver-typescript: 4.4.5(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0))(eslint@10.5.0)
-      eslint-plugin-chai-friendly: 1.2.1(eslint@10.5.0)
       eslint-plugin-import-x: 4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0)
       eslint-plugin-no-null: 1.0.2(eslint@10.5.0)
       globals: 17.6.0
@@ -2060,11 +2052,11 @@ snapshots:
       - supports-color
       - typescript
 
-  '@eclipse-glsp/dev@2.8.0-next.16(@types/node@22.19.21)(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(typescript@5.9.3)(vite@8.0.16(@types/node@22.19.21)(esbuild@0.28.1))':
+  '@eclipse-glsp/dev@2.8.0-next.19(@types/node@22.19.21)(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(typescript@5.9.3)(vite@8.0.16(@types/node@22.19.21)(esbuild@0.28.1))':
     dependencies:
-      '@eclipse-glsp/cli': 2.8.0-next.16
-      '@eclipse-glsp/config': 2.8.0-next.16(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(typescript@5.9.3)
-      '@eclipse-glsp/config-test': 2.8.0-next.16(@types/node@22.19.21)(vite@8.0.16(@types/node@22.19.21)(esbuild@0.28.1))
+      '@eclipse-glsp/cli': 2.8.0-next.19
+      '@eclipse-glsp/config': 2.8.0-next.19(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(typescript@5.9.3)
+      '@eclipse-glsp/config-test': 2.8.0-next.19(@types/node@22.19.21)(vite@8.0.16(@types/node@22.19.21)(esbuild@0.28.1))
     transitivePeerDependencies:
       - '@edge-runtime/vm'
       - '@opentelemetry/api'
@@ -2086,7 +2078,7 @@ snapshots:
       - typescript
       - vite
 
-  '@eclipse-glsp/eslint-config@2.8.0-next.16(@eslint/js@10.0.1(eslint@10.5.0))(@stylistic/eslint-plugin@5.10.0(eslint@10.5.0))(@tony.ganchev/eslint-plugin-header@3.4.4(eslint@10.5.0))(eslint-config-prettier@10.1.8(eslint@10.5.0))(eslint-import-resolver-typescript@4.4.5(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0))(eslint@10.5.0))(eslint-plugin-chai-friendly@1.2.1(eslint@10.5.0))(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0))(eslint-plugin-no-null@1.0.2(eslint@10.5.0))(eslint@10.5.0)(globals@17.6.0)(typescript-eslint@8.61.1(eslint@10.5.0)(typescript@5.9.3))':
+  '@eclipse-glsp/eslint-config@2.8.0-next.19(@eslint/js@10.0.1(eslint@10.5.0))(@stylistic/eslint-plugin@5.10.0(eslint@10.5.0))(@tony.ganchev/eslint-plugin-header@3.4.4(eslint@10.5.0))(eslint-config-prettier@10.1.8(eslint@10.5.0))(eslint-import-resolver-typescript@4.4.5(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0))(eslint@10.5.0))(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0))(eslint-plugin-no-null@1.0.2(eslint@10.5.0))(eslint@10.5.0)(globals@17.6.0)(typescript-eslint@8.61.1(eslint@10.5.0)(typescript@5.9.3))':
     dependencies:
       '@eslint/js': 10.0.1(eslint@10.5.0)
       '@stylistic/eslint-plugin': 5.10.0(eslint@10.5.0)
@@ -2094,19 +2086,18 @@ snapshots:
       eslint: 10.5.0
       eslint-config-prettier: 10.1.8(eslint@10.5.0)
       eslint-import-resolver-typescript: 4.4.5(eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0))(eslint@10.5.0)
-      eslint-plugin-chai-friendly: 1.2.1(eslint@10.5.0)
       eslint-plugin-import-x: 4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0)
       eslint-plugin-no-null: 1.0.2(eslint@10.5.0)
       globals: 17.6.0
       typescript-eslint: 8.61.1(eslint@10.5.0)(typescript@5.9.3)
 
-  '@eclipse-glsp/prettier-config@2.8.0-next.16(prettier@3.8.4)':
+  '@eclipse-glsp/prettier-config@2.8.0-next.19(prettier@3.8.4)':
     dependencies:
       prettier-plugin-packagejson: 3.0.2(prettier@3.8.4)
     transitivePeerDependencies:
       - prettier
 
-  '@eclipse-glsp/protocol@2.8.0-next.12(inversify@6.2.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)':
+  '@eclipse-glsp/protocol@2.8.0-next.13(inversify@6.2.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)':
     dependencies:
       sprotty-protocol: 1.4.0
       uuid: 14.0.0
@@ -2115,11 +2106,11 @@ snapshots:
       inversify: 6.2.2(reflect-metadata@0.2.2)
       reflect-metadata: 0.2.2
 
-  '@eclipse-glsp/ts-config@2.8.0-next.16(typescript@5.9.3)':
+  '@eclipse-glsp/ts-config@2.8.0-next.19(typescript@5.9.3)':
     dependencies:
       typescript: 5.9.3
 
-  '@eclipse-glsp/vitest-config@2.8.0-next.16(@vitest/coverage-v8@4.1.9)(vitest@4.1.9)':
+  '@eclipse-glsp/vitest-config@2.8.0-next.19(@vitest/coverage-v8@4.1.9)(vitest@4.1.9)':
     dependencies:
       '@vitest/coverage-v8': 4.1.9(vitest@4.1.9)
       vitest: 4.1.9(@types/node@22.19.21)(@vitest/coverage-v8@4.1.9)(vite@8.0.16(@types/node@22.19.21)(esbuild@0.28.1))
@@ -2854,10 +2845,6 @@ snapshots:
       eslint-plugin-import-x: 4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0)
     transitivePeerDependencies:
       - supports-color
-
-  eslint-plugin-chai-friendly@1.2.1(eslint@10.5.0):
-    dependencies:
-      eslint: 10.5.0
 
   eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.61.1(eslint@10.5.0)(typescript@5.9.3))(eslint@10.5.0):
     dependencies:

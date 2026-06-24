@@ -40,7 +40,7 @@ describe('test DefaultClientSessionManager', () => {
     const sessionManager = container.resolve(DefaultClientSessionManager);
 
     it('add listener', () => {
-        expect(sessionManager.addListener(testSessionListener, testSession.id)).true;
+        expect(sessionManager.addListener(testSessionListener, testSession.id)).toBe(true);
     });
 
     it('add create client session', () => {
