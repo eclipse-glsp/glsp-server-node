@@ -15,6 +15,7 @@
  ********************************************************************************/
 import 'reflect-metadata';
 
+import { GModelDemoDiagramModule } from '@eclipse-glsp-examples/gmodel-demo-server/browser';
 import { configureELKLayoutModule } from '@eclipse-glsp/layout-elk';
 import { createAppModule, LogLevel, WorkerServerLauncher } from '@eclipse-glsp/server/browser';
 import { McpWorkerBridge } from '@eclipse-glsp/server-mcp/browser';
@@ -22,7 +23,7 @@ import { Container } from 'inversify';
 import { WorkflowLayoutConfigurator } from '../common/layout/workflow-layout-configurator';
 import { WorkflowMcpDiagramModule } from '../common/mcp/workflow-mcp-diagram-module';
 import { WorkflowDiagramModule, WorkflowServerModule } from '../common/workflow-diagram-module';
-import { WorkflowMockModelStorage } from './mock-model-storage';
+import { WebModelStorage } from './web-model-storage';
 
 export async function launch(_argv?: string[]): Promise<void> {
     // Bridge must be created before any await so postMessages that arrive on the next event-loop tick aren't dropped.
@@ -38,11 +39,11 @@ export async function launch(_argv?: string[]): Promise<void> {
         isWebWorker: true
     });
 
-    const serverModule = new WorkflowServerModule().configureDiagramModule(
-        new WorkflowDiagramModule(() => WorkflowMockModelStorage),
-        elkLayoutModule,
-        new WorkflowMcpDiagramModule()
-    );
+    const serverModule = new WorkflowServerModule()
+        .configureDiagramModule(new WorkflowDiagramModule(() => WebModelStorage), elkLayoutModule, new WorkflowMcpDiagramModule())
+        // Host the gmodel-demo language on the same worker. It reuses the language-agnostic
+        // web storage (fetch by sourceUri), so no additional persistence code is needed.
+        .configureDiagramModule(new GModelDemoDiagramModule(() => WebModelStorage));
 
     launcher.configure(serverModule, bridge.createServerModule());
 

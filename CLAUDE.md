@@ -19,6 +19,10 @@ Eclipse GLSP Server Node monorepo. Provides the TypeScript-based server framewor
 - **Tests**: `pnpm test` (Mocha), runs across all packages
 - After completing any code changes, always run the `/fix` skill before reporting completion. It auto-fixes lint/format/header issues and runs the tests; manually resolve anything it could not auto-fix (remaining lint errors, test failures) and re-run it.
 
+## Changelog
+
+- Do not hand-edit `CHANGELOG.md`. Entries are produced collectively before each release via the `/generate-changelog` skill, so skip manual changelog updates when implementing a change.
+
 ## Import Rules
 
 These are enforced by ESLint and are easy to get wrong:

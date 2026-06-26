@@ -16,6 +16,10 @@ Eclipse GLSP Server Node monorepo. Provides the TypeScript-based server framewor
 - After completing any code changes, always run the `/verify` skill before reporting completion
 - If verification fails, run the `/fix` skill to auto-fix issues, then re-run `/verify`
 
+## Changelog
+
+- Do not hand-edit `CHANGELOG.md`. Entries are produced collectively before each release via the `/generate-changelog` skill, so skip manual changelog updates when implementing a change.
+
 ## Import Rules
 
 These are enforced by ESLint and are easy to get wrong:

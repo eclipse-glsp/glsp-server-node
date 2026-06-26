@@ -7,19 +7,10 @@
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "include": ["src", "src/**/*.json"],
+  "include": ["src"],
   "references": [
     {
-      "path": "../gmodel-demo-server"
-    },
-    {
       "path": "../../packages/server"
-    },
-    {
-      "path": "../../packages/server-mcp"
-    },
-    {
-      "path": "../../packages/layout-elk"
     }
   ]
 }

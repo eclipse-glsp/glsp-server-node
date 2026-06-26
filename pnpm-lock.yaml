@@ -23,8 +23,23 @@ importers:
         specifier: ^5.9.2
         version: 5.9.3
 
+  examples/gmodel-demo-server:
+    dependencies:
+      '@eclipse-glsp/server':
+        specifier: workspace:*
+        version: link:../../packages/server
+      inversify:
+        specifier: ^6.1.3
+        version: 6.2.2(reflect-metadata@0.2.2)
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+
   examples/workflow-server:
     dependencies:
+      '@eclipse-glsp-examples/gmodel-demo-server':
+        specifier: workspace:*
+        version: link:../gmodel-demo-server
       '@eclipse-glsp/layout-elk':
         specifier: workspace:*
         version: link:../../packages/layout-elk
@@ -66,7 +81,7 @@ importers:
     dependencies:
       '@eclipse-glsp/protocol':
         specifier: next
-        version: 2.8.0-next.13(inversify@6.2.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
+        version: 2.8.0-next.14(inversify@6.2.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
 
   packages/layout-elk:
     dependencies:
@@ -90,7 +105,7 @@ importers:
         version: link:../graph
       '@eclipse-glsp/protocol':
         specifier: next
-        version: 2.8.0-next.13(inversify@6.2.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
+        version: 2.8.0-next.14(inversify@6.2.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       commander:
         specifier: ^14.0.0
         version: 14.0.3
@@ -198,8 +213,8 @@ packages:
   '@eclipse-glsp/prettier-config@2.8.0-next.19':
     resolution: {integrity: sha512-pBLY7CQYHl0pAwSTiNPr4j182sSi0LH9ZwL+Ka0EhvXMMxUfvPMaEmKFi5nXuxVigeOFpRcTaRyuJU0LH15AqA==}
 
-  '@eclipse-glsp/protocol@2.8.0-next.13':
-    resolution: {integrity: sha512-hS9APz4RFmlFmCaucnHRbWgbQSfgbNBYQGPNQYy8esVzHwB1MQ8T3NBcnWmHBU+smrXronHYtZcAfOtLIw0dlA==}
+  '@eclipse-glsp/protocol@2.8.0-next.14':
+    resolution: {integrity: sha512-60KcNPueJZfRrtzu4tiAfRVbxsTFhStFPmd11OZyRZIa4N91GFHxtbuhPkrcx1NaElStVNegKfc7W8HQ/M7ezA==}
     peerDependencies:
       inversify: ^6.1.3
       reflect-metadata: ^0.2.2
@@ -2097,7 +2112,7 @@ snapshots:
     transitivePeerDependencies:
       - prettier
 
-  '@eclipse-glsp/protocol@2.8.0-next.13(inversify@6.2.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)':
+  '@eclipse-glsp/protocol@2.8.0-next.14(inversify@6.2.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)':
     dependencies:
       sprotty-protocol: 1.4.0
       uuid: 14.0.0

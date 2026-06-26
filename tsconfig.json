@@ -20,6 +20,9 @@
     },
     {
       "path": "./examples/workflow-server"
+    },
+    {
+      "path": "./examples/gmodel-demo-server"
     }
   ]
 }

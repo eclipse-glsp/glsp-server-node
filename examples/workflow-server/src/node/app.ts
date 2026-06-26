@@ -15,6 +15,7 @@
  ********************************************************************************/
 import 'reflect-metadata';
 
+import { GModelDemoDiagramModule } from '@eclipse-glsp-examples/gmodel-demo-server';
 import { ElkLayoutModule } from '@eclipse-glsp/layout-elk';
 import { GModelStorage, Logger, SocketServerLauncher, WebSocketServerLauncher, createAppModule } from '@eclipse-glsp/server/node';
 import { Container } from 'inversify';
@@ -40,15 +41,21 @@ async function launch(argv?: string[]): Promise<void> {
         logger.error('Uncaught exception:', error);
     });
 
-    const serverModule = new WorkflowServerModule().configureDiagramModule(
-        new WorkflowDiagramModule(() => GModelStorage),
-        new ElkLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator }),
-        new WorkflowMcpDiagramModule()
-    );
+    const serverModule = new WorkflowServerModule()
+        .configureDiagramModule(
+            new WorkflowDiagramModule(() => GModelStorage),
+            new ElkLayoutModule({ algorithms: ['layered'], layoutConfigurator: WorkflowLayoutConfigurator }),
+            new WorkflowMcpDiagramModule()
+        )
+        // Host the gmodel-demo conformance language on the same server. It reuses the
+        // extension-agnostic GModelStorage, so no additional persistence code is needed.
+        .configureDiagramModule(new GModelDemoDiagramModule(() => GModelStorage));
     const mcpServerModule = new WorkflowMcpServerModule();
     if (options.webSocket) {
         const launcher = appContainer.resolve(WebSocketServerLauncher);
         launcher.configure(serverModule, mcpServerModule);
+        // 'workflow' is just the websocket endpoint name; both hosted languages are reachable
+        // through it and are routed per session by their diagramType (workflow-diagram / gmodel-demo).
         await launcher.start({ port: options.port, host: options.host, path: 'workflow' });
     } else {
         const launcher = appContainer.resolve(SocketServerLauncher);
