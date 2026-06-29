@@ -14,8 +14,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import {
+    Action,
     ActionMessage,
     Args,
+    CompoundOperation,
     DisposeClientSessionParameters,
     GLSPClientProxy,
     GLSPServer,
@@ -167,7 +169,7 @@ export class DefaultGLSPServer implements GLSPServer {
 
     process(message: ActionMessage): void {
         this.validateServerInitialized();
-        this.logger.info(`process [action=${message.action.kind}, clientId=${message.clientId}]`);
+        this.logger.info(`process [action=${this.formatAction(message.action)}, clientId=${message.clientId}]`);
         const clientSessionId = message.clientId;
         const clientSession = this.clientSessions.get(clientSessionId);
         if (!clientSession) {
@@ -226,6 +228,14 @@ export class DefaultGLSPServer implements GLSPServer {
         }
         const errorAction = MessageAction.create(errorMsg, { severity: 'ERROR', details });
         this.sendToClient({ clientId: message.clientId, action: errorAction });
+    }
+
+    protected formatAction(action: Action): string {
+        if (CompoundOperation.is(action)) {
+            const children = action.operationList.map(op => op.kind).join(', ');
+            return `${action.kind}(${children})`;
+        }
+        return action.kind;
     }
 
     protected sendToClient(message: ActionMessage): void {
