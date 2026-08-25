@@ -6,6 +6,10 @@
 
 ### Potentially Breaking Changes
 
+- [layout] Keep applying computed bounds when an individual entry cannot be applied [#149](https://github.com/eclipse-glsp/glsp-server-node/pull/149)
+    - `applyRoute` now returns `GEdge | undefined` instead of `GEdge`
+    - `applyElementAndBounds`, `applyAlignment` and `applyRoute` no longer throw for an element the index cannot resolve, they report it as not applied. `applyRoutingPoints` stays strict.
+
 ## [v2.7.0 - 01/06/2026](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.7.0)
 
 ### Changes
