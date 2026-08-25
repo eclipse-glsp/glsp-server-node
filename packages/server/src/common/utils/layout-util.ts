@@ -25,11 +25,11 @@ import { GLSPServerError, getOrThrow } from './glsp-server-error';
  *
  * @param bounds The new bounds.
  * @param index  The model index.
- * @returns The changed element.
+ * @returns The changed element, or `undefined` if the bounds could not be applied to any element.
  */
 export function applyElementAndBounds(bounds: ElementAndBounds, index: GModelIndex): GBoundsAware | undefined {
-    const element = getOrThrow(index.get(bounds.elementId), 'Model element not found! ID: ' + bounds.elementId);
-    if (isGBoundsAware(element)) {
+    const element = index.find(bounds.elementId);
+    if (element && isGBoundsAware(element)) {
         if (bounds.newPosition !== undefined) {
             element.position = bounds.newPosition;
         }
@@ -44,11 +44,11 @@ export function applyElementAndBounds(bounds: ElementAndBounds, index: GModelInd
  *
  * @param alignment The new alignment.
  * @param index     The model index.
- * @returns The changed element.
+ * @returns The changed element, or `undefined` if the alignment could not be applied to any element.
  */
 export function applyAlignment(alignment: ElementAndAlignment, index: GModelIndex): GAlignable | undefined {
-    const element = getOrThrow(index.get(alignment.elementId), 'Model element not found! ID: ' + alignment.elementId);
-    if (isGAlignable(element)) {
+    const element = index.find(alignment.elementId);
+    if (element && isGAlignable(element)) {
         element.alignment = alignment.newAlignment;
         return element;
     }
@@ -56,19 +56,20 @@ export function applyAlignment(alignment: ElementAndAlignment, index: GModelInde
 }
 
 /**
- * Applies the new route to the model.
+ * Applies the new route to the model. A route needs at least a source and a target point to describe an edge.
  *
  * @param route The new route.
  * @param index The model index.
- * @returns The changed element.
+ * @returns The changed edge, or `undefined` if the route could not be applied to any edge.
  */
-export function applyRoute(route: ElementAndRoutingPoints, index: GModelIndex): GEdge {
+export function applyRoute(route: ElementAndRoutingPoints, index: GModelIndex): GEdge | undefined {
     const routingPoints = route.newRoutingPoints ?? [];
-    if (routingPoints.length < 2) {
-        throw new GLSPServerError('Invalid Route!');
+    const edge = index.findByClass(route.elementId, GEdge);
+    if (!edge || routingPoints.length < 2) {
+        return undefined;
     }
     // first and last point mark the source and target point
-    const edge = applyRoutingPoints(route, index);
+    edge.routingPoints = routingPoints;
     const edgeRoutingPoints = edge.routingPoints;
 
     const args = edge.args ?? {};

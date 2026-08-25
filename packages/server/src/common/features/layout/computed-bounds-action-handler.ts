@@ -14,10 +14,19 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { GModelRoot } from '@eclipse-glsp/graph';
-import { Action, ComputedBoundsAction, LayoutOperation, MaybePromise } from '@eclipse-glsp/protocol';
+import {
+    Action,
+    ComputedBoundsAction,
+    ElementAndAlignment,
+    ElementAndBounds,
+    ElementAndRoutingPoints,
+    LayoutOperation,
+    MaybePromise
+} from '@eclipse-glsp/protocol';
 import { inject, injectable } from 'inversify';
 import { ActionHandler } from '../../actions/action-handler';
 import { applyAlignment, applyElementAndBounds, applyRoute } from '../../utils/layout-util';
+import { Logger } from '../../utils/logger';
 import { ModelState } from '../model/model-state';
 import { ModelSubmissionHandler } from '../model/model-submission-handler';
 
@@ -34,6 +43,9 @@ export class ComputedBoundsActionHandler implements ActionHandler {
     @inject(ModelState)
     protected modelState: ModelState;
 
+    @inject(Logger)
+    protected logger: Logger;
+
     actionKinds = [ComputedBoundsAction.KIND];
     execute(action: ComputedBoundsAction): MaybePromise<Action[]> {
         const model = this.modelState.root;
@@ -48,11 +60,47 @@ export class ComputedBoundsActionHandler implements ActionHandler {
         return [];
     }
 
+    /**
+     * Applies everything the client computed for the given model.
+     *
+     * An entry that cannot be applied is skipped and logged rather than treated as an error.
+     */
     protected applyBounds(root: GModelRoot, action: ComputedBoundsAction): void {
+        this.applyElementBounds(action.bounds);
+        this.applyAlignments(action.alignments ?? []);
+        this.applyRoutes(action.routes ?? []);
+    }
+
+    protected applyElementBounds(allBounds: ElementAndBounds[]): void {
         const index = this.modelState.index;
-        action.bounds.forEach(bounds => applyElementAndBounds(bounds, index));
-        (action.alignments ?? []).forEach(alignment => applyAlignment(alignment, index));
-        (action.routes ?? []).forEach(route => applyRoute(route, index));
+        allBounds.forEach(bounds => {
+            if (!applyElementAndBounds(bounds, index)) {
+                this.logger.warn(`Skipped computed bounds of element '${bounds.elementId}'`);
+            }
+        });
+    }
+
+    protected applyAlignments(alignments: ElementAndAlignment[]): void {
+        const index = this.modelState.index;
+        alignments.forEach(alignment => {
+            if (!applyAlignment(alignment, index)) {
+                this.logger.warn(`Skipped computed alignment of element '${alignment.elementId}'`);
+            }
+        });
+    }
+
+    /**
+     * Applies the computed routes.
+     *
+     * A skipped route is logged at debug level, an edge the client has not finished routing yet is expected.
+     */
+    protected applyRoutes(routes: ElementAndRoutingPoints[]): void {
+        const index = this.modelState.index;
+        routes.forEach(route => {
+            if (!applyRoute(route, index)) {
+                this.logger.debug(`Skipped computed route of element '${route.elementId}'`);
+            }
+        });
     }
 
     priority?: number | undefined;
