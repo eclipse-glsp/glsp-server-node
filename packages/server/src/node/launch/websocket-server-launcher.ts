@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { createWebSocketConnection, Disposable, MaybePromise, WebSocketWrapper } from '@eclipse-glsp/protocol';
+import { createWebSocketConnection, Disposable, Emitter, Event, MaybePromise, WebSocketWrapper } from '@eclipse-glsp/protocol';
 import * as http from 'http';
 import { inject, injectable } from 'inversify';
 import * as net from 'net';
@@ -50,8 +50,20 @@ export class WebSocketServerLauncher extends JsonRpcGLSPServerLauncher<WebSocket
 
     protected server: Server;
 
-    constructor() {
-        super();
+    protected onConnectionEmitter = new Emitter<WebSocket>();
+
+    /**
+     * Fires for every web socket the server accepts, before the JSON-RPC connection is built on it.
+     *
+     * A listener must not consume the socket. Subscribe before {@link start} to observe the first connection; the
+     * subscription outlives an individual launch and is disposed by the caller.
+     */
+    get onConnection(): Event<WebSocket> {
+        return this.onConnectionEmitter.event;
+    }
+
+    protected override registerDisposables(): void {
+        super.registerDisposables();
         this.toDispose.push(
             Disposable.create(() => {
                 this.server.close();
@@ -66,15 +78,22 @@ export class WebSocketServerLauncher extends JsonRpcGLSPServerLauncher<WebSocket
         this.logger.info(`The GLSP Websocket launcher is ready to accept new client requests on endpoint '${endpoint}'`);
         console.log(this.startupCompleteMessage.concat(resolvedOptions.port.toString()));
 
-        this.server.on('connection', (ws, req) => {
-            const connection = this.createConnection(ws);
-            this.createServerInstance(connection);
-        });
+        this.server.on('connection', ws => this.acceptConnection(ws));
 
         return new Promise((resolve, reject) => {
             this.server.on('close', () => resolve(undefined));
             this.server.on('error', error => reject(error));
         });
+    }
+
+    /**
+     * Takes up a web socket the server accepted. Observers are notified before the socket is read from.
+     *
+     * @param socket The accepted web socket.
+     */
+    protected acceptConnection(socket: WebSocket): void {
+        this.onConnectionEmitter.fire(socket);
+        this.createServerInstance(this.createConnection(socket));
     }
 
     protected createConnection(socket: WebSocket): jsonrpc.MessageConnection {

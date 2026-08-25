@@ -4,6 +4,11 @@
 
 ### Changes
 
+- [launch] Expose the address a `SocketServerLauncher` bound to via `listening` and `port`, so an embedder no longer has to parse the startup message to learn an OS-assigned port [#150](https://github.com/eclipse-glsp/glsp-server-node/pull/150)
+- [launch] Add an `onConnection` event to `SocketServerLauncher` and `WebSocketServerLauncher`, so an embedder can observe accepted connections without reaching for the protected server field [#150](https://github.com/eclipse-glsp/glsp-server-node/pull/150)
+- [launch] Release the server socket again when a restarted launcher is shut down [#150](https://github.com/eclipse-glsp/glsp-server-node/pull/150)
+    - launchers now register what `shutdown` has to release in the new `registerDisposables` hook, called once per launch, rather than in their constructor
+
 ### Potentially Breaking Changes
 
 - [layout] Keep applying computed bounds when an individual entry cannot be applied [#149](https://github.com/eclipse-glsp/glsp-server-node/pull/149)

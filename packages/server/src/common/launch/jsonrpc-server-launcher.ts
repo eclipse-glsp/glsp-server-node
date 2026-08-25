@@ -43,8 +43,8 @@ export abstract class JsonRpcGLSPServerLauncher<T> extends GLSPServerLauncher<T>
     protected serverInstances = new Map<jsonrpc.MessageConnection, JsonRpcServerInstance>();
     protected startupCompleteMessage = START_UP_COMPLETE_MSG;
 
-    constructor() {
-        super();
+    protected override registerDisposables(): void {
+        super.registerDisposables();
         this.toDispose.push(
             Disposable.create(() => {
                 this.serverInstances.forEach(instance => this.disposeServerInstance(instance));
