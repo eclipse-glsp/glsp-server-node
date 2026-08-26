@@ -15,6 +15,7 @@
  ********************************************************************************/
 
 import {
+    Deferred,
     Disposable,
     GLSPClientProxy,
     GLSPServer,
@@ -23,6 +24,7 @@ import {
     configureClientConnection
 } from '@eclipse-glsp/protocol';
 import { Container, ContainerModule, inject, injectable } from 'inversify';
+import * as net from 'net';
 import * as jsonrpc from 'vscode-jsonrpc';
 import { Logger } from '../utils/logger';
 import { GLSPServerLauncher } from './glsp-server-launcher';
@@ -43,8 +45,93 @@ export abstract class JsonRpcGLSPServerLauncher<T> extends GLSPServerLauncher<T>
     protected serverInstances = new Map<jsonrpc.MessageConnection, JsonRpcServerInstance>();
     protected startupCompleteMessage = START_UP_COMPLETE_MSG;
 
-    constructor() {
-        super();
+    protected listeningAddress = new Deferred<net.AddressInfo>();
+
+    /**
+     * Resolves with the address the server bound to once it is listening, and rejects if it never gets there.
+     *
+     * Launching with port `0` lets the operating system pick a free port, so the bound address is not necessarily the
+     * requested one. Settles once per launch and keeps that value, so use {@link port} for the current state. Reading
+     * this before {@link start} is fine, the promise handed out is the one that launch settles.
+     */
+    get listening(): Promise<net.AddressInfo> {
+        return this.listeningAddress.promise;
+    }
+
+    /**
+     * The port the server is currently listening on, or `undefined` if it is not.
+     *
+     * Await {@link listening} rather than polling this while the server is still starting up.
+     */
+    get port(): number | undefined {
+        const address = this.getServerSocket()?.address();
+        return address && typeof address !== 'string' ? address.port : undefined;
+    }
+
+    /**
+     * The socket that {@link port} reports on, or `undefined` before the first launch.
+     *
+     * A launcher that binds a socket overrides this, the default reports no address at all.
+     */
+    protected getServerSocket(): net.Server | undefined {
+        return undefined;
+    }
+
+    /**
+     * Arms {@link listening} for a launch.
+     *
+     * An unresolved promise is kept, so a caller that grabbed {@link listening} before {@link start} gets the one this
+     * launch settles. A settled one is replaced, so a restart is not handed the previous result.
+     */
+    protected resetListening(): void {
+        if (this.listeningAddress.state !== 'unresolved') {
+            this.listeningAddress = new Deferred<net.AddressInfo>();
+        }
+    }
+
+    /**
+     * Resolves {@link listening} with the address the given server bound to.
+     *
+     * @param server The server that reported itself as listening.
+     * @returns The bound address, or `undefined` if it cannot be used, in which case the launcher is shut down.
+     */
+    protected settleListening(server: net.Server): net.AddressInfo | undefined {
+        const addressInfo = server.address();
+        if (!addressInfo) {
+            this.failToListen('Could not resolve GLSP Server address info.');
+            return undefined;
+        }
+        if (typeof addressInfo === 'string') {
+            this.failToListen(`GLSP Server is unexpectedly listening to pipe or domain socket "${addressInfo}".`);
+            return undefined;
+        }
+        this.listeningAddress.resolve(addressInfo);
+        return addressInfo;
+    }
+
+    /**
+     * Invoked when the server socket fails, e.g. because the requested port is already in use.
+     *
+     * @param error The reason the socket failed.
+     */
+    protected handleError(error: Error): void {
+        this.failToListen(`GLSP server socket error. ${error.message}`, error);
+    }
+
+    /**
+     * Reports that the server will not accept requests, rejects {@link listening} and shuts the launcher down.
+     *
+     * @param message The reason the server is not usable.
+     * @param cause   The underlying error, if the reason was one.
+     */
+    protected failToListen(message: string, cause?: Error): void {
+        this.logger.error(`${message} Shutting down.`);
+        this.listeningAddress.reject(cause ?? new Error(message));
+        this.shutdown();
+    }
+
+    protected override registerDisposables(): void {
+        super.registerDisposables();
         this.toDispose.push(
             Disposable.create(() => {
                 this.serverInstances.forEach(instance => this.disposeServerInstance(instance));

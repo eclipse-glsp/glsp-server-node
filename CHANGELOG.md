@@ -4,11 +4,19 @@
 
 ### Changes
 
+- [launch] Expose the address a launcher bound to via `listening` and `port` on `JsonRpcGLSPServerLauncher`, so an embedder no longer has to parse the startup message to learn an OS-assigned port [#150](https://github.com/eclipse-glsp/glsp-server-node/pull/150)
+- [launch] Add an `onConnection` event to `SocketServerLauncher` and `WebSocketServerLauncher`, so an embedder can observe accepted connections without reaching for the protected server field [#150](https://github.com/eclipse-glsp/glsp-server-node/pull/150)
+    - the web socket event carries the upgrade request next to the socket, which is the only place its headers and query are still available
+- [launch] Release the server socket again when a restarted launcher is shut down [#150](https://github.com/eclipse-glsp/glsp-server-node/pull/150)
+    - `WebSocketServerLauncher` now also closes the HTTP server it mounts on, which `ws` leaves listening because it did not create it
+
 ### Potentially Breaking Changes
 
 - [layout] Keep applying computed bounds when an individual entry cannot be applied [#149](https://github.com/eclipse-glsp/glsp-server-node/pull/149)
     - `applyRoute` now returns `GEdge | undefined` instead of `GEdge`
     - `applyElementAndBounds`, `applyAlignment` and `applyRoute` no longer throw for an element the index cannot resolve, they report it as not applied. `applyRoutingPoints` stays strict.
+- [launch] Launchers register what `shutdown` has to release in the new `GLSPServerLauncher.registerDisposables` hook, called once per launch, rather than in their constructor [#150](https://github.com/eclipse-glsp/glsp-server-node/pull/150)
+    - A custom launcher that pushes into `toDispose` from its constructor keeps compiling but loses that cleanup after the first `shutdown`, because `dispose` empties the collection. Move those registrations into an override of `registerDisposables`.
 
 ## [v2.7.0 - 01/06/2026](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.7.0)
 

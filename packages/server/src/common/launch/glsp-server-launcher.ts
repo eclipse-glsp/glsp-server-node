@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022-2023 STMicroelectronics and others.
+ * Copyright (c) 2022-2026 STMicroelectronics and others.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v. 2.0 which is available at
@@ -42,9 +42,20 @@ export abstract class GLSPServerLauncher<T> implements Disposable {
     start(startParams: T): MaybePromise<void> {
         if (!this.running) {
             this.running = true;
+            this.registerDisposables();
             return this.run(startParams);
         }
         this.logger.warn('Could not start launcher. Launcher is already running!');
+    }
+
+    /**
+     * Registers what {@link shutdown} has to release for the launch that is about to start.
+     *
+     * Called once per launch, because {@link dispose} empties the collection it registers into. A subclass that holds
+     * resources for the duration of a launch overrides this instead of registering them in its constructor.
+     */
+    protected registerDisposables(): void {
+        // nothing to release by default
     }
 
     protected abstract run(startParams: T): MaybePromise<void>;
