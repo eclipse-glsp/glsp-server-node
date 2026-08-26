@@ -19,51 +19,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Container } from 'inversify';
 import * as net from 'net';
 import { createAppModule } from '../di/app-module';
+import { waitForReachable } from '../test/port-util';
 import { defaultSocketLaunchOptions } from './socket-cli-parser';
 import { SocketServerLauncher } from './socket-server-launcher';
 
 const serverPort = 5008;
-
-function delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
- * Resolves whether a TCP connection to the given port is currently accepted.
- *
- * The outcome is routed through the returned promise rather than asserted inside the socket event
- * callbacks on purpose: an assertion thrown from a detached socket listener escapes the test's
- * promise chain and surfaces as a Vitest "unhandled error" that fails the run *without* turning any
- * individual test red. Resolving/rejecting keeps every outcome attributable to this test.
- */
-function isReachable(port: number): Promise<boolean> {
-    return new Promise(resolve => {
-        const socket = new net.Socket();
-        socket.setTimeout(1000);
-        const finish = (reachable: boolean): void => {
-            socket.destroy();
-            resolve(reachable);
-        };
-        socket
-            .on('connect', () => finish(true))
-            .on('error', () => finish(false))
-            .on('timeout', () => finish(false))
-            .connect(port);
-    });
-}
-
-/** Polls until the port reaches the expected reachability, or fails the test once the deadline elapses. */
-async function waitForReachable(port: number, expected: boolean, deadlineMs = 5000): Promise<void> {
-    const start = Date.now();
-    while (Date.now() - start < deadlineMs) {
-        if ((await isReachable(port)) === expected) {
-            return;
-        }
-
-        await delay(50);
-    }
-    expect.fail(`Port ${port} did not become ${expected ? 'reachable' : 'unreachable'} within ${deadlineMs}ms`);
-}
 
 function createLauncher(): SocketServerLauncher {
     const serverStub = {
@@ -106,6 +66,15 @@ describe('test SocketServerLauncher', () => {
         launcher.start({ port: serverPort });
 
         await expect(launcher.listening).resolves.toMatchObject({ port: serverPort });
+    });
+
+    it('resolves a promise that was grabbed before the launch', async () => {
+        launcher = createLauncher();
+        const listening = launcher.listening;
+
+        launcher.start({ port: serverPort });
+
+        await expect(listening).resolves.toMatchObject({ port: serverPort });
     });
 
     it('resolves the port the operating system assigned', async () => {
