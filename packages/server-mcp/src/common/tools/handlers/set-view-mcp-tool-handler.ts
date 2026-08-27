@@ -74,9 +74,10 @@ export const SetViewOutputSchema = z.object({
         .optional()
         .describe("Resolved final viewport when `action: 'set-viewport'` was applied (current values merged with the supplied overrides).")
 });
+export type SetViewOutput = z.infer<typeof SetViewOutputSchema>;
 
 @injectable()
-export class SetViewMcpToolHandler extends AbstractMcpDiagramToolHandler<SetViewInput> {
+export class SetViewMcpToolHandler extends AbstractMcpDiagramToolHandler<SetViewInput, SetViewOutput> {
     /** Timeout (in ms) for the `GetViewportAction` round-trip used by `set-viewport` partial updates. Override via subclass + rebind. */
     protected readonly viewportQueryTimeoutMs: number = 5000;
 
@@ -102,7 +103,7 @@ export class SetViewMcpToolHandler extends AbstractMcpDiagramToolHandler<SetView
         if (action === 'set-viewport') {
             return this.applyExplicitViewport(zoom, scroll);
         }
-        const resolvedIds = elementIds ? elementIds.map(id => this.aliasService.lookup(id)) : this.modelState.index.allIds();
+        const resolvedIds = elementIds ? this.resolveExistingIds(elementIds) : this.modelState.index.allIds();
         const dispatchAction = this.buildIntentAction(action, resolvedIds);
         await this.actionDispatcher.dispatch(dispatchAction);
         return this.success('Viewport successfully changed', { action, targetIds: this.encodeIds(resolvedIds) });

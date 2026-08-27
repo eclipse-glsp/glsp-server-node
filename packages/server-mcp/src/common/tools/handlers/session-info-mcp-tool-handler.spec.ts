@@ -19,6 +19,7 @@ import { describe, expect, it } from 'vitest';
 import { Container, ContainerModule } from 'inversify';
 import { McpToolResult } from '../../server/mcp-handler-shared';
 import { SessionInfoMcpToolHandler } from './session-info-mcp-tool-handler';
+import { expectValidStructuredContent } from './test/expect-structured-content';
 
 function asText(result: McpToolResult): string {
     const block = result.content[0];
@@ -115,6 +116,7 @@ describe('SessionInfoMcpToolHandler', () => {
         expect(text).toContain('workflow-diagram');
         expect(text).toContain('state-diagram');
         // Full per-session detail goes via structuredContent.
+        expectValidStructuredContent(handler, result);
         const sessions = (result.structuredContent as { sessions: SessionRow[] }).sessions;
         expect(sessions.map(row => row.sessionId)).toEqual(['session-alpha', 'session-beta']);
     });

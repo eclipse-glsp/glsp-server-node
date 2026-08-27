@@ -294,7 +294,19 @@ export abstract class AbstractMcpDiagramResourceHandler<
         return requestActionOrFail(this.actionDispatcher, request, timeoutMs, label);
     }
 
-    /** Override to opt out of registration when a runtime dependency is missing. Default: `true`. */
+    /**
+     * Whether the diagram type can support this resource at all — see
+     * {@link BaseMcpDiagramToolHandler.isSupportedByDiagramType}. Returning `false` keeps the
+     * resource out of the MCP catalog.
+     */
+    isSupportedByDiagramType(): boolean {
+        return true;
+    }
+
+    /**
+     * Override to opt out when a per-session dependency is missing. Default: `true`. Gates the
+     * per-GLSP-session registry only — see {@link BaseMcpDiagramToolHandler.canRegister}.
+     */
     canRegister(): boolean {
         return true;
     }

@@ -40,9 +40,10 @@ export type SessionInfoRow = z.infer<typeof SessionInfoRowSchema>;
 export const SessionInfoOutputSchema = z.object({
     sessions: z.array(SessionInfoRowSchema)
 });
+export type SessionInfoOutput = z.infer<typeof SessionInfoOutputSchema>;
 
 @injectable()
-export class SessionInfoMcpToolHandler extends AbstractMcpToolHandler<SessionInfoInput> {
+export class SessionInfoMcpToolHandler extends AbstractMcpToolHandler<SessionInfoInput, SessionInfoOutput> {
     @inject(ClientSessionManager) protected clientSessionManager: ClientSessionManager;
 
     static readonly NAME = 'session-info';

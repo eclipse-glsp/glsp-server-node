@@ -18,14 +18,16 @@ import { ActionDispatcher, SelectAction, SelectAllAction } from '@eclipse-glsp/s
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { McpToolResult } from '../../server/mcp-handler-shared';
-import { McpDiagramScopedInputSchema, elementIds } from '../../server/mcp-input-schemas';
+import { McpDiagramScopedInputSchema, elementIdsAllowingEmpty } from '../../server/mcp-input-schemas';
 import { AbstractMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
 
 export const SetSelectionInputSchema = McpDiagramScopedInputSchema.extend({
-    selectedElementIds: elementIds
+    selectedElementIds: elementIdsAllowingEmpty
         .optional()
-        .describe('Element IDs to select. Pass an empty array (or omit + set `clear: true`) to clear the selection.'),
-    deselectedElementIds: elementIds.optional().describe('Element IDs to remove from the selection. Used to subtract without replacing.'),
+        .describe('Element IDs to select. Pass an empty array (or omit the field) together with `clear: true` to clear the selection.'),
+    deselectedElementIds: elementIdsAllowingEmpty
+        .optional()
+        .describe('Element IDs to remove from the selection. Used to subtract without replacing.'),
     clear: z
         .boolean()
         .optional()
@@ -38,6 +40,7 @@ export const SetSelectionOutputSchema = z.object({
     deselectedElementIds: z.array(z.string()).describe('Aliased ids requested for deselection.'),
     cleared: z.boolean().describe('Whether the existing selection was cleared before applying.')
 });
+export type SetSelectionOutput = z.infer<typeof SetSelectionOutputSchema>;
 
 /**
  * Pushes a selection change to the client. Counterpart to `get-selection` — useful for the
@@ -48,7 +51,7 @@ export const SetSelectionOutputSchema = z.object({
  * even though the underlying GModel is unaffected.
  */
 @injectable()
-export class SetSelectionMcpToolHandler extends AbstractMcpDiagramToolHandler<SetSelectionInput> {
+export class SetSelectionMcpToolHandler extends AbstractMcpDiagramToolHandler<SetSelectionInput, SetSelectionOutput> {
     static readonly NAME = 'set-selection';
     readonly name = SetSelectionMcpToolHandler.NAME;
     override readonly title = 'Set Diagram Selection';

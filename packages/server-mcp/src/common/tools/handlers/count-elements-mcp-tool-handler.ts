@@ -27,6 +27,7 @@ export const CountElementsOutputSchema = z.object({
     total: z.number().int().describe('Total element count across the diagram (root included).'),
     countsByType: z.record(z.string(), z.number().int()).describe('Element count grouped by `GModelElement.type`.')
 });
+export type CountElementsOutput = z.infer<typeof CountElementsOutputSchema>;
 
 /**
  * Counts elements in the diagram, grouped by type. Cheap alternative to dumping the full
@@ -34,7 +35,7 @@ export const CountElementsOutputSchema = z.object({
  * elements of type X exist".
  */
 @injectable()
-export class CountElementsMcpToolHandler extends AbstractMcpDiagramToolHandler<CountElementsInput> {
+export class CountElementsMcpToolHandler extends AbstractMcpDiagramToolHandler<CountElementsInput, CountElementsOutput> {
     static readonly NAME = 'count-elements';
     readonly name = CountElementsMcpToolHandler.NAME;
     override readonly title = 'Count Diagram Elements';

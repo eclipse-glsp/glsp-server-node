@@ -37,6 +37,11 @@ import { McpRequestContext, NoopMcpRequestContext } from './mcp-request-context'
 import { AbstractMcpDiagramResourceHandler, McpDiagramResourceHandlerConstructor, toParams } from './mcp-resource-handler';
 import { BaseMcpDiagramToolHandler, McpDiagramToolHandlerConstructor } from './mcp-tool-handler';
 
+/** The diagram-type support hook shared by the diagram-scope tool and resource handler bases. */
+interface DiagramTypeSupportAware {
+    isSupportedByDiagramType(): boolean;
+}
+
 /**
  * Per-diagram-type catalog of constructor lists, harvested at MCP-server start by loading each
  * diagram type's modules onto a temporary child container — same pattern as
@@ -97,11 +102,13 @@ export class DefaultMcpDiagramHandlerDispatcher implements McpDiagramHandlerDisp
 
     /**
      * Build the per-diagram-type catalog by inspecting each diagram type's module set. We don't
-     * have a real GLSP session yet — and we don't want one, because we only need the bound
+     * have a real GLSP session yet — and we don't want one, because we mostly need the bound
      * constructor *lists*, not instances. So we spin up a throwaway child container per diagram
      * type, load its modules plus a placeholder session module, and read out the multi-binding
-     * constants. No handler is instantiated; the temporary container is unbound immediately
-     * after.
+     * constants. The temporary container is unbound immediately after.
+     *
+     * Only handlers that override `isSupportedByDiagramType` are instantiated, so a handler with
+     * a `@postConstruct` sees this probe just because it opted into the support gate.
      *
      * The placeholder session module is bound with the synthetic {@link TEMPORARY_CLIENT_ID} so
      * any session-scoped `@inject(ClientId)` in module-load wiring resolves cleanly. Diagram
@@ -123,13 +130,57 @@ export class DefaultMcpDiagramHandlerDispatcher implements McpDiagramHandlerDisp
         for (const [diagramType, modules] of this.diagramModules) {
             const tempContainer = this.serverContainer.createChild();
             tempContainer.load(...modules, placeholderSessionModule);
-            const tools = getConstructorList<McpDiagramToolHandlerConstructor>(tempContainer, McpDiagramToolHandlerConstructor);
-            const resources = getConstructorList<McpDiagramResourceHandlerConstructor>(tempContainer, McpDiagramResourceHandlerConstructor);
+            const tools = this.filterSupported(
+                tempContainer,
+                getConstructorList<McpDiagramToolHandlerConstructor>(tempContainer, McpDiagramToolHandlerConstructor),
+                diagramType,
+                BaseMcpDiagramToolHandler.prototype.isSupportedByDiagramType
+            );
+            const resources = this.filterSupported(
+                tempContainer,
+                getConstructorList<McpDiagramResourceHandlerConstructor>(tempContainer, McpDiagramResourceHandlerConstructor),
+                diagramType,
+                AbstractMcpDiagramResourceHandler.prototype.isSupportedByDiagramType
+            );
             const prompts = getConstructorList<McpDiagramPromptHandlerConstructor>(tempContainer, McpDiagramPromptHandlerConstructor);
             tempContainer.unbindAll();
             catalogs.push({ diagramType, toolConstructors: tools, resourceConstructors: resources, promptConstructors: prompts });
         }
         this.diagramCatalogs = catalogs;
+    }
+
+    /**
+     * Drop constructors whose handler reports the diagram type can't support it, so they never
+     * reach the MCP catalog. A handler that overrides the hook is resolved against the harvest
+     * container, where `@optional()` dependencies reflect the diagram type's real bindings; one
+     * that inherits `defaultHook` or doesn't declare the hook is kept without being instantiated.
+     *
+     * Fails open: a constructor that cannot be resolved here stays in the catalog.
+     */
+    protected filterSupported<C extends interfaces.Newable<DiagramTypeSupportAware>>(
+        container: Container,
+        constructors: C[],
+        diagramType: string,
+        defaultHook: DiagramTypeSupportAware['isSupportedByDiagramType']
+    ): C[] {
+        return constructors.filter(constructor => {
+            // A duck-typed handler may not carry the hook at all; skip it rather than resolving it
+            // only to call a method that isn't there.
+            const hook = constructor.prototype.isSupportedByDiagramType;
+            if (typeof hook !== 'function' || hook === defaultHook) {
+                return true;
+            }
+            try {
+                if (container.resolve(constructor).isSupportedByDiagramType()) {
+                    return true;
+                }
+                this.logger.debug(`Diagram type '${diagramType}' does not support MCP handler '${constructor.name}'; not registering.`);
+                return false;
+            } catch (err: unknown) {
+                this.logger.debug(`Could not probe MCP handler '${constructor.name}' for diagram type '${diagramType}'; registering.`, err);
+                return true;
+            }
+        });
     }
 
     /** True when at least one diagram type has at least one tool handler bound. */

@@ -60,10 +60,11 @@ export const QueryElementsOutputSchema = z.object({
                 'The `elements` array then includes the container plus its descendants.'
         )
 });
+export type QueryElementsOutput = z.infer<typeof QueryElementsOutputSchema>;
 
 /** Two-mode element query — list/filter or inspect-by-id, discriminated by `elementIds` presence. */
 @injectable()
-export class QueryElementsMcpToolHandler extends AbstractMcpDiagramToolHandler<QueryElementsInput> {
+export class QueryElementsMcpToolHandler extends AbstractMcpDiagramToolHandler<QueryElementsInput, QueryElementsOutput> {
     static readonly NAME = 'query-elements';
     readonly name = QueryElementsMcpToolHandler.NAME;
     override readonly title = 'Query Diagram Elements';

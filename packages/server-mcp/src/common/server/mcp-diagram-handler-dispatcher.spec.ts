@@ -14,10 +14,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+import { Logger, NullLogger } from '@eclipse-glsp/server';
 import { CallToolResult, ReadResourceResult } from '@modelcontextprotocol/sdk/types.js';
+import { Container, ContainerModule, inject, injectable, optional } from 'inversify';
 import { describe, expect, it } from 'vitest';
 import { GLSPMcpServer } from './glsp-mcp-server';
 import { DefaultMcpDiagramHandlerDispatcher, DiagramTypeCatalog } from './mcp-diagram-handler-dispatcher';
+import { McpDiagramToolHandlerConstructor } from './mcp-tool-handler';
 
 /**
  * Tests the SDK-callback dispatch error path covered by `runWithToolErrorEnvelope`. The
@@ -111,6 +114,93 @@ class FakeStaticResourceHandlerCtor {
         return undefined;
     }
 }
+
+/** Stands in for a statically bound, optional dependency such as `LayoutEngine`. */
+const OptionalDependency = Symbol('OptionalDependency');
+
+@injectable()
+class GatedToolHandler {
+    @inject(OptionalDependency) @optional() protected dependency?: unknown;
+
+    readonly name = 'gated-tool';
+    readonly description = 'Only supported when the optional dependency is bound';
+    readonly inputSchema = { shape: {}, strict: () => ({}) };
+
+    isSupportedByDiagramType(): boolean {
+        return this.dependency !== undefined;
+    }
+
+    toRegistrationConfig(): unknown {
+        return { description: this.description, inputSchema: {} };
+    }
+}
+
+/** Never bound, so resolving {@link UnresolvableToolHandler} through the container throws. */
+const UnboundDependency = Symbol('UnboundDependency');
+
+/** Declares the hook, so it is probed, but its required dependency has no binding. */
+@injectable()
+class UnresolvableToolHandler {
+    @inject(UnboundDependency) protected dependency: unknown;
+
+    readonly name = 'unresolvable-tool';
+    readonly description = 'Declares the support hook but cannot be constructed by the container';
+    readonly inputSchema = { shape: {}, strict: () => ({}) };
+
+    isSupportedByDiagramType(): boolean {
+        return false;
+    }
+
+    toRegistrationConfig(): unknown {
+        return { description: this.description, inputSchema: {} };
+    }
+}
+
+function harvestWith(bindDependency: boolean, constructors: unknown[] = [GatedToolHandler]): DefaultMcpDiagramHandlerDispatcher {
+    const diagramModule = new ContainerModule(bind => {
+        bind(McpDiagramToolHandlerConstructor).toConstantValue(constructors as McpDiagramToolHandlerConstructor[]);
+        if (bindDependency) {
+            bind(OptionalDependency).toConstantValue({});
+        }
+    });
+    const dispatcher = new DefaultMcpDiagramHandlerDispatcher();
+    (dispatcher as unknown as { serverContainer: Container }).serverContainer = new Container();
+    (dispatcher as unknown as { diagramModules: Map<string, ContainerModule[]> }).diagramModules = new Map([['test', [diagramModule]]]);
+    (dispatcher as unknown as { logger: Logger }).logger = new NullLogger();
+    dispatcher.harvest();
+    return dispatcher;
+}
+
+describe('DefaultMcpDiagramHandlerDispatcher · diagram-type support gate', () => {
+    it('registers the tool when the diagram type binds its dependency', () => {
+        const captured = new CapturingMcpServer();
+        harvestWith(true).registerAll(captured as unknown as GLSPMcpServer, false);
+
+        expect(captured.tools.has('gated-tool')).toBe(true);
+    });
+
+    it('keeps the tool out of the catalog when no diagram type supports it', () => {
+        const captured = new CapturingMcpServer();
+        harvestWith(false).registerAll(captured as unknown as GLSPMcpServer, false);
+
+        expect(captured.tools.has('gated-tool')).toBe(false);
+    });
+
+    it('fails open and registers a handler that declares the hook but cannot be resolved', () => {
+        const captured = new CapturingMcpServer();
+        harvestWith(false, [UnresolvableToolHandler]).registerAll(captured as unknown as GLSPMcpServer, false);
+
+        // `isSupportedByDiagramType` returns false, so it survives only because probing threw.
+        expect(captured.tools.has('unresolvable-tool')).toBe(true);
+    });
+
+    it('registers a duck-typed handler without the hook, without resolving it', () => {
+        const captured = new CapturingMcpServer();
+        harvestWith(false, [FakeToolHandlerCtor]).registerAll(captured as unknown as GLSPMcpServer, false);
+
+        expect(captured.tools.has('fake-tool')).toBe(true);
+    });
+});
 
 describe('DefaultMcpDiagramHandlerDispatcher · SDK-callback dispatch error envelope', () => {
     it('tool callback returns isError envelope when sessionId is missing', async () => {

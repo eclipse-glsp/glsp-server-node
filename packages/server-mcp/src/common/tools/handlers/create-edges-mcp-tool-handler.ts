@@ -14,7 +14,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ChangeRoutingPointsOperation, CreateEdgeOperation, DiagramConfiguration, EdgeCreationChecker } from '@eclipse-glsp/server';
+import {
+    ChangeRoutingPointsOperation,
+    CreateEdgeOperation,
+    DiagramConfiguration,
+    EdgeCreationChecker,
+    GModelElement
+} from '@eclipse-glsp/server';
 import { inject, injectable, optional } from 'inversify';
 import * as z from 'zod/v4';
 import { McpToolResult } from '../../server/mcp-handler-shared';
@@ -66,12 +72,13 @@ export const CreateEdgesOutputSchema = z.object({
         .optional()
         .describe('Per-input validation results. Present only in `dryRun` mode.')
 });
+export type CreateEdgesOutput = z.infer<typeof CreateEdgesOutputSchema>;
 
 type EdgeInput = CreateEdgesInput['edges'][number];
 type ValidationResult = z.infer<typeof CreateEdgesValidationResultSchema>;
 
 @injectable()
-export class CreateEdgesMcpToolHandler extends OperationMcpDiagramToolHandler<CreateEdgesInput> {
+export class CreateEdgesMcpToolHandler extends OperationMcpDiagramToolHandler<CreateEdgesInput, CreateEdgesOutput> {
     static readonly NAME = 'create-edges';
     readonly name = CreateEdgesMcpToolHandler.NAME;
     override readonly title = 'Create Diagram Edges';
@@ -106,7 +113,7 @@ export class CreateEdgesMcpToolHandler extends OperationMcpDiagramToolHandler<Cr
                         `${result.isValid ? 'valid' : `invalid (${result.reason})`}`
                 )
                 .join('\n');
-        return this.success(summary, { createdEdges: [], errors: [], validationResults });
+        return this.success(summary, { createdEdges: [], dispatchedCommands: 0, errors: [], validationResults });
     }
 
     protected async runCreate(edges: EdgeInput[]): Promise<McpToolResult> {
@@ -137,11 +144,16 @@ export class CreateEdgesMcpToolHandler extends OperationMcpDiagramToolHandler<Cr
             dispatchedOperations++;
 
             const afterIds = this.modelState.index.allIds();
-            const newIds = afterIds.filter(id => !beforeIds.includes(id));
-            const newElements = newIds.map(id => this.modelState.index.find(id)).filter(element => element?.type === elementTypeId);
-            const newElement = newElements[0];
-            if (newElements.length > 1) {
-                this.logger.warn('More than 1 new element created');
+            const knownIds = new Set(beforeIds);
+            const newElements = afterIds
+                .filter(id => !knownIds.has(id))
+                .map(id => this.modelState.index.find(id))
+                .filter((element): element is GModelElement => element !== undefined);
+            // Fall back to the first new element — see `create-nodes`.
+            const typeMatches = newElements.filter(element => element.type === elementTypeId);
+            const newElement = typeMatches[0] ?? newElements[0];
+            if (newElements.length > 1 && typeMatches.length !== 1) {
+                this.logger.warn(`Ambiguous creation result for '${elementTypeId}': picked '${newElement?.id}' among new elements`);
             }
             beforeIds = afterIds;
 

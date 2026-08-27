@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ApplyLabelEditOperation, ChangeBoundsOperation, GEdge, GShapeElement } from '@eclipse-glsp/server';
+import { ApplyLabelEditOperation, ChangeBoundsOperation, GEdge, GModelRoot, GNode } from '@eclipse-glsp/server';
 import { injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { McpToolError, McpToolResult } from '../../server/mcp-handler-shared';
@@ -37,7 +37,13 @@ export const NodeSizeSchema = z.strictObject({
 /** Single node-modification entry. Strict so an LLM-typoed field surfaces as a validation error instead of being silently dropped. */
 export const ModifyNodeSpecSchema = z.strictObject({
     elementId,
-    position: position.optional().describe('Position where the node should be moved to (absolute diagram coordinates)'),
+    position: position
+        .optional()
+        .describe(
+            'Position where the node should be moved to, relative to the parent element ' +
+                '(identical to absolute diagram coordinates for direct children of the root, which is the common case). ' +
+                'Matches the `position` reported by `query-elements`. Note `create-nodes` takes absolute coordinates instead.'
+        ),
     size: NodeSizeSchema.optional().describe('New size of the node'),
     text: z.string().optional().describe("Label text to use instead (given that the element's type allows for labels).")
 });
@@ -55,15 +61,17 @@ export const ModifyNodesOutputSchema = z.object({
         .array(ElementIdentitySchema)
         .describe('Identity of each node whose change request was dispatched (post-modification labels).'),
     dispatchedCommands,
+    errors: z.array(z.string()).describe('Per-input failure messages; absent or empty when every input succeeded.'),
     warnings: z
         .array(z.string())
         .describe(
             'Soft notices for inputs whose change applied with caveats (e.g. `text` supplied for a node whose type has no editable label).'
         )
 });
+export type ModifyNodesOutput = z.infer<typeof ModifyNodesOutputSchema>;
 
 @injectable()
-export class ModifyNodesMcpToolHandler extends OperationMcpDiagramToolHandler<ModifyNodesInput> {
+export class ModifyNodesMcpToolHandler extends OperationMcpDiagramToolHandler<ModifyNodesInput, ModifyNodesOutput> {
     static readonly NAME = 'modify-nodes';
     readonly name = ModifyNodesMcpToolHandler.NAME;
     override readonly title = 'Modify Diagram Nodes';
@@ -88,53 +96,83 @@ export class ModifyNodesMcpToolHandler extends OperationMcpDiagramToolHandler<Mo
             throw new McpToolError(`modify-nodes does not accept edges — got: ${wrongType.join(', ')}. Use modify-edges for edges.`);
         }
 
-        // Reject any other non-shape kinds (labels, compartments, ports, custom kinds) — they
-        // reach the index too and would silently produce no-op or undefined-bounds operations.
-        const nonShape = elements.filter(([, element]) => !(element instanceof GShapeElement)).map(([change]) => `'${change.elementId}'`);
-        if (nonShape.length) {
+        // The root has no bounds of its own, and a `text` edit against it would rename whatever
+        // top-level `GLabel` the label provider happens to find first.
+        const roots = elements.filter(([, element]) => element instanceof GModelRoot).map(([change]) => `'${change.elementId}'`);
+        if (roots.length) {
             throw new McpToolError(
-                `modify-nodes only accepts shape elements — got: ${nonShape.join(', ')}. ` +
-                    'Use `query-elements` (inspect mode) to find shape ids, or pick the parent shape.'
+                `modify-nodes does not accept the diagram root — got: ${roots.join(', ')}. Target a node inside the diagram instead.`
             );
         }
 
-        // Modifications are independent of each other — dispatch in parallel.
-        const promises: Promise<void>[] = [];
+        // Core's `GModelChangeBoundsOperationHandler` only applies bounds to a `GNode`
+        // (`findByClass`). Label-only edits stay open to every element kind.
+        const unmovable = elements
+            .filter(([change, element]) => (change.position || change.size) && !(element instanceof GNode))
+            .map(([change, element]) => `'${change.elementId}' (type '${element.type}')`);
+        if (unmovable.length) {
+            throw new McpToolError(
+                `modify-nodes can only change \`position\` / \`size\` of nodes — got: ${unmovable.join(', ')}. ` +
+                    'Use `query-elements` (inspect mode) to find node ids, or target the parent node.'
+            );
+        }
+
+        // Modifications are independent of each other — dispatch in parallel. `allSettled` so one
+        // failed dispatch surfaces in `errors` instead of rejecting the whole call and losing the
+        // other outcomes, which have already mutated the model.
+        const dispatched: Array<{ promise: Promise<void>; inputId: string }> = [];
+        const errors: string[] = [];
         const warnings: string[] = [];
         elements.forEach(([change, element]) => {
-            // Guaranteed non-null and shape-typed by the missing-elements / nonShape checks above.
-            const resolved = element as GShapeElement;
             const { size, position, text } = change;
             const realId = this.aliasService.lookup(change.elementId);
 
-            if (size || position) {
-                const newSize = size ?? resolved.size;
-                const newPosition = position ?? resolved.position;
+            if (!size && !position && !text) {
+                errors.push(`No change requested for node '${change.elementId}' — provide \`position\`, \`size\` or a non-empty \`text\`.`);
+                return;
+            }
+
+            if ((size || position) && element instanceof GNode) {
+                const newSize = size ?? element.size;
+                const newPosition = position ?? element.position;
 
                 const operation = ChangeBoundsOperation.create([{ elementId: realId, newSize, newPosition }]);
-                promises.push(this.actionDispatcher.dispatch(operation));
+                dispatched.push({ promise: this.actionDispatcher.dispatch(operation), inputId: change.elementId });
             }
 
             if (text) {
-                const labelId = this.labelProvider.getLabel(resolved)?.id;
+                const labelId = this.labelProvider.getLabel(element)?.id;
                 if (labelId) {
-                    promises.push(this.actionDispatcher.dispatch(ApplyLabelEditOperation.create({ labelId, text })));
+                    const operation = ApplyLabelEditOperation.create({ labelId, text });
+                    dispatched.push({ promise: this.actionDispatcher.dispatch(operation), inputId: change.elementId });
                 } else {
                     warnings.push(
-                        `Ignored \`text\` for '${change.elementId}' (type '${resolved.type}') — this element has no editable label.`
+                        `Ignored \`text\` for '${change.elementId}' (type '${element.type}') — this element has no editable label.`
                     );
                 }
             }
         });
 
-        await Promise.all(promises);
+        const results = await Promise.allSettled(dispatched.map(entry => entry.promise));
+        const modifiedInputIds = new Set<string>();
+        results.forEach((result, index) => {
+            const { inputId } = dispatched[index];
+            if (result.status === 'rejected') {
+                const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
+                errors.push(`Failed to modify node '${inputId}': ${reason}`);
+            } else {
+                modifiedInputIds.add(inputId);
+            }
+        });
 
-        const modifiedNodes = nodes
-            .map(change => this.describeElement(change.elementId))
+        const modifiedNodes = [...modifiedInputIds]
+            .map(inputId => this.describeElement(inputId))
             .filter((entry): entry is NonNullable<typeof entry> => entry !== undefined);
         return this.success(
-            `Successfully modified ${nodes.length} node(s) (in ${promises.length} commands)` + formatNoticeList('warnings', warnings),
-            { modifiedNodes, dispatchedCommands: promises.length, warnings }
+            `Successfully modified ${modifiedNodes.length} node(s) (in ${dispatched.length} commands)` +
+                formatNoticeList('errors', errors) +
+                formatNoticeList('warnings', warnings),
+            { modifiedNodes, dispatchedCommands: dispatched.length, errors, warnings }
         );
     }
 }

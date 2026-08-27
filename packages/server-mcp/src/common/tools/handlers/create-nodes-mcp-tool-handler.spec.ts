@@ -32,6 +32,7 @@ import { McpToolResult } from '../../server/mcp-handler-shared';
 import { McpIdAliasService } from '../../server/mcp-id-alias-service';
 import { McpLabelProvider } from '../../server/mcp-label-provider';
 import { CreateNodesInput, CreateNodesMcpToolHandler } from './create-nodes-mcp-tool-handler';
+import { expectValidStructuredContent } from './test/expect-structured-content';
 
 interface CreatedElementsStructured {
     createdNodes: { id: string; elementTypeId: string; label?: string }[];
@@ -145,6 +146,7 @@ describe('CreateNodesMcpToolHandler', () => {
             ]
         });
 
+        expectValidStructuredContent(handler, result);
         const structured = result.structuredContent as unknown as CreatedElementsStructured;
         expect(structured.createdNodes).toHaveLength(2);
         expect(structured.createdNodes[0].id).toBe('task:manual#1');

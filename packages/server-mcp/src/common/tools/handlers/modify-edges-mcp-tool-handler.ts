@@ -55,9 +55,10 @@ export const ModifyEdgesOutputSchema = z.object({
     dispatchedCommands,
     errors: z.array(z.string()).describe('Per-input failure messages; absent or empty when every input succeeded.')
 });
+export type ModifyEdgesOutput = z.infer<typeof ModifyEdgesOutputSchema>;
 
 @injectable()
-export class ModifyEdgesMcpToolHandler extends OperationMcpDiagramToolHandler<ModifyEdgesInput> {
+export class ModifyEdgesMcpToolHandler extends OperationMcpDiagramToolHandler<ModifyEdgesInput, ModifyEdgesOutput> {
     static readonly NAME = 'modify-edges';
     readonly name = ModifyEdgesMcpToolHandler.NAME;
     override readonly title = 'Modify Diagram Edges';
@@ -88,7 +89,6 @@ export class ModifyEdgesMcpToolHandler extends OperationMcpDiagramToolHandler<Mo
         // instead of rejecting the whole call and losing the other outcomes.
         const dispatched: Array<{ promise: Promise<void>; realId: string; inputId: string }> = [];
         const errors: string[] = [];
-        const modifiedRealIds = new Set<string>();
         elements.forEach(([change]) => {
             const { routingPoints } = change;
             const realId = this.aliasService.lookup(change.elementId);
@@ -114,7 +114,6 @@ export class ModifyEdgesMcpToolHandler extends OperationMcpDiagramToolHandler<Mo
 
                 const operation = ReconnectEdgeOperation.create({ edgeElementId: realId, sourceElementId, targetElementId });
                 dispatched.push({ promise: this.actionDispatcher.dispatch(operation), realId, inputId: change.elementId });
-                modifiedRealIds.add(realId);
                 // Routing-point changes are skipped during a reconnect — the edge's path is recomputed from scratch.
                 return;
             }
@@ -122,18 +121,25 @@ export class ModifyEdgesMcpToolHandler extends OperationMcpDiagramToolHandler<Mo
             if (routingPoints) {
                 const operation = ChangeRoutingPointsOperation.create([{ elementId: realId, newRoutingPoints: routingPoints }]);
                 dispatched.push({ promise: this.actionDispatcher.dispatch(operation), realId, inputId: change.elementId });
-                modifiedRealIds.add(realId);
+                return;
             }
+
+            errors.push(
+                `No change requested for edge '${change.elementId}' — provide \`sourceElementId\` + \`targetElementId\` ` +
+                    'to reconnect, or `routingPoints` to reroute.'
+            );
         });
 
+        // Two entries may target the same edge; one failing must not drop the other's success.
         const results = await Promise.allSettled(dispatched.map(entry => entry.promise));
+        const modifiedRealIds = new Set<string>();
         results.forEach((result, i) => {
+            const { realId, inputId } = dispatched[i];
             if (result.status === 'rejected') {
-                const { realId, inputId } = dispatched[i];
                 const reason = result.reason instanceof Error ? result.reason.message : String(result.reason);
                 errors.push(`Failed to modify edge '${inputId}': ${reason}`);
-                // The dispatch failed, so this id was *not* modified — drop it from the success list.
-                modifiedRealIds.delete(realId);
+            } else {
+                modifiedRealIds.add(realId);
             }
         });
 
@@ -141,7 +147,7 @@ export class ModifyEdgesMcpToolHandler extends OperationMcpDiagramToolHandler<Mo
             .map(realId => this.describeElement(realId))
             .filter((entry): entry is NonNullable<typeof entry> => entry !== undefined);
         return this.success(
-            `Successfully modified ${edges.length - errors.length} edge(s) (in ${dispatched.length} commands)${formatNoticeList('errors', errors)}`,
+            `Successfully modified ${modifiedEdges.length} edge(s) (in ${dispatched.length} commands)${formatNoticeList('errors', errors)}`,
             { modifiedEdges, dispatchedCommands: dispatched.length, errors }
         );
     }

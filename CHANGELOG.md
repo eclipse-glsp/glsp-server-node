@@ -9,6 +9,18 @@
     - the web socket event carries the upgrade request next to the socket, which is the only place its headers and query are still available
 - [launch] Release the server socket again when a restarted launcher is shut down [#150](https://github.com/eclipse-glsp/glsp-server-node/pull/150)
     - `WebSocketServerLauncher` now also closes the HTTP server it mounts on, which `ws` leaves listening because it did not create it
+- [mcp] Return results that satisfy the declared output schema, so a `create-edges` dry run returns its verdicts instead of an output-validation error [#152](https://github.com/eclipse-glsp/glsp-server-node/pull/152)
+- [mcp] Stop reporting success for work that was not done [#152](https://github.com/eclipse-glsp/glsp-server-node/pull/152)
+    - `save-model` writes to an explicit `fileUri` even when the command stack is clean, instead of skipping a save-as
+    - `undo` and `redo` report how many commands they applied, not how many were requested
+    - `modify-nodes` and `modify-edges` report an error for entries that request no change, instead of counting them as modified
+- [mcp] Reject unknown element ids in `validate-diagram` and `set-view`, which previously dropped them and returned an empty, clean-looking result [#152](https://github.com/eclipse-glsp/glsp-server-node/pull/152)
+- [mcp] Keep tools out of the MCP catalog when no diagram type supports them, so `layout` is no longer advertised without a bound `LayoutEngine` [#152](https://github.com/eclipse-glsp/glsp-server-node/pull/152)
+    - the new `isSupportedByDiagramType()` hook on the diagram tool and resource bases covers statically bound dependencies; `canRegister()` keeps gating capabilities of the connected GLSP client
+- [mcp] Align tool schemas and descriptions with what the tools actually accept and apply [#152](https://github.com/eclipse-glsp/glsp-server-node/pull/152)
+    - `set-selection` accepts the documented empty-array form for clearing the selection, and `undo` / `redo` require integer counts
+    - `modify-nodes` positions are parent-relative and `create-nodes` positions absolute, matching the dispatched operations
+    - the `create-*` tools echo the created element when its type differs from the requested `elementTypeId`, instead of reporting a creation failure
 
 ### Potentially Breaking Changes
 
@@ -17,6 +29,10 @@
     - `applyElementAndBounds`, `applyAlignment` and `applyRoute` no longer throw for an element the index cannot resolve, they report it as not applied. `applyRoutingPoints` stays strict.
 - [launch] Launchers register what `shutdown` has to release in the new `GLSPServerLauncher.registerDisposables` hook, called once per launch, rather than in their constructor [#150](https://github.com/eclipse-glsp/glsp-server-node/pull/150)
     - A custom launcher that pushes into `toDispose` from its constructor keeps compiling but loses that cleanup after the first `shutdown`, because `dispose` empties the collection. Move those registrations into an override of `registerDisposables`.
+- [mcp] The MCP tool handler bases take an optional output type parameter, e.g. `AbstractMcpDiagramToolHandler<I, O>`, bound to the handler's declared `outputSchema` [#152](https://github.com/eclipse-glsp/glsp-server-node/pull/152)
+    - The parameter defaults, so a handler without an `outputSchema` is unaffected. A subclass that passes `success()` a payload not matching the overridden handler's output schema now fails to compile, instead of producing an error result at call time.
+- [mcp] `modify-nodes` rejects `position` / `size` for elements that are not a `GNode`, which core's bounds handler silently ignored while the tool reported success [#152](https://github.com/eclipse-glsp/glsp-server-node/pull/152)
+    - Adopters who bind a bounds handler covering more element kinds override the guard in `ModifyNodesMcpToolHandler`.
 
 ## [v2.7.0 - 01/06/2026](https://github.com/eclipse-glsp/glsp-server-node/releases/tag/v2.7.0)
 

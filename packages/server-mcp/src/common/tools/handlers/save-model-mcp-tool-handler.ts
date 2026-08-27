@@ -34,10 +34,11 @@ export const SaveModelOutputSchema = z.object({
         .optional()
         .describe('Destination file URI when explicitly provided; absent when saving to the original source location.')
 });
+export type SaveModelOutput = z.infer<typeof SaveModelOutputSchema>;
 
 /** Doesn't extend `OperationMcpDiagramToolHandler` — saving a read-only model is a legitimate adopter scenario (e.g. "save as" to a writable location). */
 @injectable()
-export class SaveModelMcpToolHandler extends AbstractMcpDiagramToolHandler<SaveModelInput> {
+export class SaveModelMcpToolHandler extends AbstractMcpDiagramToolHandler<SaveModelInput, SaveModelOutput> {
     static readonly NAME = 'save-model';
     readonly name = SaveModelMcpToolHandler.NAME;
     override readonly title = 'Save Diagram Model';
@@ -62,7 +63,9 @@ export class SaveModelMcpToolHandler extends AbstractMcpDiagramToolHandler<SaveM
     @inject(McpLogger) protected mcpLogger: McpLogger;
 
     protected async createResult({ fileUri }: SaveModelInput): Promise<McpToolResult> {
-        if (!this.commandStack.isDirty) {
+        // Only save-in-place can be short-circuited: a "save as" destination has no copy yet,
+        // dirty or not.
+        if (!fileUri && !this.commandStack.isDirty) {
             this.mcpLogger.info('save-model: nothing to save');
             return this.success('No changes to save', { saved: false, fileUri });
         }

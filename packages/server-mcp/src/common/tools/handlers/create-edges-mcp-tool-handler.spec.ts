@@ -32,6 +32,7 @@ import { McpToolResult } from '../../server/mcp-handler-shared';
 import { McpIdAliasService } from '../../server/mcp-id-alias-service';
 import { DefaultMcpLabelProvider, McpLabelProvider } from '../../server/mcp-label-provider';
 import { CreateEdgesInput, CreateEdgesMcpToolHandler } from './create-edges-mcp-tool-handler';
+import { expectValidStructuredContent } from './test/expect-structured-content';
 
 function makeElement(id: string, type: string): GModelElement {
     return { id, type, children: [] } as unknown as GModelElement;
@@ -137,6 +138,7 @@ describe('CreateEdgesMcpToolHandler · dryRun', () => {
             baseInput({ edges: [{ elementTypeId: 'edge:static', sourceElementId: 's', targetElementId: 't' }] })
         );
 
+        expectValidStructuredContent(handler, result);
         const structured = result.structuredContent as unknown as DryRunStructured;
         expect(structured.validationResults).toHaveLength(1);
         expect(structured.validationResults[0].isValid).toBe(true);

@@ -215,7 +215,7 @@ export abstract class AbstractMcpDiagramModule extends GLSPModule {
         binding.add(GetSelectionMcpToolHandler);
         binding.add(SetSelectionMcpToolHandler);
         binding.add(SetViewMcpToolHandler);
-        // Auto-skips at session-open via `canRegister()` when no `LayoutEngine` is bound.
+        // Auto-skips via `isSupportedByDiagramType()` when no `LayoutEngine` is bound.
         binding.add(LayoutMcpToolHandler);
     }
 

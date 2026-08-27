@@ -22,19 +22,20 @@ import { McpDiagramScopedInputSchema } from '../../server/mcp-input-schemas';
 import { OperationMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
 
 export const RedoInputSchema = McpDiagramScopedInputSchema.extend({
-    commandsToRedo: z.number().min(1).default(1).describe('Number of commands to redo. Defaults to 1 (most recent undone command).')
+    commandsToRedo: z.number().int().min(1).default(1).describe('Number of commands to redo. Defaults to 1 (most recent undone command).')
 });
 export type RedoInput = z.infer<typeof RedoInputSchema>;
 
 export const RedoOutputSchema = z.object({
     commandsRedone: z.number().int().describe('Number of previously-undone commands re-applied.')
 });
+export type RedoOutput = z.infer<typeof RedoOutputSchema>;
 
 /**
  * Redo a given number of the most recent undone actions on the command stack.
  */
 @injectable()
-export class RedoMcpToolHandler extends OperationMcpDiagramToolHandler<RedoInput> {
+export class RedoMcpToolHandler extends OperationMcpDiagramToolHandler<RedoInput, RedoOutput> {
     static readonly NAME = 'redo';
     readonly name = RedoMcpToolHandler.NAME;
     override readonly title = 'Redo Diagram Commands';
@@ -55,10 +56,14 @@ export class RedoMcpToolHandler extends OperationMcpDiagramToolHandler<RedoInput
             );
         }
 
-        for (let i = 0; i < commandsToRedo; i++) {
+        // The stack may hold fewer commands than requested.
+        let commandsRedone = 0;
+        while (commandsRedone < commandsToRedo && this.commandStack.canRedo()) {
             await this.actionDispatcher.dispatch(RedoAction.create());
+            commandsRedone++;
         }
 
-        return this.success('Redo successful', { commandsRedone: commandsToRedo });
+        const shortfall = commandsRedone < commandsToRedo ? ` (${commandsToRedo} requested; the redo stack held no more commands)` : '';
+        return this.success(`Redo successful: re-applied ${commandsRedone} command(s)${shortfall}`, { commandsRedone });
     }
 }
