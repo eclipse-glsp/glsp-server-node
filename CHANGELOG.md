@@ -4,6 +4,8 @@
 
 ### Changes
 
+- [deps] Switch bundling from webpack to esbuild [#142](https://github.com/eclipse-glsp/glsp-server-node/pull/142)
+- [deps] Migrate the build from yarn and lerna to pnpm workspaces [#144](https://github.com/eclipse-glsp/glsp-server-node/pull/144)
 - [launch] Expose the address a launcher bound to via `listening` and `port` on `JsonRpcGLSPServerLauncher`, so an embedder no longer has to parse the startup message to learn an OS-assigned port [#150](https://github.com/eclipse-glsp/glsp-server-node/pull/150)
 - [launch] Add an `onConnection` event to `SocketServerLauncher` and `WebSocketServerLauncher`, so an embedder can observe accepted connections without reaching for the protected server field [#150](https://github.com/eclipse-glsp/glsp-server-node/pull/150)
     - the web socket event carries the upgrade request next to the socket, which is the only place its headers and query are still available
@@ -12,6 +14,8 @@
 
 ### Potentially Breaking Changes
 
+- [elk] Replace the no-op ELK factory in web worker contexts with a working in-process implementation [#141](https://github.com/eclipse-glsp/glsp-server-node/pull/141)
+    - `elkLayoutModule` was effectively a no-op in the browser and now actually performs layout, so adopters that relied on that behavior have to adapt accordingly
 - [layout] Keep applying computed bounds when an individual entry cannot be applied [#149](https://github.com/eclipse-glsp/glsp-server-node/pull/149)
     - `applyRoute` now returns `GEdge | undefined` instead of `GEdge`
     - `applyElementAndBounds`, `applyAlignment` and `applyRoute` no longer throw for an element the index cannot resolve, they report it as not applied. `applyRoutingPoints` stays strict.
