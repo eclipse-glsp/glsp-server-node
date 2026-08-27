@@ -28,10 +28,11 @@ export const LayoutOutputSchema = z.object({
     applied: z.boolean().describe('Always true on success — surfaced for parity with other operations.'),
     dispatchedCommands
 });
+export type LayoutOutput = z.infer<typeof LayoutOutputSchema>;
 
 /** Not registered by default: requires an adopter-supplied `LayoutEngine` to bind, which only some GLSP servers ship. */
 @injectable()
-export class LayoutMcpToolHandler extends OperationMcpDiagramToolHandler<LayoutInput> {
+export class LayoutMcpToolHandler extends OperationMcpDiagramToolHandler<LayoutInput, LayoutOutput> {
     static readonly NAME = 'layout';
     readonly name = LayoutMcpToolHandler.NAME;
     override readonly title = 'Auto-Layout Diagram';
@@ -47,7 +48,12 @@ export class LayoutMcpToolHandler extends OperationMcpDiagramToolHandler<LayoutI
 
     @inject(LayoutEngine) @optional() protected layoutEngine?: LayoutEngine;
 
-    /** Skip-bind when no `LayoutEngine` is bound — every dispatch would otherwise no-op. */
+    /** Keep the tool out of the MCP catalog for diagram types that bind no `LayoutEngine`. */
+    override isSupportedByDiagramType(): boolean {
+        return this.layoutEngine !== undefined;
+    }
+
+    /** Skip session registration when no `LayoutEngine` is bound — every dispatch would otherwise no-op. */
     override canRegister(): boolean {
         return this.layoutEngine !== undefined;
     }

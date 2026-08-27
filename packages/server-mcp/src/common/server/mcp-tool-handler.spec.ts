@@ -118,7 +118,7 @@ const matrix: Array<{
         name: 'modify-nodes',
         Constructor: ModifyNodesMcpToolHandler,
         schema: ModifyNodesOutputSchema,
-        sample: { modifiedNodes: [{ id: 'n1', elementTypeId: 'node:foo' }], dispatchedCommands: 1, warnings: [] }
+        sample: { modifiedNodes: [{ id: 'n1', elementTypeId: 'node:foo' }], dispatchedCommands: 1, errors: [], warnings: [] }
     },
     {
         name: 'modify-edges',

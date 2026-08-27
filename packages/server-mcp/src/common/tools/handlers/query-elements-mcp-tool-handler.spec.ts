@@ -22,6 +22,7 @@ import { McpElementsNotFoundError, McpToolResult } from '../../server/mcp-handle
 import { McpIdAliasService } from '../../server/mcp-id-alias-service';
 import { DefaultMcpLabelProvider, McpLabelProvider } from '../../server/mcp-label-provider';
 import { QueryElementsInput, QueryElementsMcpToolHandler } from './query-elements-mcp-tool-handler';
+import { expectValidStructuredContent } from './test/expect-structured-content';
 
 function makeLabel(text: string): GLabel {
     // Set the prototype so `child instanceof GLabel` checks in the handler return true.
@@ -109,6 +110,7 @@ describe('QueryElementsMcpToolHandler', () => {
             ]);
 
             const result = await callCreateResult(handler, { sessionId: 's', types: ['task:manual'] });
+            expectValidStructuredContent(handler, result);
             const structured = result.structuredContent as unknown as ListStructured;
             expect(structured.mode).toBe('list');
             expect(structured.matches).toHaveLength(1);
@@ -179,6 +181,7 @@ describe('QueryElementsMcpToolHandler', () => {
             const finalCall = serializer.capturedArrays[serializer.capturedArrays.length - 1];
             expect(finalCall).toEqual(elements);
 
+            expectValidStructuredContent(handler, result);
             const structured = result.structuredContent as unknown as InspectStructured;
             expect(structured.mode).toBe('inspect');
         });

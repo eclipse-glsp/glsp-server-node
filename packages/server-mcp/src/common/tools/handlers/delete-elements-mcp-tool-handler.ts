@@ -38,9 +38,10 @@ export const DeleteElementsOutputSchema = z.object({
         ),
     dispatchedCommands
 });
+export type DeleteElementsOutput = z.infer<typeof DeleteElementsOutputSchema>;
 
 @injectable()
-export class DeleteElementsMcpToolHandler extends OperationMcpDiagramToolHandler<DeleteElementsInput> {
+export class DeleteElementsMcpToolHandler extends OperationMcpDiagramToolHandler<DeleteElementsInput, DeleteElementsOutput> {
     static readonly NAME = 'delete-elements';
     readonly name = DeleteElementsMcpToolHandler.NAME;
     override readonly title = 'Delete Diagram Elements';

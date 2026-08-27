@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { ApplyLabelEditOperation, CreateNodeOperation } from '@eclipse-glsp/server';
+import { ApplyLabelEditOperation, CreateNodeOperation, GModelElement } from '@eclipse-glsp/server';
 import { injectable } from 'inversify';
 import * as z from 'zod/v4';
 import { McpToolResult } from '../../server/mcp-handler-shared';
@@ -33,7 +33,10 @@ export const CreateNodeSpecSchema = z.strictObject({
     elementTypeId: z
         .string()
         .describe('Element type ID (e.g., `task:manual`, `task:automated`). Use the `element-types` tool to discover valid IDs.'),
-    position: position.describe('Position where the node should be created (absolute diagram coordinates)'),
+    position: position.describe(
+        'Position where the node should be created, in absolute diagram coordinates — the server converts to ' +
+            'parent-relative when `containerId` is set. Note `modify-nodes` takes parent-relative coordinates instead.'
+    ),
     text: z.string().optional().describe('Label text to use in case the given element type allows for labels.'),
     containerId: z.string().optional().describe('ID of the container element. If not provided, node is added to the root.'),
     // `args` stays open (`record(...)`) — adopter-specific extension surface for per-element-type creation hints.
@@ -57,9 +60,10 @@ export const CreateNodesOutputSchema = z.object({
             'Soft notices for inputs that succeeded with caveats (e.g. `text` supplied for a type whose elements have no editable label).'
         )
 });
+export type CreateNodesOutput = z.infer<typeof CreateNodesOutputSchema>;
 
 @injectable()
-export class CreateNodesMcpToolHandler extends OperationMcpDiagramToolHandler<CreateNodesInput> {
+export class CreateNodesMcpToolHandler extends OperationMcpDiagramToolHandler<CreateNodesInput, CreateNodesOutput> {
     static readonly NAME = 'create-nodes';
     readonly name = CreateNodesMcpToolHandler.NAME;
     override readonly title = 'Create Diagram Nodes';
@@ -91,11 +95,18 @@ export class CreateNodesMcpToolHandler extends OperationMcpDiagramToolHandler<Cr
             dispatchedOperations++;
 
             const afterIds = this.modelState.index.allIds();
-            const newIds = afterIds.filter(id => !beforeIds.includes(id));
-            const newElements = newIds.map(id => this.modelState.index.find(id)).filter(element => element?.type === elementTypeId);
-            const newElement = newElements[0];
-            if (newElements.length > 1) {
-                this.logger.warn('More than 1 new element created');
+            const knownIds = new Set(beforeIds);
+            const newElements = afterIds
+                .filter(id => !knownIds.has(id))
+                .map(id => this.modelState.index.find(id))
+                .filter((element): element is GModelElement => element !== undefined);
+            // Fall back to the first new element: the built type may differ from the requested
+            // `elementTypeId` (type hint vs. concrete GModel type). `allIds()` is pre-order, so the
+            // first entry is the created element itself rather than one of its new children.
+            const typeMatches = newElements.filter(element => element.type === elementTypeId);
+            const newElement = typeMatches[0] ?? newElements[0];
+            if (newElements.length > 1 && typeMatches.length !== 1) {
+                this.logger.warn(`Ambiguous creation result for '${elementTypeId}': picked '${newElement?.id}' among new elements`);
             }
             beforeIds = afterIds;
 

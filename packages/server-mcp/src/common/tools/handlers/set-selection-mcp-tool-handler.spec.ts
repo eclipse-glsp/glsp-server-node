@@ -30,7 +30,8 @@ import { Container, ContainerModule } from 'inversify';
 import { McpElementsNotFoundError, McpToolResult } from '../../server/mcp-handler-shared';
 import { McpIdAliasService } from '../../server/mcp-id-alias-service';
 import { DefaultMcpLabelProvider, McpLabelProvider } from '../../server/mcp-label-provider';
-import { SetSelectionInput, SetSelectionMcpToolHandler } from './set-selection-mcp-tool-handler';
+import { SetSelectionInput, SetSelectionInputSchema, SetSelectionMcpToolHandler } from './set-selection-mcp-tool-handler';
+import { expectValidStructuredContent } from './test/expect-structured-content';
 
 function makeElement(id: string, type: string): GModelElement {
     return { id, type, children: [] } as unknown as GModelElement;
@@ -97,12 +98,34 @@ describe('SetSelectionMcpToolHandler', () => {
         const { dispatcher, dispatched } = makeRecordingDispatcher();
         const handler = buildHandler([makeElement('a', 'task'), makeElement('b', 'task'), makeElement('c', 'task')], dispatcher);
 
-        await callCreateResult(handler, { sessionId: 's', selectedElementIds: ['a', 'b'], deselectedElementIds: ['c'] });
+        const result = await callCreateResult(handler, {
+            sessionId: 's',
+            selectedElementIds: ['a', 'b'],
+            deselectedElementIds: ['c']
+        });
 
+        expectValidStructuredContent(handler, result);
         expect(dispatched).toHaveLength(1);
         const action = dispatched[0] as SelectAction;
         expect(action.selectedElementsIDs).toEqual(['a', 'b']);
         expect(action.deselectedElementsIDs).toEqual(['c']);
+    });
+
+    it('clears the selection for the documented empty-array form, without a follow-up SelectAction', async () => {
+        const { dispatcher, dispatched } = makeRecordingDispatcher();
+        const handler = buildHandler([makeElement('n1', 'task')], dispatcher);
+        const input = { sessionId: 's', selectedElementIds: [], clear: true };
+
+        // The empty array has to survive input validation before the handler ever sees it.
+        const parsed = SetSelectionInputSchema.safeParse(input);
+        expect(parsed.success ? [] : parsed.error.issues).toEqual([]);
+
+        const result = await callCreateResult(handler, input);
+
+        expectValidStructuredContent(handler, result);
+        expect(dispatched).toHaveLength(1);
+        expect(SelectAllAction.is(dispatched[0])).toBe(true);
+        expect((dispatched[0] as SelectAllAction).select).toBe(false);
     });
 
     it('throws McpElementsNotFoundError when an id is missing from the model', async () => {

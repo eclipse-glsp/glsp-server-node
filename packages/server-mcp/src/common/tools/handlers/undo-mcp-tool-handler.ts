@@ -22,19 +22,20 @@ import { McpDiagramScopedInputSchema } from '../../server/mcp-input-schemas';
 import { OperationMcpDiagramToolHandler } from '../../server/mcp-tool-handler';
 
 export const UndoInputSchema = McpDiagramScopedInputSchema.extend({
-    commandsToUndo: z.number().min(1).default(1).describe('Number of commands to undo. Defaults to 1 (most recent command).')
+    commandsToUndo: z.number().int().min(1).default(1).describe('Number of commands to undo. Defaults to 1 (most recent command).')
 });
 export type UndoInput = z.infer<typeof UndoInputSchema>;
 
 export const UndoOutputSchema = z.object({
     commandsUndone: z.number().int().describe('Number of commands actually reverted.')
 });
+export type UndoOutput = z.infer<typeof UndoOutputSchema>;
 
 /**
  * Undo a given number of the most recent actions on the command stack.
  */
 @injectable()
-export class UndoMcpToolHandler extends OperationMcpDiagramToolHandler<UndoInput> {
+export class UndoMcpToolHandler extends OperationMcpDiagramToolHandler<UndoInput, UndoOutput> {
     static readonly NAME = 'undo';
     readonly name = UndoMcpToolHandler.NAME;
     override readonly title = 'Undo Diagram Commands';
@@ -54,10 +55,14 @@ export class UndoMcpToolHandler extends OperationMcpDiagramToolHandler<UndoInput
             throw new McpToolError('Nothing to undo (undo stack is empty; the model is at its initial state for this session).');
         }
 
-        for (let i = 0; i < commandsToUndo; i++) {
+        // The stack may hold fewer commands than requested.
+        let commandsUndone = 0;
+        while (commandsUndone < commandsToUndo && this.commandStack.canUndo()) {
             await this.actionDispatcher.dispatch(UndoAction.create());
+            commandsUndone++;
         }
 
-        return this.success('Undo successful', { commandsUndone: commandsToUndo });
+        const shortfall = commandsUndone < commandsToUndo ? ` (${commandsToUndo} requested; the undo stack held no more commands)` : '';
+        return this.success(`Undo successful: reverted ${commandsUndone} command(s)${shortfall}`, { commandsUndone });
     }
 }

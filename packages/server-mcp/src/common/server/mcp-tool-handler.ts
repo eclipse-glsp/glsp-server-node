@@ -26,7 +26,7 @@ import {
 } from '@eclipse-glsp/server';
 import { ToolAnnotations } from '@modelcontextprotocol/sdk/types';
 import { inject, injectable, interfaces, optional } from 'inversify';
-import { ZodObject, ZodRawShape } from 'zod/v4';
+import { ZodObject, ZodRawShape, ZodType } from 'zod/v4';
 import { GLSPMcpServer } from './glsp-mcp-server';
 import {
     McpElementsNotFoundError,
@@ -74,7 +74,7 @@ export const McpToolHandler = Symbol('McpToolHandler');
  * @experimental
  */
 @injectable()
-export abstract class BaseMcpToolHandler {
+export abstract class BaseMcpToolHandler<O extends McpStructuredContent = McpStructuredContent> {
     @inject(McpRequestContext)
     @optional()
     protected requestContext: McpRequestContext = new NoopMcpRequestContext();
@@ -95,9 +95,11 @@ export abstract class BaseMcpToolHandler {
      * Optional dual-emit schema. When set, pass the matching `structured` payload to
      * {@link success} so the framework forwards it as `structuredContent` alongside the
      * human-readable text. The MCP spec says clients SHOULD validate `structuredContent`
-     * against the declared schema, so the two MUST stay in sync.
+     * against the declared schema, so the two MUST stay in sync. Bind the `O` type parameter to
+     * `z.infer<typeof MyOutputSchema>` to have the compiler enforce that — the type ties this
+     * field and {@link success}'s payload to the same shape.
      */
-    readonly outputSchema?: ZodObject<ZodRawShape>;
+    readonly outputSchema?: ZodObject<ZodRawShape> & ZodType<O>;
     /** Optional human-friendly display name for UIs that render a friendlier label than `name`. */
     readonly title?: string;
 
@@ -187,7 +189,7 @@ export abstract class BaseMcpToolHandler {
      * Pass `structured` whenever {@link outputSchema} is declared (the spec says clients SHOULD
      * validate against the declared shape). Omit for plain text-only responses.
      */
-    protected success(message: string, structured?: McpStructuredContent): McpToolResult {
+    protected success(message: string, structured?: O): McpToolResult {
         return { isError: false, content: [{ type: 'text', text: message }], structuredContent: structured };
     }
 
@@ -220,13 +222,16 @@ export abstract class BaseMcpToolHandler {
  * @experimental
  */
 @injectable()
-export abstract class AbstractMcpToolHandler<T = Record<string, unknown>> extends BaseMcpToolHandler implements McpToolHandler {
+export abstract class AbstractMcpToolHandler<I = Record<string, unknown>, O extends McpStructuredContent = McpStructuredContent>
+    extends BaseMcpToolHandler<O>
+    implements McpToolHandler
+{
     /** Throw {@link McpToolError} for expected, user-facing errors; the base wraps. */
-    protected abstract createResult(params: T): MaybePromise<McpToolResult>;
+    protected abstract createResult(params: I): MaybePromise<McpToolResult>;
 
     registerTool(server: GLSPMcpServer): void {
         server.registerTool(this.name, this.toRegistrationConfig(), async (params, extra) =>
-            this.requestContext.run(extra, () => this.execute(() => this.createResult(params as T)))
+            this.requestContext.run(extra, () => this.execute(() => this.createResult(params as I)))
         );
     }
 }
@@ -247,14 +252,17 @@ export abstract class AbstractMcpToolHandler<T = Record<string, unknown>> extend
  * @experimental
  */
 @injectable()
-export abstract class BaseMcpDiagramToolHandler<T extends McpDiagramScopedInput = McpDiagramScopedInput> extends BaseMcpToolHandler {
+export abstract class BaseMcpDiagramToolHandler<
+    I extends McpDiagramScopedInput = McpDiagramScopedInput,
+    O extends McpStructuredContent = McpStructuredContent
+> extends BaseMcpToolHandler<O> {
     @inject(ClientId) protected clientId: string;
     @inject(ModelState) protected modelState: ModelState;
     @inject(McpIdAliasService) protected aliasService: McpIdAliasService;
     @inject(McpLabelProvider) protected labelProvider: McpLabelProvider;
 
     /** Throw {@link McpToolError} for expected errors; the base wraps. */
-    protected abstract createResult(params: T): MaybePromise<McpToolResult>;
+    protected abstract createResult(params: I): MaybePromise<McpToolResult>;
 
     /**
      * Public dispatch entry point invoked by {@link AbstractMcpServerLauncher}'s registered SDK
@@ -262,9 +270,27 @@ export abstract class BaseMcpDiagramToolHandler<T extends McpDiagramScopedInput 
      * passes through; {@link OperationMcpDiagramToolHandler} enforces the readonly gate.
      * Adopters don't call this directly.
      */
-    abstract handle(params: T): Promise<McpToolResult>;
+    abstract handle(params: I): Promise<McpToolResult>;
 
-    /** Override to opt out of registration when a runtime dependency is missing. Default: `true`. */
+    /**
+     * Whether the diagram type can support this tool at all. Evaluated once per diagram type at
+     * MCP-server start against a container with that type's diagram modules loaded, so
+     * `@inject(...) @optional()` dependencies reflect its real bindings. When no registered
+     * diagram type supports the tool, it is left out of the MCP catalog entirely.
+     *
+     * Override this for statically bound dependencies (e.g. a `LayoutEngine`) and
+     * {@link canRegister} for capabilities of the connected GLSP client — the harvest container
+     * has no client, so client capabilities always read as absent here.
+     */
+    isSupportedByDiagramType(): boolean {
+        return true;
+    }
+
+    /**
+     * Override to opt out when a per-session dependency is missing. Default: `true`. Gates the
+     * per-GLSP-session registry only: the tool stays in the catalog (another session may support
+     * it) and calls against this session fail with "No tool handler '…' registered".
+     */
     canRegister(): boolean {
         return true;
     }
@@ -357,9 +383,10 @@ export abstract class BaseMcpDiagramToolHandler<T extends McpDiagramScopedInput 
  */
 @injectable()
 export abstract class AbstractMcpDiagramToolHandler<
-    T extends McpDiagramScopedInput = McpDiagramScopedInput
-> extends BaseMcpDiagramToolHandler<T> {
-    handle(params: T): Promise<McpToolResult> {
+    I extends McpDiagramScopedInput = McpDiagramScopedInput,
+    O extends McpStructuredContent = McpStructuredContent
+> extends BaseMcpDiagramToolHandler<I, O> {
+    handle(params: I): Promise<McpToolResult> {
         return this.execute(() => this.createResult(params));
     }
 }
@@ -388,8 +415,9 @@ export abstract class AbstractMcpDiagramToolHandler<
  */
 @injectable()
 export abstract class OperationMcpDiagramToolHandler<
-    T extends McpDiagramScopedInput = McpDiagramScopedInput
-> extends BaseMcpDiagramToolHandler<T> {
+    I extends McpDiagramScopedInput = McpDiagramScopedInput,
+    O extends McpStructuredContent = McpStructuredContent
+> extends BaseMcpDiagramToolHandler<I, O> {
     @inject(ActionDispatcher) protected actionDispatcher: ActionDispatcher;
 
     // Operation tools mutate the model — flip the read defaults. Concrete handlers override
@@ -400,7 +428,7 @@ export abstract class OperationMcpDiagramToolHandler<
     override readonly destructiveHint: boolean = false;
     override readonly idempotentHint: boolean = false;
 
-    handle(params: T): Promise<McpToolResult> {
+    handle(params: I): Promise<McpToolResult> {
         return this.execute(() => {
             if (this.modelState.isReadonly) {
                 throw new McpReadOnlyError();
@@ -431,5 +459,5 @@ export abstract class OperationMcpDiagramToolHandler<
  * are read off `new Constructor()` at MCP-session-init for SDK catalog registration, the same
  * trick `bindOperations` uses to read `operationType`.
  */
-export type McpDiagramToolHandlerConstructor = interfaces.Newable<BaseMcpDiagramToolHandler<any>>;
+export type McpDiagramToolHandlerConstructor = interfaces.Newable<BaseMcpDiagramToolHandler<any, any>>;
 export const McpDiagramToolHandlerConstructor = Symbol('McpDiagramToolHandlerConstructor');

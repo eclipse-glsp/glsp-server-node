@@ -38,9 +38,10 @@ export const DiagramModelOutputSchema = z.object({
     sessionId: z.string(),
     elements: z.array(DiagramModelElementSchema)
 });
+export type DiagramModelOutput = z.infer<typeof DiagramModelOutputSchema>;
 
 @injectable()
-export class DiagramModelMcpToolHandler extends AbstractMcpDiagramToolHandler<DiagramModelInput> {
+export class DiagramModelMcpToolHandler extends AbstractMcpDiagramToolHandler<DiagramModelInput, DiagramModelOutput> {
     static readonly NAME = 'diagram-model';
     readonly name = DiagramModelMcpToolHandler.NAME;
     override readonly title = 'Diagram Model Structure';
@@ -57,8 +58,10 @@ export class DiagramModelMcpToolHandler extends AbstractMcpDiagramToolHandler<Di
     protected createResult({ sessionId }: DiagramModelInput): McpToolResult {
         const root = this.modelState.root;
         const structured = this.serializer.serializeStructured(root);
-        const count = Array.isArray(structured.elements) ? structured.elements.length : 0;
-        return this.success(this.summarizeModel(root, count), { sessionId, ...structured });
+        const elements = (Array.isArray(structured.elements) ? structured.elements : []) as DiagramModelOutput['elements'];
+        // Spread first so extra top-level keys from an adopter serializer still reach the client;
+        // the narrowed `elements` then satisfies the declared output type.
+        return this.success(this.summarizeModel(root, elements.length), { sessionId, ...structured, elements });
     }
 
     /** Builds the LLM-facing summary line. Override to customize per-adopter wording. */

@@ -45,6 +45,9 @@ export const elementId = z.string();
 /** One or more element ids. Empty arrays are rejected. */
 export const elementIds = z.array(z.string()).min(1);
 
+/** Zero or more element ids, for tools where an empty array is itself meaningful (e.g. "select nothing"). */
+export const elementIdsAllowingEmpty = z.array(z.string());
+
 /** Cartesian position used by node-creation / -modification tools. */
 export const position = z
     .object({

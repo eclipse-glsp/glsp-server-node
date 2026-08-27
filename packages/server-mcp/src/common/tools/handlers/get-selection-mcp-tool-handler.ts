@@ -27,10 +27,11 @@ export type GetSelectionInput = z.infer<typeof GetSelectionInputSchema>;
 export const GetSelectionOutputSchema = z.object({
     selectedElementIds: z.array(z.string()).describe('Aliased ids of the elements currently selected on the client.')
 });
+export type GetSelectionOutput = z.infer<typeof GetSelectionOutputSchema>;
 
 /** Round-trips a sprotty {@link GetSelectionAction} via `ActionDispatcher.requestUntil` and awaits the matching `SelectionResult`. */
 @injectable()
-export class GetSelectionMcpToolHandler extends AbstractMcpDiagramToolHandler<GetSelectionInput> {
+export class GetSelectionMcpToolHandler extends AbstractMcpDiagramToolHandler<GetSelectionInput, GetSelectionOutput> {
     /** Timeout (in ms) for awaiting the selection response from the client. Override via subclass + rebind. */
     protected readonly timeoutMs: number = 5000;
 

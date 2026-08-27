@@ -55,6 +55,7 @@ export const ElementTypesOutputSchema = z.object({
     nodeTypes: z.array(ElementTypeEntrySchema),
     edgeTypes: z.array(ElementTypeEntrySchema)
 });
+export type ElementTypesOutput = z.infer<typeof ElementTypesOutputSchema>;
 
 /**
  * Server-scope so the LLM can discover types before opening a session. Lazy-harvests the
@@ -66,7 +67,7 @@ export const ElementTypesOutputSchema = z.object({
  * `bindElementTypesProvider()`; the harvest picks it up without further overrides.
  */
 @injectable()
-export class ElementTypesMcpToolHandler extends AbstractMcpToolHandler<ElementTypesInput> {
+export class ElementTypesMcpToolHandler extends AbstractMcpToolHandler<ElementTypesInput, ElementTypesOutput> {
     @inject(DiagramModules) protected diagramModules: Map<string, ContainerModule[]>;
     @inject(InjectionContainer) protected serverContainer: Container;
     @inject(ClientSessionManager) protected clientSessionManager: ClientSessionManager;
@@ -89,8 +90,10 @@ export class ElementTypesMcpToolHandler extends AbstractMcpToolHandler<ElementTy
         const { nodeTypes, edgeTypes } = this.getElementTypes(resolved);
         return this.success(this.summarizeElementTypes(resolved, nodeTypes, edgeTypes), {
             diagramType: resolved,
-            nodeTypes,
-            edgeTypes
+            // `ElementTypeEntry` stays closed so a mistyped field on an adopter provider is still a
+            // compile error; the widening to the `loose()` schema shape happens here.
+            nodeTypes: nodeTypes as ElementTypesOutput['nodeTypes'],
+            edgeTypes: edgeTypes as ElementTypesOutput['edgeTypes']
         });
     }
 
