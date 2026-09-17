@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> **This repository is deprecated and will be archived.** Active development happens in the [`glsp-core`](https://github.com/eclipse-glsp/glsp-core) monorepo — do not implement changes here.
+
 ## Project Overview
 
 Eclipse GLSP Server Node monorepo. Provides the TypeScript-based server framework for the Graphical Language Server Platform (GLSP). Contains core server packages, graph model, ELK layout integration, and example workflow server. Uses pnpm workspaces.

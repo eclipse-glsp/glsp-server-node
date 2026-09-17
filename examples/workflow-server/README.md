@@ -1,5 +1,9 @@
 # Eclipse GLSP - Workflow Examples
 
+> [!IMPORTANT]
+> Starting with version `2.9.0`, this package is developed and published from the
+> [`glsp-core`](https://github.com/eclipse-glsp/glsp-core) monorepo (`examples/workflow-server`). This repository is deprecated and will be archived.
+
 Provides the typescript implementation of the Workflow example server. This example server is used as dev example in GLSP projects.
 
 ## Workflow Diagram Example

@@ -1,5 +1,11 @@
 # GLSP Server [![Build Status](https://img.shields.io/github/actions/workflow/status/eclipse-glsp/glsp-server-node/ci.yml?branch=main&label=build)](https://github.com/eclipse-glsp/glsp-server-node/actions/workflows/ci.yml)
 
+> [!IMPORTANT]
+> **This repository is deprecated and will be archived soon.**
+> Development has moved to the consolidated [`glsp-core`](https://github.com/eclipse-glsp/glsp-core) monorepo.
+> Starting with version `2.9.0`, all packages of this repository are developed and published from there.
+> Please report issues in the [GLSP umbrella repository](https://github.com/eclipse-glsp/glsp/issues) and open pull requests against `glsp-core`.
+
 Contains the code for the Typescript-based framework to create [GLSP](https://github.com/eclipse-glsp/glsp) server components.
 The implementation of this server is aligned with the default Java based [GLSP Server](https://github.com/eclipse-glsp/glsp-server-node).
 
