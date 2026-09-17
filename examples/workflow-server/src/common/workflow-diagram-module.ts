@@ -22,6 +22,7 @@ import {
     DiagramConfiguration,
     EdgeCreationChecker,
     GLSPServerInitializer,
+    GModelChangeContainerOperationHandler,
     GModelDiagramModule,
     InstanceMultiBinding,
     LabelEditValidator,
@@ -35,6 +36,7 @@ import {
     SourceModelStorage
 } from '@eclipse-glsp/server';
 import { injectable } from 'inversify';
+import { ChangeContainerWorkflowHandler } from './handler/change-container-workflow-handler';
 import { CreateAutomatedTaskHandler } from './handler/create-automated-task-handler';
 import { CreateCategoryHandler } from './handler/create-category-handler';
 import { CreateDecisionNodeHandler } from './handler/create-decision-node-handler';
@@ -89,6 +91,7 @@ export class WorkflowDiagramModule extends GModelDiagramModule {
         binding.add(CreateDecisionNodeHandler);
         binding.add(CreateCategoryHandler);
         binding.add(EditTaskOperationHandler);
+        binding.rebind(GModelChangeContainerOperationHandler, ChangeContainerWorkflowHandler);
     }
 
     protected bindDiagramConfiguration(): BindingTarget<DiagramConfiguration> {
