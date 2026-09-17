@@ -1,5 +1,9 @@
 # Eclipse GLSP - Server
 
+> [!IMPORTANT]
+> Starting with version `2.9.0`, this package is developed and published from the
+> [`glsp-core`](https://github.com/eclipse-glsp/glsp-core) monorepo (`packages/server/server`). This repository is deprecated and will be archived.
+
 A typescript implementation of the Java [GLSP Server](https://github.com/eclipse-glsp/glsp-server).
 
 ## More information

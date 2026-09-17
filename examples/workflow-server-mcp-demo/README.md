@@ -1,5 +1,9 @@
 # Workflow Server MCP Demo (browser)
 
+> [!IMPORTANT]
+> Starting with version `2.9.0`, this package is developed and published from the
+> [`glsp-core`](https://github.com/eclipse-glsp/glsp-core) monorepo (`examples/workflow-server-mcp-demo`). This repository is deprecated and will be archived.
+
 A browser demo for the `@eclipse-glsp/server-mcp` portable Fetch handler. The page opens a
 workflow GLSP session inside an in-page Web Worker and drives the MCP server through a
 Service Worker that intercepts `fetch('/mcp', …)` and proxies the request to the Worker via

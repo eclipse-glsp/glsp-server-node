@@ -1,5 +1,10 @@
 # Eclipse GLSP - Workflow Example Server (bundled, web)
 
+> [!IMPORTANT]
+> Starting with version `2.9.0`, this package is developed and published from the
+> [`glsp-core`](https://github.com/eclipse-glsp/glsp-core) monorepo (`examples/workflow-server-bundled-web`). This repository is deprecated and will be archived.
+> In `glsp-core` this package is private and will no longer be published to npm.
+
 Provides a bundled version of the Workflow example server for web (webworker). This example server is used as dev example in GLSP projects.
 Note that this package provides the bundled file. If you are looking for the unbundled source code with type definitions check out
 [`@eclipse-glsp-examples/workflow-server`](https://www.npmjs.com/package/@eclipse-glsp-examples/workflow-server).

@@ -1,5 +1,9 @@
 # Eclipse GLSP - Layout ELK
 
+> [!IMPORTANT]
+> Starting with version `2.9.0`, this package is developed and published from the
+> [`glsp-core`](https://github.com/eclipse-glsp/glsp-core) monorepo (`packages/server/layout-elk`). This repository is deprecated and will be archived.
+
 Integration of the [Eclipse Layout Kernel (ELK)](https://www.eclipse.org/elk/) with the GLSP node server framework.
 This packages provides an ELK layout engine that can be used for autolayouting the graphical model (GModel) on node servers.
 

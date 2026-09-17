@@ -1,11 +1,10 @@
 name: 'Publish to NPM'
 
+# This repository is deprecated. Starting with version 2.9.0 all packages are developed and
+# published from the consolidated `glsp-core` monorepo (https://github.com/eclipse-glsp/glsp-core).
+# The automatic `workflow_run` trigger (nightly publish on successful CI of `main`) has therefore
+# been removed. Only manual dispatch/call remains, for emergency republishing of old versions.
 on:
-  workflow_run:
-    workflows: ['CI']
-    types:
-      - completed
-    branches: [main]
   workflow_call:
     inputs:
       ref:
